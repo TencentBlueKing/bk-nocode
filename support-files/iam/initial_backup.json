@@ -1,0 +1,243 @@
+{
+    "system_id": "bk_nocode",
+    "operations": [
+        {
+            "operation": "upsert_system",
+            "data": {
+                "id": "bk_nocode",
+                "name": "无代码平台",
+                "name_en": "NOCODE",
+                "description": "",
+                "description_en": "",
+                "clients": "bk_nocode",
+                "provider_config": {
+                    "host": "",
+                    "auth": "basic"
+                }
+            }
+        },
+        {
+            "operation": "upsert_resource_type",
+            "data": {
+                "id": "project",
+                "name": "应用",
+                "name_en": "Project",
+                "description": "",
+                "description_en": "",
+                "parents": [],
+                "provider_config": {
+                    "path": "/api/iam/resources/v1/"
+                },
+                "version": 1
+            }
+        },
+        {
+            "operation": "upsert_instance_selection",
+            "data": {
+                "id": "project_list",
+                "name": "应用列表",
+                "name_en": "Project",
+                "resource_type_chain": [
+                    {
+                        "system_id": "bk_nocode",
+                        "id": "project"
+                    }
+                ]
+            }
+        },
+        {
+            "operation": "upsert_action",
+            "data": {
+                "id": "project_create",
+                "name": "应用创建",
+                "name_en": "Create Project",
+                "description": "应用的新建",
+                "description_en": "",
+                "type": "create",
+                "related_resource_types": [],
+                "version": 1
+            }
+        },
+        {
+            "operation": "upsert_action",
+            "data": {
+                "id": "project_view",
+                "name": "应用查看",
+                "name_en": "Project View",
+                "description": "查看应用的详情",
+                "description_en": "",
+                "type": "view",
+                "related_resource_types": [
+                    {
+                        "system_id": "bk_nocode",
+                        "id": "project",
+                        "related_instance_selections": [
+                            {
+                                "system_id": "bk_nocode",
+                                "id": "project_list"
+                            }
+                        ]
+                    }
+                ],
+                "version": 1
+            }
+        },
+        {
+            "operation": "upsert_action",
+            "data": {
+                "id": "project_edit",
+                "name": "应用编辑",
+                "name_en": "Project Edit",
+                "description": "编辑应用内容",
+                "description_en": "",
+                "type": "edit",
+                "related_resource_types": [
+                    {
+                        "system_id": "bk_nocode",
+                        "id": "project",
+                        "related_instance_selections": [
+                            {
+                                "system_id": "bk_nocode",
+                                "id": "project_list"
+                            }
+                        ]
+                    }
+                ],
+                "version": 1
+            }
+        },
+        {
+            "operation": "upsert_action",
+            "data": {
+                "id": "project_manage",
+                "name": "应用管理",
+                "name_en": "Project Manage",
+                "description": "应用管理",
+                "description_en": "project manage",
+                "type": "manage",
+                "related_resource_types": [
+                    {
+                        "system_id": "bk_nocode",
+                        "id": "project",
+                        "related_instance_selections": [
+                            {
+                                "system_id": "bk_nocode",
+                                "id": "project_list"
+                            }
+                        ]
+                    }
+                ],
+                "version": 1
+            }
+        },
+        {
+            "operation": "upsert_action",
+            "data": {
+                "id": "project_delete",
+                "name": "应用删除",
+                "name_en": "Project Delete",
+                "description": "应用删除",
+                "description_en": "project delete",
+                "type": "delete",
+                "related_resource_types": [
+                    {
+                        "system_id": "bk_nocode",
+                        "id": "project",
+                        "related_instance_selections": [
+                            {
+                                "system_id": "bk_nocode",
+                                "id": "project_list"
+                            }
+                        ]
+                    }
+                ],
+                "version": 1
+            }
+        },
+        {
+            "operation": "upsert_action",
+            "data": {
+                "id": "project_access",
+                "name": "应用访问",
+                "name_en": "Project Access",
+                "description": "应用删除",
+                "description_en": "project access",
+                "type": "view",
+                "related_resource_types": [
+                    {
+                        "system_id": "bk_nocode",
+                        "id": "project",
+                        "related_instance_selections": [
+                            {
+                                "system_id": "bk_nocode",
+                                "id": "project_list"
+                            }
+                        ]
+                    }
+                ],
+                "version": 1
+            }
+        },
+        {
+            "operation": "upsert_action_groups",
+            "data": [
+                {
+                    "name": "应用",
+                    "name_en": "Project",
+                    "actions": [
+                        {
+                            "id": "project_access"
+                        },
+                        {
+                            "id": "project_create"
+                        },
+                        {
+                            "id": "project_view"
+                        },
+                        {
+                            "id": "project_edit"
+                        },
+                        {
+                            "id": "project_delete"
+                        },
+                        {
+                            "id": "project_manage"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "operation": "add_resource_creator_actions",
+            "data": {
+                "config": [
+                    {
+                        "id": "project",
+                        "actions": [
+                            {
+                                "id": "project_edit",
+                                "required": true
+                            },
+                            {
+                                "id": "project_view",
+                                "required": true
+                            },
+                            {
+                                "id": "project_delete",
+                                "required": true
+                            },
+                            {
+                                "id": "project_access",
+                                "required": true
+                            },
+                            {
+                                "id": "project_manage",
+                                "required": true
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

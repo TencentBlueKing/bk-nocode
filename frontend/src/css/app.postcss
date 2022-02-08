@@ -1,0 +1,50 @@
+@import './reset.css';
+@import './iconfont.css';
+
+body {
+  color: #313238;
+  background: #f5f7fa;
+  font-family: 'Microsoft YaHei', 'PingFang SC', 'Hiragino Sans GB', 'SimSun', 'sans-serif';
+}
+
+.bk-form-control {
+  & > .bk-form-radio,
+  & > .bk-form-checkbox {
+    margin-right: 24px;
+  }
+}
+
+.common-error-tips {
+  color: #ff5656;
+  font-size: 12px;
+  line-height: 30px;
+}
+
+.cursor-element {
+  width: 12px;
+  height: 16px;
+  background: url('../assets/images/lock.svg') no-repeat;
+}
+.btn-permission-disabled {
+  background-color: #fafafa !important;
+  border-color: #e6e6e6 !important;
+  color: #cccccc !important;
+  cursor: pointer !important;
+}
+.text-permission-disabled {
+  color: #cccccc !important;
+  cursor: pointer !important;
+}
+
+.bk-select-dropdown-theme .tippy-content {
+  padding: 0;
+}
+
+.bk-table .bk-table-fixed-right tr.bk-table-row-last td.is-last {
+  border-bottom: 1px solid #dfe0e5;
+}
+
+.tippy-tooltip .tippy-arrow {
+  width: auto;
+  height: auto;
+}

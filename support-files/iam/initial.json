@@ -1,0 +1,204 @@
+{
+    "system_id": "bk_nocode",
+    "operations": [
+        {
+            "operation": "upsert_system",
+            "data": {
+                "id": "bk_nocode",
+                "name": "无代码平台(S-Maker)",
+                "name_en": "S-Maker",
+                "description": "",
+                "description_en": "",
+                "clients": "bk_nocode",
+                "provider_config": {
+                    "host": "",
+                    "auth": "basic"
+                }
+            }
+        },
+        {
+            "operation": "upsert_action",
+            "data": {
+                "id": "project_create",
+                "name": "创建应用",
+                "name_en": "Create Project",
+                "description": "应用的新建",
+                "description_en": "",
+                "type": "create",
+                "related_resource_types": [],
+                "version": 1
+            }
+        },
+        {
+            "operation": "upsert_resource_type",
+            "data": {
+                "id": "project",
+                "name": "应用",
+                "name_en": "Project",
+                "description": "",
+                "description_en": "",
+                "parents": [],
+                "provider_config": {
+                    "path": "/api/iam/resources/v1/"
+                },
+                "version": 1
+            }
+        },
+        {
+            "operation": "upsert_instance_selection",
+            "data": {
+                "id": "project_list",
+                "name": "应用列表",
+                "name_en": "Project List",
+                "resource_type_chain": [
+                    {
+                        "system_id": "bk_nocode",
+                        "id": "project"
+                    }
+                ]
+            }
+        },
+        {
+            "operation": "upsert_resource_type",
+            "data": {
+                "id": "page",
+                "name": "页面",
+                "name_en": "Page",
+                "description": "",
+                "description_en": "",
+                "parents": [],
+                "provider_config": {
+                    "path": "/api/iam/resources/v1/"
+                },
+                "version": 1
+            }
+        },
+        {
+            "operation": "upsert_instance_selection",
+            "data": {
+                "id": "page_list",
+                "name": "页面列表",
+                "name_en": "Page List",
+                "resource_type_chain": [
+                    {
+                        "system_id": "bk_nocode",
+                        "id": "project"
+                    },
+                    {
+                        "system_id": "bk_nocode",
+                        "id": "page"
+                    }
+                ]
+            }
+        },
+        {
+            "operation": "upsert_resource_type",
+            "data": {
+                "id": "action",
+                "name": "操作",
+                "name_en": "Action",
+                "description": "",
+                "description_en": "",
+                "parents": [],
+                "provider_config": {
+                    "path": "/api/iam/resources/v1/"
+                },
+                "version": 1
+            }
+        },
+        {
+            "operation": "upsert_instance_selection",
+            "data": {
+                "id": "action_list",
+                "name": "操作列表",
+                "name_en": "Action List",
+                "resource_type_chain": [
+                    {
+                        "system_id": "bk_nocode",
+                        "id": "project"
+                    },
+                    {
+                        "system_id": "bk_nocode",
+                        "id": "page"
+                    },
+                    {
+                        "system_id": "bk_nocode",
+                        "id": "action"
+                    }
+                ]
+            }
+        },
+        {
+            "operation": "upsert_action",
+            "data": {
+                "id": "page_view",
+                "name": "导航查看",
+                "name_en": "Page View",
+                "description": "导航查看",
+                "description_en": "Page view",
+                "type": "view",
+                "related_resource_types": [
+                    {
+                        "system_id": "bk_nocode",
+                        "id": "page",
+                        "related_instance_selections": [
+                            {
+                                "system_id": "bk_nocode",
+                                "id": "page_list"
+                            }
+                        ]
+                    }
+                ],
+                "version": 1
+            }
+        },
+        {
+            "operation": "upsert_action",
+            "data": {
+                "id": "project_admin",
+                "name": "应用所有权限",
+                "name_en": "Project Admin",
+                "description": "应用所有权限",
+                "description_en": "Project Admin",
+                "type": "manage",
+                "related_resource_types": [
+                    {
+                        "system_id": "bk_nocode",
+                        "id": "project",
+                        "related_instance_selections": [
+                            {
+                                "system_id": "bk_nocode",
+                                "id": "project_list"
+                            }
+                        ]
+                    }
+                ],
+                "version": 1
+            }
+        },
+        {
+            "operation": "upsert_action",
+            "data": {
+                "id": "action_execute",
+                "name": "动作执行",
+                "name_en": "Action Execute",
+                "description": "动作执行",
+                "description_en": "Action Execute",
+                "type": "create",
+                "related_resource_types": [
+                    {
+                        "system_id": "bk_nocode",
+                        "id": "action",
+                        "related_instance_selections": [
+                            {
+                                "system_id": "bk_nocode",
+                                "id": "action_list"
+                            }
+                        ]
+                    }
+                ],
+                "version": 1
+            }
+        }
+    ]
+}

@@ -1,0 +1,23 @@
+app_code: bk_nocode
+app_name: S-Maker无代码平台
+app_name_en: NO CODE
+author: 蓝鲸智云
+category: 办公应用
+introduction: 蓝鲸无代码平台
+introduction_en: the blueking no code app
+version: 1.1.0
+language: python
+is_use_celery: True
+is_use_celery_with_gevent: False
+language_support: 英语
+container:
+    memory: 4096
+desktop:
+    width: 1200
+    height: 720
+    is_max: True
+date: 2020-07-02 18:00:00
+env:
+  - key: BKAPP_ENABLE_SHARED_FS
+    value: True
+

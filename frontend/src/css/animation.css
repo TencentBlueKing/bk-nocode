@@ -1,0 +1,13 @@
+@charset "UTF-8";
+
+
+
+.common-fade-leave-active, .common-fade-enter-active{
+  transition: all 0.3s ease;
+}
+.common-fade-leave-active,.common-fade-enter{
+  height: 0px!important;
+}
+.common-fade-leave,.common-fade-enter-active{
+  height: 207px;
+}

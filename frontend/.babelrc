@@ -1,0 +1,42 @@
+{
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "loose": false,
+        "useBuiltIns": "usage",
+        "corejs": {
+          "version": 3
+        },
+        "targets": {
+          "browsers": [
+            "Chrome >= 46",
+            "Firefox >= 45",
+            "Safari >= 10"
+          ]
+        }
+      }
+    ],
+    [
+      "@vue/babel-preset-jsx",
+      {
+        // https://github.com/vuejs/composition-api
+        "compositionAPI": true
+      }
+    ]
+  ],
+  "plugins": [
+    "@babel/plugin-syntax-dynamic-import",
+    "@babel/plugin-transform-modules-commonjs",
+    "@babel/plugin-proposal-export-namespace-from",
+    "@babel/plugin-proposal-class-properties",
+    [
+      "@babel/plugin-transform-runtime", {
+        "regenerator": false,
+        "corejs": false,
+        "helpers": true,
+        "useESModules": false
+      }
+    ]
+  ]
+}

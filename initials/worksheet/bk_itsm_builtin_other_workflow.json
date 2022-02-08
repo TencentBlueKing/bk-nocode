@@ -1,0 +1,232 @@
+{
+    "is_deleted": false,
+    "name": "详情",
+    "desc": "",
+    "flow_type": "other",
+    "is_enabled": true,
+    "is_revocable": true,
+    "revoke_config": {
+        "type": 2,
+        "state": 0
+    },
+    "is_draft": false,
+    "is_builtin": false,
+    "is_task_needed": false,
+    "owners": ",admin,",
+    "notify_rule": "NONE",
+    "notify_freq": 0,
+    "is_biz_needed": false,
+    "is_iam_used": false,
+    "is_supervise_needed": false,
+    "supervise_type": "EMPTY",
+    "supervisor": "",
+    "engine_version": "PIPELINE_V1",
+    "version_number": "20211207144602",
+    "table": {
+        "id": 1,
+        "is_deleted": false,
+        "name": "默认",
+        "desc": "默认基础模型",
+        "version": "EMPTY",
+        "fields": [],
+        "fields_order": [],
+        "field_key_order": []
+    },
+    "task_schemas": [],
+    "creator": "admin",
+    "updated_by": "admin",
+    "workflow_id": 63,
+    "version_message": "",
+    "states": {
+        "1": {
+            "workflow": 63,
+            "id": 1,
+            "key": 1,
+            "name": "开始",
+            "desc": "",
+            "distribute_type": "PROCESS",
+            "axis": {
+                "x": 150,
+                "y": 150
+            },
+            "is_builtin": true,
+            "variables": {
+                "inputs": [],
+                "outputs": []
+            },
+            "tag": "DEFAULT",
+            "processors_type": "OPEN",
+            "processors": "",
+            "assignors": "",
+            "assignors_type": "EMPTY",
+            "delivers": "",
+            "delivers_type": "EMPTY",
+            "can_deliver": false,
+            "extras": {},
+            "is_draft": false,
+            "is_terminable": false,
+            "fields": [],
+            "type": "START",
+            "api_instance_id": 0,
+            "is_sequential": false,
+            "finish_condition": {},
+            "is_multi": false,
+            "creator": null,
+            "create_at": "2021-12-07 14:45:46",
+            "updated_by": null,
+            "update_at": "2021-12-07 14:45:46",
+            "end_at": null,
+            "is_first_state": false
+        },
+        "2": {
+            "workflow": 63,
+            "id": 2,
+            "key": 2,
+            "name": "数据源节点",
+            "desc": "",
+            "distribute_type": "PROCESS",
+            "axis": {
+                "x": 285,
+                "y": 150
+            },
+            "is_builtin": true,
+            "variables": {
+                "inputs": [],
+                "outputs": []
+            },
+            "tag": "DEFAULT",
+            "processors_type": "OPEN",
+            "processors": "",
+            "assignors": "",
+            "assignors_type": "EMPTY",
+            "delivers": "",
+            "delivers_type": "EMPTY",
+            "can_deliver": false,
+            "extras": {},
+            "is_draft": false,
+            "is_terminable": false,
+            "fields": [],
+            "type": "NORMAL",
+            "api_instance_id": 0,
+            "is_sequential": false,
+            "finish_condition": {},
+            "is_multi": false,
+            "creator": null,
+            "create_at": "2021-12-07 14:45:46",
+            "updated_by": null,
+            "update_at": "2021-12-07 14:45:46",
+            "end_at": null,
+            "is_first_state": true
+        },
+        "3": {
+            "workflow": 63,
+            "id": 3,
+            "key": 3,
+            "name": "结束",
+            "desc": "",
+            "distribute_type": "PROCESS",
+            "axis": {
+                "x": 620,
+                "y": 150
+            },
+            "is_builtin": true,
+            "variables": {
+                "inputs": [],
+                "outputs": []
+            },
+            "tag": "DEFAULT",
+            "processors_type": "OPEN",
+            "processors": "",
+            "assignors": "",
+            "assignors_type": "EMPTY",
+            "delivers": "",
+            "delivers_type": "EMPTY",
+            "can_deliver": false,
+            "extras": {},
+            "is_draft": false,
+            "is_terminable": false,
+            "fields": [],
+            "type": "END",
+            "api_instance_id": 0,
+            "is_sequential": false,
+            "finish_condition": {},
+            "is_multi": false,
+            "creator": null,
+            "create_at": "2021-12-07 14:45:46",
+            "updated_by": null,
+            "update_at": "2021-12-07 14:45:46",
+            "end_at": null,
+            "is_first_state": false
+        }
+    },
+    "transitions": {
+        "214": {
+            "workflow": 63,
+            "id": 214,
+            "from_state": 1,
+            "to_state": 2,
+            "name": "",
+            "axis": {
+                "start": "Right",
+                "end": "Left"
+            },
+            "condition": {
+                "expressions": [
+                    {
+                        "type": "and",
+                        "expressions": [
+                            {
+                                "key": "G_INT_1",
+                                "condition": "==",
+                                "value": 1
+                            }
+                        ]
+                    }
+                ],
+                "type": "and"
+            },
+            "condition_type": "default",
+            "creator": "system",
+            "create_at": "2021-12-07 14:45:46",
+            "updated_by": "system",
+            "update_at": "2021-12-07 14:45:46",
+            "end_at": null
+        },
+        "215": {
+            "workflow": 63,
+            "id": 215,
+            "from_state": 2,
+            "to_state": 3,
+            "name": "默认",
+            "axis": {
+                "start": "Right",
+                "end": "Left"
+            },
+            "condition": {
+                "expressions": [
+                    {
+                        "type": "and",
+                        "expressions": [
+                            {
+                                "key": "G_INT_1",
+                                "condition": "==",
+                                "value": 1
+                            }
+                        ]
+                    }
+                ],
+                "type": "and"
+            },
+            "condition_type": "default",
+            "creator": "system",
+            "create_at": "2021-12-07 14:45:46",
+            "updated_by": "system",
+            "update_at": "2021-12-07 14:45:46",
+            "end_at": null
+        }
+    },
+    "triggers": [],
+    "fields": {},
+    "notify": []
+}
+
