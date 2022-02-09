@@ -233,9 +233,9 @@ class StateExtraManager:
 
     def update_info(self, instance_id):
         instance, created = TicketGlobalVariable.objects.get_or_create(
-            key="data_proc_result_%s" % self.state_instance.id,
-            name="data_proc_result_%s" % self.state_instance.id,
-            state_id=self.state_instance.id,
+            key="data_proc_result_%s" % self.state_instance["id"],
+            name="data_proc_result_%s" % self.state_instance["id"],
+            state_id=self.state_instance["id"],
             ticket_id=self.ticket.id,
             value="",
         )
