@@ -34,9 +34,13 @@ import datetime
 import mock
 from django.test import TestCase, override_settings
 
+from itsm.component.constants import OPERATE_CATALOG
+from itsm.project.handler.project_handler import ProjectHandler
+from itsm.project.models import Project
 from itsm.tests.service.params import CREATE_SERVICE_DATA, CONFIGS
-from itsm.workflow.models import WorkflowVersion, Workflow
-from itsm.service.models import Service, FavoriteService
+from itsm.workflow.models import WorkflowVersion
+from itsm.service.models import Service
+from nocode.worksheet.models import WorkSheet
 
 
 class ServiceTest(TestCase):
@@ -59,6 +63,30 @@ class ServiceTest(TestCase):
             "workflow": WorkflowVersion.objects.first(),
             "creator": self.operator,
         }
+        self.worksheet_data = {
+            "id": 1,
+            "creator": "admin",
+            "create_at": "2021-09-18 15:51:22",
+            "update_at": "2021-09-18 15:51:22",
+            "updated_by": "admin",
+            "is_deleted": False,
+            "name": "这是一张测试工作表",
+            "desc": "test_worksheet",
+            "key": "test_worksheet",
+            "project_key": "0",
+        }
+        self.create_project_data = {
+            "key": "test",
+            "name": "test",
+            "logo": "",
+            "color": [],
+            "creator": "admin",
+            "create_at": "2021-05-30 17:16:40",
+            "updated_by": "test_admin",
+            "update_at": "2021-05-30 17:16:40",
+        }
+        project = Project.objects.create(**self.create_project_data)
+        ProjectHandler(instance=project).init_operate_catalogs(OPERATE_CATALOG)
 
     def test_create_service_actions_auth(self):
         """
@@ -96,92 +124,86 @@ class ServiceTest(TestCase):
     def test_create_service(self, patch_misc_get_bk_users, path_get_bk_users):
         patch_misc_get_bk_users.return_value = {}
         path_get_bk_users.return_value = {}
+
         url = "/api/service/projects/"
-        data = {
-            "name": "测试服务",
-            "desc": "测试服务",
-            "key": "request",
-            "catalog_id": 2,
-        }
+        worksheet_id = WorkSheet.objects.create(**self.worksheet_data).id
 
-        resp_error = self.client.post(url, data)
-        self.assertEqual(resp_error.data["result"], False)
-        self.assertEqual(resp_error.data["code"], "VALIDATE_ERROR")
-        self.assertEqual(resp_error.data["message"], "project_key:该字段是必填项。")
-
-        resp = self.client.post(url, CREATE_SERVICE_DATA)
+        CREATE_SERVICE_DATA.setdefault("worksheet_ids", [worksheet_id])
+        resp = self.client.post(
+            url, json.dumps(CREATE_SERVICE_DATA), content_type="application/json"
+        )
         self.assertEqual(resp.data["result"], True)
         self.assertEqual(resp.data["code"], "OK")
 
-    @override_settings(MIDDLEWARE=("itsm.tests.middlewares.OverrideMiddleware",))
-    @mock.patch("itsm.ticket.serializers.ticket.get_bk_users")
-    @mock.patch("itsm.component.utils.misc.get_bk_users")
-    def test_import(self, patch_misc_get_bk_users, path_get_bk_users):
-        patch_misc_get_bk_users.return_value = {}
-        path_get_bk_users.return_value = {}
-        url = "/api/service/projects/"
-        resp = self.client.post(url, CREATE_SERVICE_DATA)
-
-        service_id = resp.data["data"]["id"]
-
-        import_from_template_url = (
-            "/api/service/projects/" "{}/import_from_template/".format(service_id)
-        )
-
-        resp = self.client.post(import_from_template_url, {"table_id": 8})
-
-        self.assertEqual(resp.data["result"], True)
-        self.assertEqual(resp.data["code"], "OK")
-
-        workflow = Workflow.objects.get(
-            id=Service.objects.get(id=service_id).workflow.workflow_id
-        )
-        version = workflow.create_version()
-
-        # 判断字段是否成功导入
-        fields = version.get_first_state_fields()
-        self.assertEqual(fields[0]["name"], "标题")
-        self.assertEqual(fields[1]["name"], "申请类型")
-        self.assertEqual(fields[2]["name"], "组织")
-        self.assertEqual(fields[3]["name"], "申请内容")
-        self.assertEqual(fields[4]["name"], "申请理由")
-
-        service = Service.objects.get(id=service_id)
-        service.workflow = version
-        service.save()
-
-        # 测试从服务导入
-        data = {
-            "name": "测试服务2",
-            "desc": "测试服务",
-            "key": "request",
-            "catalog_id": 2,
-            "project_key": "0",
-        }
-        resp = self.client.post(url, data)
-        service_id = resp.data["data"]["id"]
-
-        import_from_service_url = (
-            "/api/service/projects/" "{}/import_from_service/".format(service_id)
-        )
-
-        resp = self.client.post(import_from_service_url, {"service_id": service.id})
-
-        self.assertEqual(resp.data["result"], True)
-        self.assertEqual(resp.data["code"], "OK")
-
-        workflow = Workflow.objects.get(
-            id=Service.objects.get(id=service_id).workflow.workflow_id
-        )
-        version = workflow.create_version()
-
-        # 判断字段是否成功导入
-        fields = version.get_first_state_fields()
-        self.assertEqual(fields[0]["name"], "标题")
-        self.assertEqual(fields[1]["name"], "申请类型")
-        self.assertEqual(fields[2]["name"], "组织")
-        self.assertEqual(fields[3]["name"], "申请内容")
-        self.assertEqual(fields[4]["name"], "申请理由")
+    # @override_settings(MIDDLEWARE=("itsm.tests.middlewares.OverrideMiddleware",))
+    # @mock.patch("itsm.ticket.serializers.ticket.get_bk_users")
+    # @mock.patch("itsm.component.utils.misc.get_bk_users")
+    # def test_import(self, patch_misc_get_bk_users, path_get_bk_users):
+    #     patch_misc_get_bk_users.return_value = {}
+    #     path_get_bk_users.return_value = {}
+    #     url = "/api/service/projects/"
+    #     resp = self.client.post(url, CREATE_SERVICE_DATA)
+    #
+    #     service_id = resp.data["data"]["id"]
+    #
+    #     import_from_template_url = (
+    #         "/api/service/projects/" "{}/import_from_template/".format(service_id)
+    #     )
+    #
+    #     resp = self.client.post(import_from_template_url, {"table_id": 8})
+    #
+    #     self.assertEqual(resp.data["result"], True)
+    #     self.assertEqual(resp.data["code"], "OK")
+    #
+    #     workflow = Workflow.objects.get(
+    #         id=Service.objects.get(id=service_id).workflow.workflow_id
+    #     )
+    #     version = workflow.create_version()
+    #
+    #     # 判断字段是否成功导入
+    #     fields = version.get_first_state_fields()
+    #     self.assertEqual(fields[0]["name"], "标题")
+    #     self.assertEqual(fields[1]["name"], "申请类型")
+    #     self.assertEqual(fields[2]["name"], "组织")
+    #     self.assertEqual(fields[3]["name"], "申请内容")
+    #     self.assertEqual(fields[4]["name"], "申请理由")
+    #
+    #     service = Service.objects.get(id=service_id)
+    #     service.workflow = version
+    #     service.save()
+    #
+    #     # 测试从服务导入
+    #     data = {
+    #         "name": "测试服务2",
+    #         "desc": "测试服务",
+    #         "key": "request",
+    #         "catalog_id": 2,
+    #         "project_key": "0",
+    #     }
+    #     resp = self.client.post(url, data)
+    #     service_id = resp.data["data"]["id"]
+    #
+    #     import_from_service_url = (
+    #         "/api/service/projects/" "{}/import_from_service/".format(service_id)
+    #     )
+    #
+    #     resp = self.client.post(import_from_service_url, {"service_id": service.id})
+    #
+    #     self.assertEqual(resp.data["result"], True)
+    #     self.assertEqual(resp.data["code"], "OK")
+    #
+    #     workflow = Workflow.objects.get(
+    #         id=Service.objects.get(id=service_id).workflow.workflow_id
+    #     )
+    #     version = workflow.create_version()
+    #
+    #     # 判断字段是否成功导入
+    #     fields = version.get_first_state_fields()
+    #     self.assertEqual(fields[0]["name"], "标题")
+    #     self.assertEqual(fields[1]["name"], "申请类型")
+    #     self.assertEqual(fields[2]["name"], "组织")
+    #     self.assertEqual(fields[3]["name"], "申请内容")
+    #     self.assertEqual(fields[4]["name"], "申请理由")
 
     @override_settings(MIDDLEWARE=("itsm.tests.middlewares.OverrideMiddleware",))
     @mock.patch("itsm.ticket.serializers.ticket.get_bk_users")
@@ -189,11 +211,17 @@ class ServiceTest(TestCase):
     def test_save_configs(self, patch_misc_get_bk_users, path_get_bk_users):
         patch_misc_get_bk_users.return_value = {}
         path_get_bk_users.return_value = {}
+        worksheet_id = WorkSheet.objects.create(**self.worksheet_data).id
+
+        CREATE_SERVICE_DATA.setdefault("worksheet_ids", [worksheet_id])
         url = "/api/service/projects/"
-        resp = self.client.post(url, CREATE_SERVICE_DATA)
+        resp = self.client.post(
+            url, json.dumps(CREATE_SERVICE_DATA), content_type="application/json"
+        )
+        self.assertEqual(resp.data["result"], True)
+        self.assertEqual(resp.data["code"], "OK")
 
         service_id = resp.data["data"]["id"]
-
         save_configs_url = "{}{}/save_configs/".format(url, service_id)
 
         resp = self.client.post(
@@ -202,67 +230,3 @@ class ServiceTest(TestCase):
 
         self.assertEqual(resp.data["result"], True)
         self.assertEqual(resp.data["code"], "OK")
-
-    @override_settings(MIDDLEWARE=("itsm.tests.middlewares.OverrideMiddleware",))
-    @mock.patch("itsm.ticket.serializers.ticket.get_bk_users")
-    @mock.patch("itsm.component.utils.misc.get_bk_users")
-    def test_favorite(self, patch_misc_get_bk_users, path_get_bk_users):
-        patch_misc_get_bk_users.return_value = {}
-        path_get_bk_users.return_value = {}
-        url = "/api/service/projects/"
-        resp = self.client.post(url, CREATE_SERVICE_DATA)
-
-        service_id = resp.data["data"]["id"]
-
-        operate_favorite_url = "/api/service/projects/{}/operate_favorite/".format(
-            service_id
-        )
-
-        resp = self.client.post(operate_favorite_url, {"favorite": True})
-
-        self.assertEqual(resp.data["result"], True)
-        self.assertEqual(resp.data["code"], "OK")
-
-        get_favorite_service_url = "/api/service/projects/get_favorite_service/"
-
-        resp = self.client.get(get_favorite_service_url)
-
-        self.assertTrue(FavoriteService.objects.filter(user="admin").exists())
-
-        self.assertEqual(resp.data["result"], True)
-        self.assertEqual(resp.data["code"], "OK")
-
-    @override_settings(MIDDLEWARE=("itsm.tests.middlewares.OverrideMiddleware",))
-    @mock.patch("itsm.ticket.serializers.ticket.get_bk_users")
-    @mock.patch("itsm.component.utils.misc.get_bk_users")
-    def test_favorite_service_of_project(
-        self, patch_misc_get_bk_users, path_get_bk_users
-    ):
-        patch_misc_get_bk_users.return_value = {}
-        path_get_bk_users.return_value = {}
-
-        get_favorite_service_url = "/api/project/projects/list_favourite_service"
-        resp = self.client.get(get_favorite_service_url)
-
-        self.assertEqual(resp.data["result"], True)
-        self.assertEqual(resp.data["code"], "OK")
-
-        data = resp.data["data"]
-        for item in data:
-            """
-            {
-                project: {
-                    name:
-                    project_key:
-                },
-                favourite_service: [
-                    {
-                        id:
-                        info:
-                    },
-                    ...
-                ]
-            },
-            """
-            self.assertEqual(item["project"]["name"], "测试服务")
-            self.assertEqual(len(item["favourite_service"]), 1)

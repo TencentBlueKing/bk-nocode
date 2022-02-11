@@ -23,16 +23,36 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
+
 CREATE_SERVICE_DATA = {
-    "name": "测试服务",
-    "desc": "测试服务",
-    "key": "request",
-    "catalog_id": 2,
-    "project_key": "0"
+    "type": "ADD",
+    "name": "test",
+    "desc": "test",
+    "project_key": "test",
 }
 
-CONFIGS = {'workflow_config': {'is_revocable': True, 'revoke_config': {'type': 2, 'state': 0},
-                               'is_supervise_needed': False, 'supervise_type': 'EMPTY',
-                               'supervisor': '', 'notify': [], 'notify_rule': 'NONE',
-                               'notify_freq': 0}, 'display_type': 'OPEN',
-           'can_ticket_agency': False}
+# CONFIGS = {
+#     'workflow_config': {
+#         'is_revocable': True,
+#         'revoke_config': {'type': 2, 'state': 0},
+#         # 'is_supervise_needed': False,
+#         # 'supervise_type': 'EMPTY',
+#         # 'supervisor': '',
+#         'notify': [],
+#         'notify_rule': 'NONE',
+#         'notify_freq': 0},
+#     'display_type': 'OPEN',
+#     'can_ticket_agency': False
+# }
+
+CONFIGS = {
+    "workflow_config": {
+        "notify": [],
+        "notify_freq": 0,
+        "notify_rule": "NONE",
+        "revoke_config": {"type": 2, "state": 0},
+        "is_revocable": "true",
+        "show_all_workflow": "true",
+        "show_my_create_workflow": "true",
+    }
+}

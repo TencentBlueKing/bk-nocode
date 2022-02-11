@@ -25,28 +25,27 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 CREATE_TICKET_PARAMS = {
-    "catalog_id": 3,
     "service_id": 1,
-    "service_type": "request",
     "fields": [
-        {"type": "STRING", "id": 1, "key": "title", "value": "test_ticket", "choice": []},
         {
             "type": "STRING",
-            "id": 5,
-            "key": "apply_content",
+            "id": 1,
+            "key": "title",
+            "value": "test_ticket",
+            "choice": [],
+        },
+        {
+            "type": "TEXT",
+            "id": 3,
+            "key": "APPROVAL_CONTENT",
             "value": "测试内容",
         },
         {
-            "type": "STRING",
-            "key": "ZHIDINGSHENPIREN",
-            "value": "test",
-        },
-        {
-            "type": "STRING",
-            "key": "apply_reason",
-            "value": "test",
+            "id": 2,
+            "type": "MEMBERS",
+            "key": "APPROVER",
+            "value": "admin",
         },
     ],
     "creator": "admin",
-    "attention": True,
 }

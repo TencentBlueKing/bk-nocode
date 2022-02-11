@@ -22,6 +22,7 @@ NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES
 WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
+from itsm.project.models import Project
 from nocode.base.base_tests import MyTestCase
 from nocode.worksheet.models import WorkSheet
 from nocode.worksheet.views.worksheet import WorkSheetViewSet
@@ -41,7 +42,15 @@ class TestWorkSheetView(MyTestCase):
             "key": "test_worksheet",
             "project_key": "test-m",
         }
-
+        CREATE_PROJECT_DATA = {
+            "key": "test-m",
+            # "prefix": "test-m",
+            "name": "test-m",
+            "desc": "test-m",
+            "color": ["#3a84ff", "#6cbaff"],
+            "logo": "T",
+        }
+        Project.objects.get_or_create(**CREATE_PROJECT_DATA)
         WorkSheet.objects.get_or_create(**WORKSHEET_DATA)
 
     swagger_test_view = WorkSheetViewSet
