@@ -26,23 +26,39 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import json
 
 from django.test import TestCase, override_settings
+from blueapps.core.celery.celery import app
 
-from itsm.service.models import CatalogService
+from itsm.project.models import ProjectConfig
 from itsm.tests.ticket.params import CREATE_TICKET_PARAMS
-from itsm.ticket.models import TicketEventLog
+from itsm.ticket.models import TicketEventLog, Ticket
 
 
 class TicketEventLogTestCase(TestCase):
-
-    def setUp(self) -> None:
-        CatalogService.objects.create(service_id=1, is_deleted=False, catalog_id=2, creator="admin")
+    def setUp(self):
+        app.conf.update(CELERY_ALWAYS_EAGER=True)
+        Ticket.objects.all().delete()
+        project_config = {"workflow_prefix": "test", "project_key": "0"}
+        ProjectConfig.objects.create(**project_config)
+        # CatalogService.objects.create(service_id=1, is_deleted=False, catalog_id=2, creator="admin")
         TicketEventLog.objects.all().delete()
 
-    @override_settings(MIDDLEWARE=('itsm.tests.middlewares.OverrideMiddleware',))
+    @override_settings(MIDDLEWARE=("itsm.tests.middlewares.OverrideMiddleware",))
     def test_get_index_ticket_event_log(self):
-        url = "/api/ticket/receipts/"
-        resp = self.client.post(path=url, data=json.dumps(CREATE_TICKET_PARAMS),
-                                content_type="application/json")
+        publish_rep = self.client.post(
+            path="/api/project/manager/publish/",
+            data=json.dumps({"project_key": "0"}),
+            content_type="application/json",
+        )
+        self.assertEqual(publish_rep.data["code"], "OK")
+        self.assertEqual(publish_rep.data["message"], "success")
+
+        url = "/api/ticket/receipts/create_ticket/"
+
+        resp = self.client.post(
+            path=url,
+            data=json.dumps(CREATE_TICKET_PARAMS),
+            content_type="application/json",
+        )
 
         sn = resp.data["data"]["sn"]
 

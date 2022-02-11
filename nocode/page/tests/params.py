@@ -22,25 +22,15 @@ NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES
 WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
-import json
 
 CREATE_PROJECT_DATA = {
-    "key": "testprojectv2",
-    "prefix": "testprojectv2",
-    "name": "testprojectv3",
-    "desc": "testproject",
+    "key": "test",
+    "creator": "admin",
+    "name": "test",
+    "desc": "test",
     "color": ["#3a84ff", "#6cbaff"],
-    "project_config": json.dumps({"workflow_prefix": "testprojectv2"}),
-    "isCreate": "true",
     "logo": "T",
 }
-
-# PAGE_ROOT = {
-#     "key": "root",
-#     "name": "根目录",
-#     "project_key": "test_project",
-#     "order": 0
-# }
 
 CREATE_PAGE_1 = {
     "project_key": CREATE_PROJECT_DATA["key"],
@@ -58,35 +48,6 @@ CREATE_PAGE_3 = {
     "type": "SHEET",
 }
 
-PAGE_1_COMPONENT = {
-    "page_id": 2,
-    "components": [{"type": "FUNCTION", "value": "1", "config": {}}],
-}
-
-PAGE_2_COMPONENT = {
-    "page_id": 3,
-    "components": [{"type": "LIST", "value": "1", "config": {}}],
-}
-
-PAGE_3_COMPONENT = {
-    "page_id": 4,
-    "components": [{"type": "SHEET", "value": "1", "config": {}}],
-}
-
 SON_POINT = [CREATE_PAGE_1, CREATE_PAGE_2, CREATE_PAGE_3]
-COMPONENTS = {
-    "page_id": 2,
-    "components": [
-        {
-            "page_id": 2,
-            "type": "FUNCTION",
-            "value": 2,
-            "config": {
-                "name": "test",
-                "desc": "",
-                "bgColor": "linear-gradient(224deg, #6cbaff 0%, #3a84ff 100%) 1",
-            },
-        }
-    ],
-}
+
 NEW_ORDER = []
