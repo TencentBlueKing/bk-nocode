@@ -22,9 +22,12 @@ NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES
 WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
+import json
 
+import mock
 from django.test import TestCase, override_settings
 
+from itsm.project.handler.permit_engine_handler import PermitInitManagerDispatcher
 from itsm.project.models import ServiceCatalog, ProjectSettings, Project, ProjectConfig
 from itsm.tests.project.params import CREATE_PROJECT_DATA
 
@@ -36,19 +39,20 @@ class TestProject(TestCase):
         Project.objects.all().delete()
         ServiceCatalog.objects.all().delete()
 
-    def tearDown(self) -> None:
-        ProjectSettings.objects.all().delete()
-        Project.objects.all().delete()
-        ServiceCatalog.objects.all().delete()
-
     @override_settings(MIDDLEWARE=("itsm.tests.middlewares.OverrideMiddleware",))
-    def test_create_project(self):
+    @mock.patch.object(PermitInitManagerDispatcher, "init_permit")
+    def test_create_project(self, mock_result):
+        mock_result.return_value = 1
         resp = self.client.post("/api/project/projects/", {})
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.data["result"], False)
         self.assertEqual(resp.data["code"], "VALIDATE_ERROR")
 
-        resp = self.client.post("/api/project/projects/", CREATE_PROJECT_DATA)
+        resp = self.client.post(
+            "/api/project/projects/",
+            json.dumps(CREATE_PROJECT_DATA),
+            content_type="application/json",
+        )
 
         self.assertEqual(resp.status_code, 201)
         self.assertEqual(resp.data["result"], True)
@@ -65,6 +69,11 @@ class TestProject(TestCase):
             ).exists(),
             True,
         )
+
+    def tearDown(self) -> None:
+        ProjectSettings.objects.all().delete()
+        Project.objects.all().delete()
+        ServiceCatalog.objects.all().delete()
 
     # @override_settings(MIDDLEWARE=('itsm.tests.middlewares.OverrideMiddleware',))
     # def test_update_records(self) -> None:
