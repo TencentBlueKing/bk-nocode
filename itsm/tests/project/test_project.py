@@ -43,7 +43,11 @@ class TestProject(TestCase):
     @mock.patch.object(PermitInitManagerDispatcher, "init_permit")
     def test_create_project(self, mock_result):
         mock_result.return_value = 1
-        resp = self.client.post("/api/project/projects/", {})
+        resp = self.client.post(
+            "/api/project/projects/",
+            {},
+            content_type="application/json",
+        )
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.data["result"], False)
         self.assertEqual(resp.data["code"], "VALIDATE_ERROR")
