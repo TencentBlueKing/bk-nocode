@@ -22,13 +22,14 @@ NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES
 WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
+import json
 
 CREATE_PROJECT_DATA = {
     "key": "test",
     "creator": "admin",
     "name": "test",
     "desc": "test",
-    "color": ["#3a84ff", "#6cbaff"],
+    "color": json.dumps(["#3a84ff", "#6cbaff"]),
     "logo": "T",
 }
 
