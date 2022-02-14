@@ -23,43 +23,37 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-from django.test import TestCase, override_settings
+from django.test import override_settings
+
 from itsm.project.models import Project
-from nocode.page.handlers.page_handler import PageModelHandler
-from nocode.page.tests.params import SON_POINT, CREATE_PROJECT_DATA
-from nocode.page.models import Page
+from nocode.base.base_tests import MyTestCase
+from nocode.test.page.params import CREATE_PROJECT_DATA
+from nocode.test.worksheet.params import WORKSHEET_DATA
+from nocode.worksheet.models import WorkSheet
+from nocode.worksheet.views.worksheet import WorkSheetViewSet
 
 
-class TestPageComponent(TestCase):
+class TestWorkSheetView(MyTestCase):
     def setUp(self) -> None:
-        Project.objects.create(**CREATE_PROJECT_DATA)
-        PageModelHandler().create_root(project_key=CREATE_PROJECT_DATA["key"])
+        Project.objects.get_or_create(**CREATE_PROJECT_DATA)
+        WorkSheet.objects.get_or_create(**WORKSHEET_DATA)
 
     @override_settings(MIDDLEWARE=("itsm.tests.middlewares.OverrideMiddleware",))
-    def test_batch_save(self) -> None:
-        root = Page.objects.get(key="root", project_key=CREATE_PROJECT_DATA["key"])
-        for point in SON_POINT:
-            point.setdefault("parent_id", root.id)
-            resp = self.client.post("/api/page_design/page/", point)
-            self.assertEqual(resp.data["result"], True)
+    def test_get_relate_service_page(self):
+        url = f'/api/worksheet/sheets/{WORKSHEET_DATA["id"]}/get_relate_service_page/'
+        res = self.client.get(url)
+        self.assertEqual(type(res["relate_service"]), list)
+        self.assertEqual(type(res["relate_list_page"]), list)
 
-        page = Page.objects.get(name="page1", type="FUNCTION")
-        data = {
-            "page_id": page.id,
-            "components": [
-                {
-                    "page_id": page.id,
-                    "type": "FUNCTION",
-                    "value": 29,
-                    "config": {"name": "test", "desc": "test"},
-                }
-            ],
-        }
+    swagger_test_view = WorkSheetViewSet
 
-        res = self.client.post(
-            "/api/page_design/page_component/batch_save/",
-            data,
-            content_type="application/json",
-        )
-        self.assertEqual(res.data["result"], True)
-        self.assertEqual(len(res.data["data"]), 1)
+    actions_exempt = [
+        "create",
+        "destroy",
+        "list",
+        "retrieve",
+        "update",
+        "partial_update",
+        "get_relate_service_page",
+        "get_fields_from_excel",
+    ]

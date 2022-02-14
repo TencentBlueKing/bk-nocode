@@ -26,7 +26,8 @@ from django.test import TestCase, override_settings
 
 from itsm.project.handler.project_handler import PageModelHandler
 from itsm.project.models import Project
-from nocode.page.tests.params import CREATE_PROJECT_DATA, SON_POINT
+from nocode.page.views.view import PageModelViewSet
+from nocode.test.page.params import CREATE_PROJECT_DATA, SON_POINT
 from nocode.page.models import Page, PageComponent
 
 
@@ -81,3 +82,6 @@ class TestPage(TestCase):
         )
         new_sort = new_children.values_list("id", flat=True)
         self.assertEqual(children.first().id, new_sort[0])
+
+    actions_exempt = ["create", "destroy", "list", "update", "partial_update"]
+    swagger_test_view = PageModelViewSet

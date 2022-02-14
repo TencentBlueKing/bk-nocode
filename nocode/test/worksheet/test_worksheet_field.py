@@ -22,3 +22,39 @@ NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES
 WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
+from django.test import override_settings
+
+from itsm.project.models import Project
+from nocode.base.base_tests import MyTestCase
+from nocode.test.page.params import CREATE_PROJECT_DATA
+from nocode.test.worksheet.params import WORKSHEET_DATA, WORKSHEET_FIELD
+from nocode.worksheet.models import WorkSheet
+from nocode.worksheet.views.worksheetfield import WorkSheetFieldViewSet
+
+
+class TestWorkSheetFieldsView(MyTestCase):
+    def setUp(self) -> None:
+        Project.objects.get_or_create(**CREATE_PROJECT_DATA)
+        WorkSheet.objects.get_or_create(**WORKSHEET_DATA)
+
+    @override_settings(MIDDLEWARE=("itsm.tests.middlewares.OverrideMiddleware",))
+    def test_batch_save(self):
+        url = "/api/worksheet/fields/batch_save/"
+        res = self.client.post(
+            url, data=WORKSHEET_FIELD, content_type="application/json"
+        )
+        self.assertEqual(len(res), 2)
+
+    swagger_test_view = WorkSheetFieldViewSet
+
+    actions_exempt = [
+        "create",
+        "destroy",
+        "retrieve",
+        "list",
+        "update",
+        "partial_update",
+        "get_built_in_formula",
+        "batch_save",
+        "download_file",
+    ]

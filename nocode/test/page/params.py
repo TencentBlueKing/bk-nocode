@@ -22,37 +22,33 @@ NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES
 WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
-from itsm.project.models import Project
-from nocode.base.base_tests import MyTestCase
-from nocode.worksheet.models import WorkSheet
-from nocode.worksheet.views.worksheet import WorkSheetViewSet
+import json
 
+CREATE_PROJECT_DATA = {
+    "key": "test",
+    "creator": "admin",
+    "name": "test",
+    "desc": "test",
+    "color": json.dumps(["#3a84ff", "#6cbaff"]),
+    "logo": "T",
+}
 
-class TestWorkSheetView(MyTestCase):
-    def setUp(self) -> None:
-        WORKSHEET_DATA = {
-            "id": 1,
-            "creator": "admin",
-            "create_at": "2021-09-18 15:51:22",
-            "update_at": "2021-09-18 15:51:22",
-            "updated_by": "admin",
-            "is_deleted": False,
-            "name": "这是一张测试工作表",
-            "desc": "test_worksheet",
-            "key": "test_worksheet",
-            "project_key": "test-m",
-        }
-        CREATE_PROJECT_DATA = {
-            "key": "test-m",
-            # "prefix": "test-m",
-            "name": "test-m",
-            "desc": "test-m",
-            "color": ["#3a84ff", "#6cbaff"],
-            "logo": "T",
-        }
-        Project.objects.get_or_create(**CREATE_PROJECT_DATA)
-        WorkSheet.objects.get_or_create(**WORKSHEET_DATA)
+CREATE_PAGE_1 = {
+    "project_key": CREATE_PROJECT_DATA["key"],
+    "name": "page1",
+    "type": "FUNCTION",
+}
+CREATE_PAGE_2 = {
+    "project_key": CREATE_PROJECT_DATA["key"],
+    "name": "page2",
+    "type": "LIST",
+}
+CREATE_PAGE_3 = {
+    "project_key": CREATE_PROJECT_DATA["key"],
+    "name": "page3",
+    "type": "SHEET",
+}
 
-    swagger_test_view = WorkSheetViewSet
+SON_POINT = [CREATE_PAGE_1, CREATE_PAGE_2, CREATE_PAGE_3]
 
-    actions_exempt = ["create", "destroy", "list", "update", "partial_update"]
+NEW_ORDER = []
