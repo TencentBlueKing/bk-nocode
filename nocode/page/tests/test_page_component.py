@@ -25,26 +25,24 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 from django.test import TestCase, override_settings
 from itsm.project.models import Project
-from nocode.page.tests.params import SON_POINT
+from nocode.page.handlers.page_handler import PageModelHandler
+from nocode.page.tests.params import SON_POINT, CREATE_PROJECT_DATA
 from nocode.page.models import Page
 
 
 class TestPageComponent(TestCase):
     def setUp(self) -> None:
-        project_data = {
-            "key": "testprojectv2",
-            "name": "testprojectv3",
-            "desc": "testproject",
-            "owner": {"users": ["admin"]},
-            "color": ["#3a84ff", "#6cbaff"],
-            "logo": "T",
-        }
-        Project.objects.create(**project_data)
-        for page_data in SON_POINT:
-            Page.objects.create(**page_data)
+        Project.objects.create(**CREATE_PROJECT_DATA)
+        PageModelHandler().create_root(project_key=CREATE_PROJECT_DATA["key"])
 
     @override_settings(MIDDLEWARE=("itsm.tests.middlewares.OverrideMiddleware",))
     def test_batch_save(self) -> None:
+        root = Page.objects.get(key="root", project_key=CREATE_PROJECT_DATA["key"])
+        for point in SON_POINT:
+            point.setdefault("parent_id", root.id)
+            resp = self.client.post("/api/page_design/page/", point)
+            self.assertEqual(resp.data["result"], True)
+
         page = Page.objects.get(name="page1", type="FUNCTION")
         data = {
             "page_id": page.id,
@@ -53,7 +51,7 @@ class TestPageComponent(TestCase):
                     "page_id": page.id,
                     "type": "FUNCTION",
                     "value": 29,
-                    "config": {"name": "xxxx", "desc": "zzz"},
+                    "config": {"name": "test", "desc": "test"},
                 }
             ],
         }
@@ -64,3 +62,4 @@ class TestPageComponent(TestCase):
             content_type="application/json",
         )
         self.assertEqual(res.data["result"], True)
+        self.assertEqual(len(res.data["data"]), 1)

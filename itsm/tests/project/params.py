@@ -24,13 +24,14 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 CREATE_PROJECT_DATA = {
-            "name": "单元测试项目",
-            "desc": "单元测试项目",
-            "key": "test_project",
-            "logo": "",
-            "color": "",
-            "creator": "admin",
-            "create_at": "2021-05-30 17:16:40",
-            "updated_by": "test_admin",
-            "update_at": "2021-05-30 17:16:40",
-        }
+    "key": "test",
+    "prefix": "test",
+    "name": "test",
+    "logo": "",
+    "color": [],
+    "creator": "admin",
+    "create_at": "2021-05-30 17:16:40",
+    "updated_by": "test_admin",
+    "update_at": "2021-05-30 17:16:40",
+    "project_config": {"workflow_prefix": "test"},
+}
