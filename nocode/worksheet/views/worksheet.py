@@ -66,6 +66,8 @@ class WorkSheetViewSet(BaseModelViewSet):
     )
     def list(self, request, *args, **kwargs):
         project_key = self.request.query_params.get("project_key")
+        need_page = int(self.request.query_params.get("need_page", 1))
+
         if project_key is not None:
             self.serializer_class = worksheet.WorkSheetListSerializer
             project_key = self.validated_data["project_key"]
@@ -73,6 +75,9 @@ class WorkSheetViewSet(BaseModelViewSet):
                 self.queryset.filter(project_key=project_key)
             )
             self.serializer_class = WorkSheetSerializer
+            if not need_page:
+                serializer = self.get_serializer(self.queryset, many=True)
+                return Response(serializer.data)
             return super().list(request, *args, **kwargs)
         return Response()
 

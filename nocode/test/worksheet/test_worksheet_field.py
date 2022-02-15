@@ -22,26 +22,87 @@ NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES
 WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
+import mock
 from django.test import override_settings
+from blueapps.core.celery.celery import app
 
+from itsm.component.constants import OPERATE_CATALOG
+from itsm.project.handler.project_handler import ProjectHandler
 from itsm.project.models import Project
 from nocode.base.base_tests import MyTestCase
 from nocode.test.page.params import CREATE_PROJECT_DATA
-from nocode.test.worksheet.params import WORKSHEET_DATA, WORKSHEET_FIELD
-from nocode.worksheet.models import WorkSheet
+
+from nocode.test.worksheet.params import WORKSHEET_DATA
+from nocode.worksheet.handlers.moudule_handler import ServiceHandler, DjangoHandler
 from nocode.worksheet.views.worksheetfield import WorkSheetFieldViewSet
 
 
 class TestWorkSheetFieldsView(MyTestCase):
     def setUp(self) -> None:
-        Project.objects.get_or_create(**CREATE_PROJECT_DATA)
-        WorkSheet.objects.get_or_create(**WORKSHEET_DATA)
+        app.conf.update(CELERY_ALWAYS_EAGER=True)
+        project = Project.objects.create(**CREATE_PROJECT_DATA)
+        ProjectHandler(instance=project).init_operate_catalogs(OPERATE_CATALOG)
+
+    def create_worksheet(self):
+        url = "/api/worksheet/sheets/"
+        res = self.client.post(
+            url, data=WORKSHEET_DATA, content_type="application/json"
+        )
+        self.assertEqual(res["name"], WORKSHEET_DATA["name"])
+        return res["id"]
 
     @override_settings(MIDDLEWARE=("itsm.tests.middlewares.OverrideMiddleware",))
-    def test_batch_save(self):
+    @mock.patch.object(ServiceHandler, "init_service")
+    @mock.patch.object(DjangoHandler, "init_db")
+    def test_batch_save(self, mock_result, mock_back):
+        worksheet_id = self.create_worksheet()
+        mock_result.return_value = {}
+        mock_back.return_value = {}
         url = "/api/worksheet/fields/batch_save/"
+
+        worksheet_field = {
+            "worksheet_id": worksheet_id,
+            "fields": [
+                {
+                    "meta": {},
+                    "api_info": {},
+                    "choice": [],
+                    "kv_relation": {},
+                    "key": "shu_zi_1",
+                    "name": "数字1",
+                    "desc": "",
+                    "type": "INT",
+                    "layout": "COL_12",
+                    "validate_type": "OPTION",
+                    "source_type": "CUSTOM",
+                    "api_instance_id": 0,
+                    "default": "0",
+                    "worksheet_id": worksheet_id,
+                    "regex": "EMPTY",
+                },
+                {
+                    "meta": {},
+                    "api_info": {},
+                    "choice": [],
+                    "kv_relation": {},
+                    "create_at": "2022-01-27 15:37:28",
+                    "key": "shu_zi_2",
+                    "name": "数字2",
+                    "desc": "",
+                    "type": "INT",
+                    "layout": "COL_12",
+                    "validate_type": "OPTION",
+                    "source_type": "CUSTOM",
+                    "api_instance_id": 0,
+                    "default": "0",
+                    "worksheet_id": worksheet_id,
+                    "regex": "EMPTY",
+                },
+            ],
+        }
+
         res = self.client.post(
-            url, data=WORKSHEET_FIELD, content_type="application/json"
+            url, data=worksheet_field, content_type="application/json"
         )
         self.assertEqual(len(res), 2)
 
