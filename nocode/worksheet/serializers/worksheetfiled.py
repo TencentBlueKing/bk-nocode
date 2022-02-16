@@ -60,13 +60,6 @@ class WorkSheetFieldSerializer(serializers.ModelSerializer):
 
         return worksheet_id
 
-    def validate_name(self, name):
-        if pattern.match(name) is None:
-            raise serializers.ValidationError(detail=_("字段名称只支持中文英文数字!"))
-        if len(name) > 8:
-            raise serializers.ValidationError(detail=_("字段名超过最大长度：8"))
-        return name
-
     def validated_data_config(self, data_config):
         """
         表单白名单校验
@@ -108,7 +101,7 @@ class WorkSheetFieldSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-        validated_data["key"] = WorkSheetFieldIndexHandler.generate_key(validated_data)
+        validated_data["key"] = WorkSheetFieldIndexHandler.generate_key()
         WorkSheetFieldIndexHandler.is_support_unique_index(validated_data)
         return super(WorkSheetFieldSerializer, self).create(validated_data)
 

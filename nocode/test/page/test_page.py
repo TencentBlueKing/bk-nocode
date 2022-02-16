@@ -23,8 +23,11 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 from django.test import TestCase, override_settings
-from itsm.project.models import ProjectConfig, Project
-from nocode.page.tests.params import CREATE_PROJECT_DATA, SON_POINT
+
+from itsm.project.handler.project_handler import PageModelHandler
+from itsm.project.models import Project
+from nocode.page.views.view import PageModelViewSet
+from nocode.test.page.params import CREATE_PROJECT_DATA, SON_POINT
 from nocode.page.models import Page, PageComponent
 
 
@@ -34,33 +37,12 @@ class TestPage(TestCase):
         Page.objects.all().delete()
         PageComponent.objects.all().delete()
 
-    @override_settings(MIDDLEWARE=("itsm.tests.middlewares.OverrideMiddleware",))
-    def test_create_project(self):
-        resp = self.client.post("/api/project/projects/", {})
-        self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.data["result"], False)
-        self.assertEqual(resp.data["code"], "VALIDATE_ERROR")
-
-        resp = self.client.post("/api/project/projects/", CREATE_PROJECT_DATA)
-        self.assertEqual(resp.data["result"], True)
-        self.assertEqual(resp.status_code, 201)
-
-        project_key = resp.data["data"]["key"]
-
-        project = Project.objects.filter(key=project_key)
-
-        self.assertEqual(resp.data["result"], True)
-        self.assertEqual(len(project), 1)
-
-        self.assertEqual(
-            ProjectConfig.objects.filter(project_key=project_key).exists(), True
-        )
-        self.assertEqual(len(Page.objects.filter(project_key=project_key)), 1)
+        Project.objects.get_or_create(**CREATE_PROJECT_DATA)
+        PageModelHandler().create_root(project_key=CREATE_PROJECT_DATA["key"])
 
     @override_settings(MIDDLEWARE=("itsm.tests.middlewares.OverrideMiddleware",))
     def test_tree_view(self) -> None:
         key = CREATE_PROJECT_DATA["key"]
-        self.test_create_project()
         root = Page.objects.get(key="root", project_key=key)
         for point in SON_POINT:
             point.setdefault("parent_id", root.id)
@@ -76,6 +58,7 @@ class TestPage(TestCase):
     def test_move(self) -> None:
         key = CREATE_PROJECT_DATA["key"]
         self.test_tree_view()
+
         children = (
             Page.objects.get(project_key=key, key="root")
             .get_children()
@@ -99,3 +82,6 @@ class TestPage(TestCase):
         )
         new_sort = new_children.values_list("id", flat=True)
         self.assertEqual(children.first().id, new_sort[0])
+
+    actions_exempt = ["create", "destroy", "list", "update", "partial_update"]
+    swagger_test_view = PageModelViewSet

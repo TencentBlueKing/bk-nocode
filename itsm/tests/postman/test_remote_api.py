@@ -27,8 +27,7 @@ from django.test import TestCase, override_settings
 
 
 class TestRemoteApi(TestCase):
-    
-    @override_settings(MIDDLEWARE=('itsm.tests.middlewares.OverrideMiddleware',))
+    @override_settings(MIDDLEWARE=("itsm.tests.middlewares.OverrideMiddleware",))
     def test_list(self):
         url = "/api/postman/remote_api/"
 
@@ -36,4 +35,4 @@ class TestRemoteApi(TestCase):
 
         self.assertEqual(resp.data["result"], True)
         self.assertEqual(resp.data["code"], "OK")
-        self.assertEqual(len(resp.data["data"]), 40)
+        self.assertEqual(len(resp.data["data"]), 39)

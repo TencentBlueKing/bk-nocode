@@ -22,3 +22,38 @@ NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES
 WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
+
+from django.test import override_settings
+
+from itsm.project.models import Project
+from nocode.base.base_tests import MyTestCase
+from nocode.test.page.params import CREATE_PROJECT_DATA
+from nocode.test.worksheet.params import WORKSHEET_DATA
+from nocode.worksheet.models import WorkSheet
+from nocode.worksheet.views.worksheet import WorkSheetViewSet
+
+
+class TestWorkSheetView(MyTestCase):
+    def setUp(self) -> None:
+        Project.objects.get_or_create(**CREATE_PROJECT_DATA)
+        WorkSheet.objects.get_or_create(**WORKSHEET_DATA)
+
+    @override_settings(MIDDLEWARE=("itsm.tests.middlewares.OverrideMiddleware",))
+    def test_get_relate_service_page(self):
+        url = f'/api/worksheet/sheets/{WORKSHEET_DATA["id"]}/get_relate_service_page/'
+        res = self.client.get(url)
+        self.assertEqual(type(res["relate_service"]), list)
+        self.assertEqual(type(res["relate_list_page"]), list)
+
+    swagger_test_view = WorkSheetViewSet
+
+    actions_exempt = [
+        "create",
+        "destroy",
+        "list",
+        "retrieve",
+        "update",
+        "partial_update",
+        "get_relate_service_page",
+        "get_fields_from_excel",
+    ]

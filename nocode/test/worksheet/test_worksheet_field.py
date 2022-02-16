@@ -22,45 +22,39 @@ NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES
 WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
+from django.test import override_settings
 
-from django.test import TestCase, override_settings
 from itsm.project.models import Project
-from nocode.page.tests.params import SON_POINT
-from nocode.page.models import Page
+from nocode.base.base_tests import MyTestCase
+from nocode.test.page.params import CREATE_PROJECT_DATA
+from nocode.test.worksheet.params import WORKSHEET_DATA, WORKSHEET_FIELD
+from nocode.worksheet.models import WorkSheet
+from nocode.worksheet.views.worksheetfield import WorkSheetFieldViewSet
 
 
-class TestPageComponent(TestCase):
+class TestWorkSheetFieldsView(MyTestCase):
     def setUp(self) -> None:
-        project_data = {
-            "key": "testprojectv2",
-            "name": "testprojectv3",
-            "desc": "testproject",
-            "owner": {"users": ["admin"]},
-            "color": ["#3a84ff", "#6cbaff"],
-            "logo": "T",
-        }
-        Project.objects.create(**project_data)
-        for page_data in SON_POINT:
-            Page.objects.create(**page_data)
+        Project.objects.get_or_create(**CREATE_PROJECT_DATA)
+        WorkSheet.objects.get_or_create(**WORKSHEET_DATA)
 
     @override_settings(MIDDLEWARE=("itsm.tests.middlewares.OverrideMiddleware",))
-    def test_batch_save(self) -> None:
-        page = Page.objects.get(name="page1", type="FUNCTION")
-        data = {
-            "page_id": page.id,
-            "components": [
-                {
-                    "page_id": page.id,
-                    "type": "FUNCTION",
-                    "value": 29,
-                    "config": {"name": "xxxx", "desc": "zzz"},
-                }
-            ],
-        }
-
+    def test_batch_save(self):
+        url = "/api/worksheet/fields/batch_save/"
         res = self.client.post(
-            "/api/page_design/page_component/batch_save/",
-            data,
-            content_type="application/json",
+            url, data=WORKSHEET_FIELD, content_type="application/json"
         )
-        self.assertEqual(res.data["result"], True)
+        self.assertEqual(len(res), 2)
+
+    swagger_test_view = WorkSheetFieldViewSet
+
+    actions_exempt = [
+        "create",
+        "destroy",
+        "retrieve",
+        "list",
+        "update",
+        "partial_update",
+        "get_built_in_formula",
+        "batch_save",
+        "download_file",
+    ]

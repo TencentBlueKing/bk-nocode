@@ -26,270 +26,322 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 __author__ = "蓝鲸智云"
 __copyright__ = "Copyright © 2012-Now Tencent BlueKing. All Rights Reserved."
 
-import json
-import time
-from collections import OrderedDict
+# import json
+# import time
+# from collections import OrderedDict
+#
+# from blueapps.core.celery.celery import app
+# from django.conf import settings
+# from django.test import TestCase, override_settings
+# from common.cipher import AESVerification
+# from common.redis import Cache
+# from itsm.project.models import ProjectConfig
+# from itsm.tests.openapi.params import CREATE_TICKET_DATA
+# from itsm.ticket.models import Ticket, AttentionUsers
+# from itsm.service.models import Service, CatalogService
+# from itsm.workflow.models import WorkflowVersion
+# from itsm.role.models import UserRole
 
-from blueapps.core.celery.celery import app
-from django.conf import settings
-from django.test import TestCase, override_settings
-from common.cipher import AESVerification
-from common.redis import Cache
-from itsm.tests.openapi.params import CREATE_TICKET_DATA
-from itsm.ticket.models import Ticket, AttentionUsers
-from itsm.service.models import Service, CatalogService
-from itsm.workflow.models import WorkflowVersion
-from itsm.role.models import UserRole
 
-
-class TicketOpenTest(TestCase):
-    def setUp(self):
-        app.conf.update(CELERY_ALWAYS_EAGER=True)
-        Ticket.objects.all().delete()
-        AttentionUsers.objects.all().delete()
-
-        CatalogService.objects.create(service_id=1, is_deleted=False, catalog_id=2, creator="admin")
-
-    def tearDown(self):
-        Ticket.objects.all().delete()
-        AttentionUsers.objects.all().delete()
-        WorkflowVersion.objects.all().delete()
-        UserRole.objects.filter(role_type="IAM").delete()
-
-    @override_settings(MIDDLEWARE=('itsm.tests.middlewares.OverrideMiddleware',))
-    def test_approval_result(self):
-        data = {
-            "fast_approval": True,
-            "fields": [
-                {"key": "title", "value": "测试内置审批"},
-                {"key": "APPROVER", "value": "admin,admin3,admin2"},
-                {"key": "APPROVAL_CONTENT", "value": "这是一个审批单"},
-            ],
-            "creator": "admin",
-        }
-        url = "/openapi/ticket/create_ticket/"
-        rsp = self.client.post(path=url, data=json.dumps(data), content_type="application/json")
-        sn = rsp.data["data"]["sn"]
-        query_url = "/openapi/ticket/ticket_approval_result/"
-        query_data = {"sn": [sn]}
-        result = self.client.post(path=query_url, data=json.dumps(query_data),
-                                  content_type="application/json")
-        self.assertEqual(result.data["code"], 0)
-        self.assertEqual(result.data["message"], "success")
-        self.assertEqual(False, result.data["data"][0]["approve_result"])
-        self.assertEqual(sn, result.data["data"][0]["sn"])
-
-    @override_settings(MIDDLEWARE=('itsm.tests.middlewares.OverrideMiddleware',))
-    def test_verify(self):
-        message = AESVerification.gen_signature(settings.APP_CODE + "_" + settings.SECRET_KEY)
-        data = {
-            "token": str(message, encoding="utf-8"),
-        }
-        url = "/openapi/ticket/token/verify/"
-        rsp = self.client.post(path=url, data=json.dumps(data), content_type="application/json")
-        result = rsp.data["data"]["is_passed"]
-        self.assertEqual(True, result)
-
-    @override_settings(MIDDLEWARE=('itsm.tests.middlewares.OverrideMiddleware',))
-    def test_get_callback_failed_ticket(self):
-        Cache().hset("callback_error_ticket", "12345", int(time.time()))
-        url = "/openapi/ticket/callback_failed_ticket/"
-        rsp = self.client.get(path=url)
-        sn = rsp.data["data"]
-        self.assertEqual(["12345"], sn)
-
-    @override_settings(MIDDLEWARE=('itsm.tests.middlewares.OverrideMiddleware',))
-    def test_get_service_roles(self):
-        role = UserRole.objects.create(role_type="IAM", name="分级管理员", members="",
-                                       role_key="rating_manager", access="")
-
-        states = {
-            "92580": {
-                "id": 92580,
-                "processors_type": "GENERAL",
-                "processors": "8,7",
-                "name": "节点1",
-                "type": "START",
-                "is_multi": True
-            },
-            "92581": {
-                "id": 92581,
-                "processors_type": "IAM",
-                "processors": str(role.id),
-                "name": "节点2",
-                "type": "NORMAL",
-                "is_multi": False,
-            },
-            "92582": {
-                "id": 92582,
-                "processors_type": "PERSON",
-                "processors": "admin",
-                "name": "节点3",
-                "type": "NORMAL",
-                "is_multi": False,
-            },
-            "92583": {
-                "id": 92583,
-                "processors_type": "PERSON",
-                "processors": "admin",
-                "name": "节点4",
-                "type": "END",
-                "is_multi": False,
-            },
-        }
-        transitions = {
-            "92584": {
-                "id": 92583,
-                "from_state": 92580,
-                "to_state": 92581,
-            },
-            "92585": {
-                "id": 92584,
-                "from_state": 92581,
-                "to_state": 92582,
-            },
-            "92586": {
-                "id": 92585,
-                "from_state": 92582,
-                "to_state": 92583,
-            }
-        }
-        workflow = WorkflowVersion.objects.create(name="test_flow", workflow_id=1, states=states, transitions=transitions)
-        service = Service.objects.create(key="123", name="test", workflow=workflow)
-        
-        # test1: 测试url参数只有service.id时的执行情况
-        url = "/openapi/service/get_service_roles/?service_id={}".format(service.id)
-        rsp = self.client.get(path=url)
-        roles = rsp.data["data"]
-        self.assertEqual(
-            roles,
-            [
-                {
-                    "id": 92582, 
-                    "name": "节点3", 
-                    "processors_type": "PERSON", 
-                    "processors": "admin",
-                    "sign_type": "or"
-                }
-            ]
-        )
-        
-        # test2: 测试url参数为service.id和all，且all=1(逻辑真)时的执行情况
-        url_with_all = "/openapi/service/get_service_roles/?service_id={}&all={}".format(service.id, 1)
-        rsp_with_all = self.client.get(path=url_with_all)
-        roles_with_all = rsp_with_all.data['data']
-        self.assertEqual(
-            roles_with_all,
-            [
-                {
-                    'id': 92581,
-                    'name': '节点2',
-                    'processors': 'rating_manager',
-                    'processors_type': 'IAM',
-                    'sign_type': 'or'
-                },
-                {
-                    "id": 92582,
-                    "name": "节点3",
-                    "processors_type": "PERSON",
-                    "processors": "admin",
-                    "sign_type": "or"
-                }
-            ]
-        )
-
-    @override_settings(MIDDLEWARE=('itsm.tests.middlewares.OverrideMiddleware',))
-    def test_create_ticket(self):
-        url = "/openapi/ticket/create_ticket/"
-
-        resp = self.client.post(url, json.dumps(CREATE_TICKET_DATA),
-                                content_type="application/json")
-
-        self.assertEqual(resp.data["result"], True)
-        self.assertEqual(resp.data["code"], 0)
-        self.assertEqual(resp.data["message"], "success")
-
-    @override_settings(MIDDLEWARE=('itsm.tests.middlewares.OverrideMiddleware',))
-    def test_get_tickets(self):
-        url = "/openapi/ticket/create_ticket/"
-
-        resp = self.client.post(url, json.dumps(CREATE_TICKET_DATA),
-                                content_type="application/json")
-
-        sn = resp.data["data"]["sn"]
-
-        url = "/openapi/ticket/get_tickets/"
-
-        resp = self.client.post(url, json.dumps({
-            "sns": [sn]
-        }), content_type="application/json")
-
-        self.assertEqual(resp.data["result"], True)
-        self.assertEqual(resp.data["code"], 0)
-
-        self.assertIsInstance(resp.data["data"], OrderedDict)
-
-    def create_ticket(self):
-        url = "/openapi/ticket/create_ticket/"
-
-        resp = self.client.post(url, json.dumps(CREATE_TICKET_DATA),
-                                content_type="application/json")
-
-        return resp.data["data"]["sn"]
-
-    @override_settings(MIDDLEWARE=('itsm.tests.middlewares.OverrideMiddleware',))
-    def test_get_ticket_info(self):
-        sn = self.create_ticket()
-
-        url = "/openapi/ticket/get_ticket_info/"
-
-        resp = self.client.get(url, {
-            "sn": sn
-        })
-
-        self.assertEqual(resp.data["result"], True)
-        self.assertEqual(resp.data["code"], 0)
-        self.assertEqual(resp.data["data"]["sn"], sn)
-
-    @override_settings(MIDDLEWARE=('itsm.tests.middlewares.OverrideMiddleware',))
-    def test_get_ticket_logs(self):
-        sn = self.create_ticket()
-
-        url = "/openapi/ticket/get_ticket_logs/"
-
-        resp = self.client.get(url, {
-            "sn": sn
-        })
-
-        self.assertEqual(resp.data["result"], True)
-        self.assertEqual(resp.data["code"], 0)
-        self.assertEqual(resp.data["data"]["sn"], sn)
-        self.assertEqual(resp.data["message"], "success")
-
-    @override_settings(MIDDLEWARE=('itsm.tests.middlewares.OverrideMiddleware',))
-    def test_operate_ticket(self):
-        sn = self.create_ticket()
-
-        url = "/openapi/ticket/operate_ticket/"
-
-        resp = self.client.post(url, json.dumps({
-            "sn": sn,
-            "operator": "admin",
-            "action_type": "WITHDRAW",
-            "action_message": "撤销单据"
-        }), content_type="application/json")
-
-        self.assertEqual(resp.data["result"], True)
-        self.assertEqual(resp.data["code"], 0)
-
-        url = "/openapi/ticket/get_ticket_status/"
-
-        resp = self.client.get(
-            url, {
-                "sn": sn
-            }
-        )
-
-        self.assertEqual(resp.data["result"], True)
-        self.assertEqual(resp.data["code"], 0)
-        self.assertEqual(resp.data["data"]["current_status"], "REVOKED")
+# class TicketOpenTest(TestCase):
+#     def setUp(self):
+#         app.conf.update(CELERY_ALWAYS_EAGER=True)
+#         Ticket.objects.all().delete()
+#         AttentionUsers.objects.all().delete()
+#         project_config = {
+#             "workflow_prefix": "test",
+#             "project_key": "0"
+#         }
+#         ProjectConfig.objects.create(**project_config)
+#
+#         # CatalogService.objects.create(service_id=1, is_deleted=False, catalog_id=2, creator="admin")
+#
+#     def tearDown(self):
+#         Ticket.objects.all().delete()
+#         AttentionUsers.objects.all().delete()
+#         WorkflowVersion.objects.all().delete()
+#         UserRole.objects.filter(role_type="IAM").delete()
+#
+#     @override_settings(MIDDLEWARE=('itsm.tests.middlewares.OverrideMiddleware',))
+#     def test_approval_result(self):
+#         publish_rep = self.client.post(
+#             path="/api/project/manager/publish/",
+#             data=json.dumps({"project_key": "0"}),
+#             content_type="application/json"
+#         )
+#         self.assertEqual(publish_rep.data["code"], "OK")
+#         self.assertEqual(publish_rep.data["message"], "success")
+#         data = {
+#             "service_id": 1,
+#             "fast_approval": True,
+#             "fields": [
+#                 {"key": "title", "value": "测试内置审批"},
+#                 {"key": "APPROVER", "value": "admin,admin3,admin2"},
+#                 {"key": "APPROVAL_CONTENT", "value": "这是一个审批单"},
+#             ],
+#             "creator": "admin",
+#         }
+#         url = "/api/ticket/receipts/create_ticket/"
+#         rsp = self.client.post(
+#             path=url, data=json.dumps(data), content_type="application/json"
+#         )
+#         self.assertEqual(rsp.data["code"], "OK")
+#         self.assertEqual(rsp.data["message"], "success")
+#
+#         sn = rsp.data["data"]["sn"]
+#         query_url = "/openapi/ticket/ticket_approval_result/"
+#         query_data = {"sn": [sn]}
+#         result = self.client.post(path=query_url, data=json.dumps(query_data),
+#                                   content_type="application/json")
+#         self.assertEqual(result.data["code"], 0)
+#         self.assertEqual(result.data["message"], "success")
+#         self.assertEqual(False, result.data["data"][0]["approve_result"])
+#         self.assertEqual(sn, result.data["data"][0]["sn"])
+#
+#     @override_settings(MIDDLEWARE=('itsm.tests.middlewares.OverrideMiddleware',))
+#     def test_verify(self):
+#         message = AESVerification.gen_signature(settings.APP_CODE + "_" + settings.SECRET_KEY)
+#         data = {
+#             "token": str(message, encoding="utf-8"),
+#         }
+#         url = "/openapi/ticket/token/verify/"
+#         rsp = self.client.post(path=url, data=json.dumps(data), content_type="application/json")
+#         result = rsp.data["data"]["is_passed"]
+#         self.assertEqual(True, result)
+#
+#     @override_settings(MIDDLEWARE=('itsm.tests.middlewares.OverrideMiddleware',))
+#     def test_get_callback_failed_ticket(self):
+#         Cache().hset("callback_error_ticket", "12345", int(time.time()))
+#         url = "/openapi/ticket/callback_failed_ticket/"
+#         rsp = self.client.get(path=url)
+#         sn = rsp.data["data"]
+#         self.assertEqual(["12345"], sn)
+#
+#     @override_settings(MIDDLEWARE=('itsm.tests.middlewares.OverrideMiddleware',))
+#     def test_get_service_roles(self):
+#         role = UserRole.objects.create(role_type="IAM", name="分级管理员", members="",
+#                                        role_key="rating_manager", access="")
+#
+#         states = {
+#             "92580": {
+#                 "id": 92580,
+#                 "processors_type": "GENERAL",
+#                 "processors": "8,7",
+#                 "name": "节点1",
+#                 "type": "START",
+#                 "is_multi": True
+#             },
+#             "92581": {
+#                 "id": 92581,
+#                 "processors_type": "IAM",
+#                 "processors": str(role.id),
+#                 "name": "节点2",
+#                 "type": "NORMAL",
+#                 "is_multi": False,
+#             },
+#             "92582": {
+#                 "id": 92582,
+#                 "processors_type": "PERSON",
+#                 "processors": "admin",
+#                 "name": "节点3",
+#                 "type": "NORMAL",
+#                 "is_multi": False,
+#             },
+#             "92583": {
+#                 "id": 92583,
+#                 "processors_type": "PERSON",
+#                 "processors": "admin",
+#                 "name": "节点4",
+#                 "type": "END",
+#                 "is_multi": False,
+#             },
+#         }
+#         transitions = {
+#             "92584": {
+#                 "id": 92583,
+#                 "from_state": 92580,
+#                 "to_state": 92581,
+#             },
+#             "92585": {
+#                 "id": 92584,
+#                 "from_state": 92581,
+#                 "to_state": 92582,
+#             },
+#             "92586": {
+#                 "id": 92585,
+#                 "from_state": 92582,
+#                 "to_state": 92583,
+#             }
+#         }
+#         workflow = WorkflowVersion.objects.create(name="test_flow", workflow_id=1, states=states,
+#                                                   transitions=transitions)
+#         service = Service.objects.create(key="123", name="test", workflow=workflow)
+#
+#         # test1: 测试url参数只有service.id时的执行情况
+#         url = "/openapi/service/get_service_roles/?service_id={}".format(service.id)
+#         rsp = self.client.get(path=url)
+#         roles = rsp.data["data"]
+#         self.assertEqual(
+#             roles,
+#             [
+#                 {
+#                     "id": 92582,
+#                     "name": "节点3",
+#                     "processors_type": "PERSON",
+#                     "processors": "admin",
+#                     "sign_type": "or"
+#                 }
+#             ]
+#         )
+#
+#         # test2: 测试url参数为service.id和all，且all=1(逻辑真)时的执行情况
+#         url_with_all = "/openapi/service/get_service_roles/?service_id={}&all={}".format(service.id,
+#                                                                                          1)
+#         rsp_with_all = self.client.get(path=url_with_all)
+#         roles_with_all = rsp_with_all.data['data']
+#         self.assertEqual(
+#             roles_with_all,
+#             [
+#                 {
+#                     'id': 92581,
+#                     'name': '节点2',
+#                     'processors': 'rating_manager',
+#                     'processors_type': 'IAM',
+#                     'sign_type': 'or'
+#                 },
+#                 {
+#                     "id": 92582,
+#                     "name": "节点3",
+#                     "processors_type": "PERSON",
+#                     "processors": "admin",
+#                     "sign_type": "or"
+#                 }
+#             ]
+#         )
+#
+#     @override_settings(MIDDLEWARE=('itsm.tests.middlewares.OverrideMiddleware',))
+#     def test_create_ticket(self):
+#         url = "/openapi/ticket/create_ticket/"
+#
+#         resp = self.client.post(url, json.dumps(CREATE_TICKET_DATA),
+#                                 content_type="application/json")
+#
+#         self.assertEqual(resp.data["result"], True)
+#         self.assertEqual(resp.data["code"], 0)
+#         self.assertEqual(resp.data["message"], "success")
+#
+#     @override_settings(MIDDLEWARE=('itsm.tests.middlewares.OverrideMiddleware',))
+#     def test_get_tickets(self):
+#         sn = self.create_ticket()
+#
+#         url = "/openapi/ticket/get_tickets/"
+#
+#         resp = self.client.post(url, json.dumps({
+#             "sns": [sn]
+#         }), content_type="application/json")
+#
+#         self.assertEqual(resp.data["result"], True)
+#         self.assertEqual(resp.data["code"], 0)
+#
+#         self.assertIsInstance(resp.data["data"], OrderedDict)
+#
+#     def create_ticket(self):
+#         publish_rep = self.client.post(
+#             path="/api/project/manager/publish/",
+#             data=json.dumps({"project_key": "0"}),
+#             content_type="application/json"
+#         )
+#         self.assertEqual(publish_rep.data["code"], "OK")
+#         self.assertEqual(publish_rep.data["message"], "success")
+#
+#         url = "/api/ticket/receipts/"
+#
+#         data = {
+#             "service_id": 1,
+#             "fields": [
+#                 {
+#                     "type": "STRING",
+#                     "id": 1,
+#                     "key": "title",
+#                     "value": "test_ticket1",
+#                     "choice": [],
+#                 },
+#                 {
+#                     "type": "TEXT",
+#                     "id": 3,
+#                     "key": "APPROVAL_CONTENT",
+#                     "value": "测试内容",
+#                 },
+#                 {
+#                     "id": 2,
+#                     "type": "MEMBERS",
+#                     "key": "APPROVER",
+#                     "value": "admin",
+#                 },
+#             ],
+#             "creator": "admin",
+#         }
+#
+#         resp = self.client.post(path=url, data=json.dumps(data),
+#                                 content_type="application/json")
+#         self.assertEqual(resp.data["code"], "OK")
+#         self.assertEqual(resp.data["message"], "success")
+#
+#         return resp.data["data"]["sn"]
+#
+#     @override_settings(MIDDLEWARE=('itsm.tests.middlewares.OverrideMiddleware',))
+#     def test_get_ticket_info(self):
+#         sn = self.create_ticket()
+#
+#         url = "/openapi/ticket/get_ticket_info/"
+#
+#         resp = self.client.get(url, {
+#             "sn": sn
+#         })
+#
+#         self.assertEqual(resp.data["result"], True)
+#         self.assertEqual(resp.data["code"], 0)
+#         self.assertEqual(resp.data["data"]["sn"], sn)
+#
+#     @override_settings(MIDDLEWARE=('itsm.tests.middlewares.OverrideMiddleware',))
+#     def test_get_ticket_logs(self):
+#         sn = self.create_ticket()
+#
+#         url = "/openapi/ticket/get_ticket_logs/"
+#
+#         resp = self.client.get(url, {
+#             "sn": sn
+#         })
+#
+#         self.assertEqual(resp.data["result"], True)
+#         self.assertEqual(resp.data["code"], 0)
+#         self.assertEqual(resp.data["data"]["sn"], sn)
+#         self.assertEqual(resp.data["message"], "success")
+#
+#     @override_settings(MIDDLEWARE=('itsm.tests.middlewares.OverrideMiddleware',))
+#     def test_operate_ticket(self):
+#         sn = self.create_ticket()
+#
+#         url = "/openapi/ticket/operate_ticket/"
+#
+#         resp = self.client.post(url, json.dumps({
+#             "sn": sn,
+#             "operator": "admin",
+#             "action_type": "WITHDRAW",
+#             "action_message": "撤销单据"
+#         }), content_type="application/json")
+#
+#         self.assertEqual(resp.data["result"], True)
+#         self.assertEqual(resp.data["code"], 0)
+#
+#         url = "/openapi/ticket/get_ticket_status/"
+#
+#         resp = self.client.get(
+#             url, {
+#                 "sn": sn
+#             }
+#         )
+#
+#         self.assertEqual(resp.data["result"], True)
+#         self.assertEqual(resp.data["code"], 0)
+#         self.assertEqual(resp.data["data"]["current_status"], "REVOKED")
