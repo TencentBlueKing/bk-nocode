@@ -128,7 +128,7 @@ export default {
       this.searchStr = '';
     },
     handleCardClick(card, project) {
-      const { page_id, value } = card;
+      const { page_id, value, id } = card;
       const { project_config, project_version } = project;
       this.$router.push({
         name: 'commonCreateTicket',
@@ -138,6 +138,9 @@ export default {
           pageId: page_id,
           funcId: value,
           actionId: card.id,
+        },
+        query: {
+          componentId: id,
         },
       });
     },
