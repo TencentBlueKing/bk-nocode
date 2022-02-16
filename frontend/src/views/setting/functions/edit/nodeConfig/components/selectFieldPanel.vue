@@ -153,7 +153,13 @@ export default {
       }
     },
     fieldHasInNode(field) {
-      return !!this.nodeFields.find(item => item.key === `${field.formKey}_${field.key}`);
+      return this.nodeFields.some(item => {
+        if (item.meta && item.meta.worksheet) {
+          const { key, field_key } = item.meta.worksheet;
+          return key === field.formKey && field_key === field.key;
+        };
+        return false;
+      });
     },
     handleSelectForms(val, oldVal) {
       const formsFieldTableData = [];
