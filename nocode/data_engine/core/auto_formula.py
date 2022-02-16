@@ -23,6 +23,7 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 import json
+from datetime import datetime
 from functools import reduce
 
 from nocode.worksheet.exceptions import FormulaInputError
@@ -141,7 +142,7 @@ class FormulaGenerator:
             )
         return result
 
-    def generate_formula_result(self, validated_data):
+    def generate_formula_result(self, validated_data, record):
         params_keys = self.configs["fields"]
         if self.configs["calculate_type"] == "number":
             cal_method = self.FORMULA_MAP.get(self.configs["type"].upper())
@@ -165,7 +166,14 @@ class FormulaGenerator:
             if params_keys:
                 params_dict = {}
                 for key in params_keys:
+                    if key == "create_at":
+                        params_dict[key] = getattr(record, "create_at")
+                        continue
+                    if key == "update_at":
+                        params_dict[key] = getattr(record, "update_at", datetime.now())
+                        continue
                     params_dict[key] = validated_data[key]
+
                 result = self.configs["value"].format_map(params_dict)
             else:
                 result = self.configs["value"]
