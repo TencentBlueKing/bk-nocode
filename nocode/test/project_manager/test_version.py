@@ -12,18 +12,25 @@ from itsm.tests.project.params import CREATE_PROJECT_DATA
 from nocode.page.models import Page
 from nocode.test.page.params import SON_POINT
 from nocode.test.worksheet.params import WORKSHEET_DATA, WORKSHEET_FIELD
+from nocode.worksheet.handlers.moudule_handler import ServiceHandler, DjangoHandler
 from nocode.worksheet.models import WorkSheet
 
 
 class TestProjectManager(TestCase):
-    @mock.patch.object(PermitInitManagerDispatcher, "init_permit")
     @override_settings(MIDDLEWARE=("itsm.tests.middlewares.OverrideMiddleware",))
-    def setUp(self, mock_result) -> None:
+    @mock.patch.object(PermitInitManagerDispatcher, "init_permit")
+    @mock.patch.object(ServiceHandler, "init_service")
+    @mock.patch.object(DjangoHandler, "init_db")
+    @mock.patch.object(ServiceHandler, "migrate_service")
+    def setUp(self, mock_result, mock_back, mock_callback, mock_data) -> None:
         app.conf.update(CELERY_ALWAYS_EAGER=True)
         ProjectConfig.objects.all().delete()
         Project.objects.all().delete()
 
         mock_result.return_value = 1
+        mock_back.return_value = {}
+        mock_callback.return_value = {}
+        mock_data.return_value = {}
         self.create_project()
         self.page_id = self.page_batch_save()
         self.worksheet_id = self.field_batch_save()

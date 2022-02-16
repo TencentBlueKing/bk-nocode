@@ -42,8 +42,17 @@ class TestWorkSheetFieldsView(MyTestCase):
         app.conf.update(CELERY_ALWAYS_EAGER=True)
         project = Project.objects.create(**CREATE_PROJECT_DATA)
         ProjectHandler(instance=project).init_operate_catalogs(OPERATE_CATALOG)
+        self.worksheet_id = self.create_worksheet()
 
-    def create_worksheet(self):
+    @override_settings(MIDDLEWARE=("itsm.tests.middlewares.OverrideMiddleware",))
+    @mock.patch.object(ServiceHandler, "init_service")
+    @mock.patch.object(DjangoHandler, "init_db")
+    @mock.patch.object(ServiceHandler, "migrate_service")
+    def create_worksheet(self, mock_result, mock_back, mock_callback):
+        mock_result.return_value = {}
+        mock_back.return_value = {}
+        mock_callback.return_value = {}
+
         url = "/api/worksheet/sheets/"
         res = self.client.post(
             url, data=WORKSHEET_DATA, content_type="application/json"
@@ -54,14 +63,15 @@ class TestWorkSheetFieldsView(MyTestCase):
     @override_settings(MIDDLEWARE=("itsm.tests.middlewares.OverrideMiddleware",))
     @mock.patch.object(ServiceHandler, "init_service")
     @mock.patch.object(DjangoHandler, "init_db")
-    def test_batch_save(self, mock_result, mock_back):
-        worksheet_id = self.create_worksheet()
+    @mock.patch.object(ServiceHandler, "migrate_service")
+    def test_batch_save(self, mock_result, mock_back, mock_callback):
         mock_result.return_value = {}
         mock_back.return_value = {}
-        url = "/api/worksheet/fields/batch_save/"
+        mock_callback.return_value = {}
 
+        url = "/api/worksheet/fields/batch_save/"
         worksheet_field = {
-            "worksheet_id": worksheet_id,
+            "worksheet_id": self.worksheet_id,
             "fields": [
                 {
                     "meta": {},
@@ -77,7 +87,7 @@ class TestWorkSheetFieldsView(MyTestCase):
                     "source_type": "CUSTOM",
                     "api_instance_id": 0,
                     "default": "0",
-                    "worksheet_id": worksheet_id,
+                    "worksheet_id": self.worksheet_id,
                     "regex": "EMPTY",
                 },
                 {
@@ -95,7 +105,7 @@ class TestWorkSheetFieldsView(MyTestCase):
                     "source_type": "CUSTOM",
                     "api_instance_id": 0,
                     "default": "0",
-                    "worksheet_id": worksheet_id,
+                    "worksheet_id": self.worksheet_id,
                     "regex": "EMPTY",
                 },
             ],
