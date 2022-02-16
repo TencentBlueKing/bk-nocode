@@ -23,10 +23,9 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 import datetime
+import uuid
 
 from django.db import transaction
-from pypinyin import lazy_pinyin
-
 from nocode.base.base_handler import APIModel
 from nocode.worksheet.exceptions import (
     WorkSheetFieldDoesNotExist,
@@ -78,26 +77,13 @@ class WorkSheetFieldIndexHandler:
     """
 
     @classmethod
-    def generate_key(cls, validated_data):
-
-        name = validated_data["name"]
-        worksheet_id = validated_data["worksheet_id"]
-
-        key = "_".join(lazy_pinyin(name))
-
-        # 如果数据库中已经存在同名的key，则走版本控制
-        if WorkSheetField._objects.filter(
-            key=key, worksheet_id=worksheet_id, is_deleted__in=[0, 1]
-        ).exists():
-            # 目前的业务场景，99足够用了
-            for version in range(1, 99):
-                new_key = "{0}_{1}".format(key, version)
-                if not WorkSheetField._objects.filter(
-                    key=new_key, worksheet_id=worksheet_id, is_deleted__in=[0, 1]
-                ).exists():
-                    return new_key
-
-        return key
+    def generate_key(cls):
+        """
+        2022 2.15 重构为uuid，与name解藕
+        :param validated_data:
+        :return:
+        """
+        return uuid.uuid4().hex
 
     @classmethod
     def is_support_unique_index(cls, validated_data):
@@ -120,7 +106,7 @@ class WorkSheetFieldBatchModelHandler:
 
         if item.get("api_instance_id") is None:
             item["api_instance_id"] = 0
-        key = WorkSheetFieldIndexHandler.generate_key(item)
+        key = WorkSheetFieldIndexHandler.generate_key()
         WorkSheetFieldIndexHandler.is_support_unique_index(item)
         item["key"] = key
         serializer = WorkSheetFieldSerializer(data=item, context=context)
