@@ -485,7 +485,10 @@ class ServiceSerializer(AuthModelSerializer):
         validated_data["key"] = "request"
 
         validated_data["workflow"] = version
-        validated_data["is_valid"] = False
+
+        validated_data["is_valid"] = (
+            True if validated_data["type"] in ["DETAIL", "EXPORT"] else False
+        )
 
         validated_data.pop("catalog_id", None)
 

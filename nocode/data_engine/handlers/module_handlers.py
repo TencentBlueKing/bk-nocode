@@ -88,10 +88,11 @@ class ServiceHandler:
         first_state_fields = service.first_state_fields
         keys = []
 
-        worksheet_key = WorkSheetHandler(self.worksheet_id).get_instance().key
-
         for field in first_state_fields:
-            prefix = "{}_".format(worksheet_key)
-            key = field["key"].replace(prefix, "", 1)
-            keys.append("contents__{}".format(key))
+            if field["meta"].get("worksheet"):
+                worksheet_id = field["meta"]["worksheet"]["id"]
+                if self.worksheet_id == worksheet_id:
+                    keys.append(
+                        "contents__{}".format(field["meta"]["worksheet"]["field_key"])
+                    )
         return keys
