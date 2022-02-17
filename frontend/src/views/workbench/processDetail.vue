@@ -38,8 +38,18 @@
           </bk-tab>
         </div>
         <div class="right-container">
-          <basic-info :basic-info="ticketInfo" v-if="JSON.stringify(ticketInfo)!=='{}'"></basic-info>
-          <flow-log ref="flowLog"></flow-log>
+          <bk-tab :active.sync="rightActive" type="unborder-card">
+            <bk-tab-panel
+              v-for="(panel, index) in rightPanels"
+              v-bind="panel"
+              :key="index">
+            </bk-tab-panel>
+          </bk-tab>
+          <basic-info
+            :basic-info="ticketInfo"
+            v-if="JSON.stringify(ticketInfo)!=='{}'&&rightActive==='basicInfo'"></basic-info>
+          <flow-log ref="flowLog" v-if="rightActive==='flowLog'"></flow-log>
+          <trigger-record v-if="rightActive==='trigger'"></trigger-record>
         </div>
       </div>
       <bk-dialog
@@ -69,9 +79,9 @@ import basicInfo from './components/basicInfo.vue';
 import fieldMix from '@/commonMix/field.js';
 import flowLog from './components/flowLog.vue';
 import nodeDetail from './components/nodeDetail.vue';
+import triggerRecord from './components/triggerRecord.vue';
 import processPreview from './components/processPreview.vue';
 import PageWrapper from '@/components/pageWrapper.vue';
-import { errorHandler } from '../../utils/errorHandler';
 import { deepClone } from '@/utils/util';
 
 export default {
@@ -82,6 +92,7 @@ export default {
     nodeDetail,
     processPreview,
     PageWrapper,
+    triggerRecord,
   },
   mixins: [fieldMix],
   provide() {
@@ -95,6 +106,12 @@ export default {
         { name: 'nodeDetail', label: '节点详情' },
         { name: 'processPreview', label: '流程预览' },
       ],
+      rightPanels: [
+        { name: 'basicInfo', label: '基本信息', count: 10 },
+        { name: 'flowLog', label: '流转日志', count: 20 },
+        { name: 'trigger', label: '触发器记录', count: 30 },
+      ],
+      rightActive: 'basicInfo',
       ticketId: '',
       // 节点列表
       nodeList: [],
@@ -250,6 +267,10 @@ export default {
   }
   .right-container{
     height: calc(100% - 48px);
+    width: 452px;
+    background: #ffffff;
+    box-shadow: 0 2px 4px 0 rgba(25,25,41,0.05);
+    border-radius: 2px;
   }
 }
 .tool-panel-container {

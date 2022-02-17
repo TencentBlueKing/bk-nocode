@@ -77,7 +77,7 @@ export default {
 <style lang="postcss" scoped>
 .field-form-item {
   margin-top: 24px;
-  width: calc(100% - 16px);
+  width: 100%;
   &.half-row {
     width: calc(50% - 16px);
     margin-right: 16px;

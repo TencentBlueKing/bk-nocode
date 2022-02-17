@@ -48,11 +48,11 @@
                     v-model="formData.appId"
                     :searchable="true"
                     :loading="appLoading"
-                    @selected="((val) => handleCurrentFieldsSelect(item,val))">
+                    @selected="handleSelectApp">
                     <bk-option
                       v-for="option in appList"
-                      :key="option.id"
-                      :id="option.id"
+                      :key="option.key"
+                      :id="option.key"
                       :name="option.name">
                     </bk-option>
                   </bk-select>
@@ -67,7 +67,7 @@
                     v-model="formData.sheetId"
                     :searchable="true"
                     :loading="sheetLoading"
-                    @selected="((val) => handleCurrentFieldsSelect(item,val))">
+                    @selected="handleSelectSheet">
                     <bk-option
                       v-for="option in sheetList"
                       :key="option.id"
@@ -92,8 +92,11 @@
                 :loading="SheetFieldsLoading"
                 @selected="((val) => handleCurrentFieldsSelect(item,val))">
                 <bk-option
-                  v-for="option in currentSheetFields" :key="option.id" :id="option.id"
-                  :name="option.name"></bk-option>
+                  v-for="option in currentSheetFields"
+                  :key="option.id"
+                  :id="option.id"
+                  :name="option.name">
+                </bk-option>
               </bk-select>
               <span class="condition-equal">值等于</span>
               <bk-select
@@ -121,6 +124,7 @@
                 <component
                   :is="item.fieldComp"
                   :field="field"
+                  :value="item.relationCurrentValue"
                   :disabled="item.type!=='const'"
                   @change="(val) => handleRuleChange(item,val)">
                 </component>
@@ -190,6 +194,10 @@ export default {
       type: Object,
       default: () => ({}),
     },
+    value: {
+      type: Object,
+      default: () => ({}),
+    },
     disabled: {
       type: Boolean,
       default: false,
@@ -250,16 +258,37 @@ export default {
       this.$options.components[item] = fields[item];
     });
   },
-  handleDefaultChange(val) {
-    console.log(val);
+  created() {
+    this.initData(cloneDeep(this.value));
   },
   methods: {
-    async getFieldList() {
+    async initData(localValue) {
+      if (Object.keys(localValue).length !== 0) {
+        const { value, type, conditions, changeFields } = localValue;
+        this.defaultValue = 'linkageRules';
+        this.formData.value = value;
+        this.formData.container = type;
+        this.formData.changeFields = changeFields;
+        this.formData.condition = conditions;
+        if (type === 2) {
+          this.formData.sheetId = localValue.target.worksheet_id;
+          await this.getSheetList();
+          await this.getFieldList(localValue.target.worksheet_id);
+        } else if (type === 3) {
+          this.formData.sheetId = localValue.target.worksheet_id;
+          this.formData.appId = localValue.target.project_key;
+          await this.getAppList();
+          await this.getSheetListFromApp(localValue.target.project_key);
+          this.currentSheetFields = this.sheetList.find(item => item.id === localValue.target.worksheet_id).fields;
+        }
+      }
+    },
+    async getFieldList(workSheetId) {
       const { version, appId, formId } = this.$route.params;
       const params = {
         project_key: appId,
         version_number: version,
-        worksheet_id: formId,
+        worksheet_id: workSheetId || formId,
       };
       try {
         this.SheetFieldsLoading = true;
@@ -271,11 +300,53 @@ export default {
         this.SheetFieldsLoading = false;
       }
     },
-    getSheetList() {
-      // TODO
+    async getSheetList() {
+      const { appId } = this.$route.params;
+      const params = {
+        project_key: appId,
+        need_page: 0,
+      };
+      try {
+        this.sheetLoading = true;
+        const res = await this.$store.dispatch('setting/getFormList', params);
+        this.sheetList = res.data;
+      } catch (e) {
+        console.error(e);
+      } finally {
+        this.sheetLoading = false;
+      }
     },
-    getAppList() {
-      // TODO
+    // 获取某个app下的开放表单
+    async getSheetListFromApp(relateApp) {
+      const { appId } = this.$route.params;
+      const params = {
+        project: appId,
+        relate_project: relateApp,
+      };
+      try {
+        this.sheetLoading = true;
+        const res = await this.$store.dispatch('setting/getWorkSheets', params);
+        this.sheetList = res;
+      } catch (e) {
+        console.error(e);
+      } finally {
+        this.sheetLoading = false;
+      }
+    },
+    async getAppList() {
+      const { appId } = this.$route.params;
+      const params = {
+        project_key: appId,
+      };
+      try {
+        this.appLoading = true;
+        const result = await this.$store.dispatch('setting/getProjectGranted', params);
+        this.appList = result;
+      } catch (e) {
+        console.warn(e);
+      } finally {
+        this.appLoading = false;
+      }
     },
     handleSelect(val) {
       this.defaultValue = val;
@@ -291,6 +362,17 @@ export default {
         item.fieldComp = FIELDS_TYPES.find(el => el.type === type).comp;
         item.relationCurrentValue = '';
       }
+    },
+    handleSelectSheet(val) {
+      if (this.formData.container !== 3) {
+        this.getFieldList(val);
+      } else {
+        this.currentSheetFields = this.sheetList.find(item => item.id === val).fields;
+      }
+    },
+    async handleSelectApp(val) {
+      this.sheetList = [];
+      this.getSheetListFromApp(val);
     },
     handleSelectVariable(item, val) {
       if (!item.id) {
@@ -331,6 +413,25 @@ export default {
       this.formData.condition.splice(index, 1);
     },
     handleChangeContainer(val) {
+      this.formData = {
+        container: val,
+        condition: [{
+          key: `${uuid(8)}`,
+          id: '',
+          type: '',
+          relationCurrentSheetId: '',
+          relationCurrentSheet: [],
+          relationCurrentValue: '',
+          fieldComp: '',
+        }],
+        sheetId: '',
+        appId: '',
+        value: '',
+        changeFields: true,
+      };
+      if (val === 1) {
+        this.getFieldList();
+      }
       if (val === 2) {
         this.getSheetList();
       }
@@ -379,8 +480,8 @@ export default {
             project_key: appId,
           },
           target: {
-            project_key: appId,
-            worksheet_id: formId,
+            project_key: this.formData.appId || appId,
+            worksheet_id: this.formData.sheetId || formId,
           },
           conditions,
           value,
@@ -480,5 +581,9 @@ export default {
 
 .sheet-name {
   width: 312px;
+}
+
+/deep/ .bk-grid-container {
+  padding: 0 !important;
 }
 </style>
