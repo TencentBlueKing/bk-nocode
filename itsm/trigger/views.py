@@ -64,13 +64,13 @@ class ComponentApiViewSet(component_viewsets.APIView):
         for code, component_cls in ComponentLibrary.components.get(
             "trigger", {}
         ).items():
-            if code not in [
-                "send_message",
-                "modify_field",
-                "modify_processor",
-                "automatic_announcement",
-                "modify_specified_state_processor",
-            ]:
+            ignore_trigger = [
+                "api",
+                "modify_ticket_status",
+                "unbind_parent_child_tickets",
+                "update_ticket_status",
+            ]
+            if code in ignore_trigger:
                 continue
             if getattr(component_cls, "is_sub_class", False) or (
                 code not in query_codes and query_codes

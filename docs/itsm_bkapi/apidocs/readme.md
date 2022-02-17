@@ -9,38 +9,24 @@
 
 ## 文档说明
 
-- [审批结果查询](zh_hans/approval_result.md)
-[(English Documents Available)](en/approval_result.md)
-- [回调失败的单据](zh_hans/callback_failed_ticket.md)
-[(English Documents Available)](en/callback_failed_ticket.md)
-- [创建单据](zh_hans/create_ticket.md)
-[(English Documents Available)](en/create_ticket.md)
-- [服务目录查询](zh_hans/get_service_catalogs.md)
-[(English Documents Available)](en/get_service_catalogs.md)
-- [服务详情查询](zh_hans/get_service_detail.md)
-[(English Documents Available)](en/get_service_detail.md)
-- [服务角色查询](zh_hans/get_service_roles.md)
-[(English Documents Available)](en/get_service_roles.md)
-- [服务列表查询](zh_hans/get_services.md)
-[(English Documents Available)](en/get_services.md)
-- [单据详情查询](zh_hans/get_ticket_info.md)
-[(English Documents Available)](en/get_ticket_info.md)
-- [单据日志查询](zh_hans/get_ticket_logs.md)
-[(English Documents Available)](en/get_ticket_logs.md)
-- [单据状态查询](zh_hans/get_ticket_status.md)
-[(English Documents Available)](en/get_ticket_status.md)
-- [获取单据列表](zh_hans/get_tickets.md)
-[(English Documents Available)](en/get_tickets.md)
-- [处理单据节点](zh_hans/operate_node.md)
-[(English Documents Available)](en/operate_node.md)
-- [处理单据](zh_hans/operate_ticket.md)
-[(English Documents Available)](en/operate_ticket.md)
-- [token校验](zh_hans/verify_token.md)
-[(English Documents Available)](en/verify_token.md)
 
-
-待补充
-
-ticket_approval_result
-
-get_tickets_by_user
+- [导出某个列表组件的数据](zh_hans/export_the_data_of_a_list_component.md)
+[(English Documents Available)](en/export_the_data_of_a_list_component.md)
+- [获取用户下的应用](zh_hans/get_apps_of_user.md)
+[(English Documents Available)](en/get_apps_of_user.md)
+- [获取某个版本应用下表单](zh_hans/get_worksheet_of_apps_by_version.md)
+[(English Documents Available)](en/get_worksheet_of_apps_by_version.md)
+- [获取某个版本下某个表单的数据回馈](zh_hans/get_worksheet_data_by_version.md)
+[(English Documents Available)](en/get_worksheet_data_by_version.md)
+- [获取某个列表组件的数据](zh_hans/list_component_data.md)
+[(English Documents Available)](en/list_component_data.md)
+- [万能查询：根据筛选条件获取列表的数据](zh_hans/worksheet_data.md)
+[(English Documents Available)](en/worksheet_data.md)
+- [外链功能，获取提单节点字段](zh_hans/get_first_state_fields.md)
+[(English Documents Available)](en/get_first_state_fields.md)
+- [外链功能:提单](zh_hans/open_link_create_ticket.md)
+[(English Documents Available)](en/open_link_create_ticket.md)
+- [外链功能:文件上传](zh_hans/open_link_upload.md)
+[(English Documents Available)](en/open_link_upload.md)
+- [节点运行日志](zh_hans/state_log.md)
+[(English Documents Available)](en/state_log.md)

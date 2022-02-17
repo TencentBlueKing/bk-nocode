@@ -6,9 +6,9 @@ WORKSHEET_DATA = {
     "update_at": "2021-09-18 15:51:22",
     "updated_by": "admin",
     "is_deleted": False,
-    "name": "这是一张测试工作表",
+    "name": "test",
     "desc": "test_worksheet",
-    "key": "test_worksheet",
+    "key": "test",
     "project_key": "test",
 }
 

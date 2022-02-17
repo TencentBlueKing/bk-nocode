@@ -81,7 +81,7 @@ class MyTestClient(Client):
         :param response:
         :return: 返回数据中的data字段
         """
-        assert response.status_code == 200
+        assert response.status_code == 200 or response.status_code == 201
         json_response = json.loads(response.content)
         try:
             assert json_response.get("result")
