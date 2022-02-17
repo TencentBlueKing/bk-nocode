@@ -478,7 +478,7 @@ export default {
     },
     // 打开添加条件面板
     handleOpenConditionsPanel(key) {
-      this.fieldData[key] = { connector: '', expressions: [] };
+      this.fieldData[key] = { connector: 'and', expressions: [{ key: '', condition: '', value: '' }] };
     },
     dropdownShow() {
       this.isDropdownShow = true;

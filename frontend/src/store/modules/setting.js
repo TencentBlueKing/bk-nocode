@@ -176,6 +176,10 @@ export default {
     getNodeVars({}, params) {
       return ajax.get(`/workflow/states/${params.state}/variables/`, { params }).then(response => response.data);
     },
+    // 获取前置各节点的变量
+    getGroupedNodeVars({}, id) {
+      return ajax.get(`/workflow/states/${id}/group_variables/`).then(response => response.data);
+    },
     // 获取节点字段列表
     getNodeFields({}, params) {
       return ajax.get('/workflow/fields/', { params }).then(response => response.data);
