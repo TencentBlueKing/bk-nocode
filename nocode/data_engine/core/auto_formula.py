@@ -142,7 +142,7 @@ class FormulaGenerator:
             )
         return result
 
-    def generate_formula_result(self, validated_data, record):
+    def generate_formula_result(self, validated_data, sys_time_fields):
         params_keys = self.configs["fields"]
         if self.configs["calculate_type"] == "number":
             cal_method = self.FORMULA_MAP.get(self.configs["type"].upper())
@@ -167,10 +167,12 @@ class FormulaGenerator:
                 params_dict = {}
                 for key in params_keys:
                     if key == "create_at":
-                        params_dict[key] = getattr(record, "create_at")
+                        params_dict[key] = sys_time_fields.get("create_at")
                         continue
                     if key == "update_at":
-                        params_dict[key] = getattr(record, "update_at", datetime.now())
+                        params_dict[key] = sys_time_fields.get(
+                            "update_at", datetime.now()
+                        )
                         continue
                     params_dict[key] = validated_data[key]
 
