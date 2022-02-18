@@ -60,7 +60,6 @@ class ModifyPublicFieldComponent(BaseComponent):
 
         outputs = []
         field_groups = self.data.inputs["field_groups"]
-        update_fields_set = set()
         for group, item in field_groups.items():
             dst_field_key, dst_field_value = "", ""
             for value in item:
@@ -77,11 +76,8 @@ class ModifyPublicFieldComponent(BaseComponent):
                     "field_value__display": first_field.display_value,
                 }
                 outputs.append({group: outputs_data})
-                update_fields_set.add(dst_field_key)
             if dst_field_key in ["bk_biz_id", "current_status", "title"]:
                 setattr(dst_ticket, dst_field_key, dst_field_value)
-                update_fields_set.add(dst_field_key)
-
-        dst_ticket.save(update_fields=list(update_fields_set))
+                dst_ticket.save(update_fields=[dst_field_key])
         self.data.set_outputs("field_groups", outputs)
         return True
