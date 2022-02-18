@@ -1,8 +1,8 @@
 <template>
 <div class="basic-info">
-  <span class="title">
-    基本信息
-  </span>
+<!--  <span class="title">-->
+<!--    基本信息-->
+<!--  </span>-->
   <div class="info-container">
     <bk-form :label-width="60">
       <bk-form-item ext-cls="custom-label" v-for="item in formData" :label="item.label" :key="item.label">

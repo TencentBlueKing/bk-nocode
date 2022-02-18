@@ -46,5 +46,9 @@ export default {
     withdrawTicket({}, id) {
       return ajax.post(`ticket/receipts/${id}/withdraw/`).then(res => res.data);
     },
+    // 获取单据手动触发器
+    getTicketHandleTriggers({}, { id, params }) {
+      return ajax.get(`ticket/receipts/${id}/trigger_actions/`, { params }).then(res => res.data);
+    },
   },
 };

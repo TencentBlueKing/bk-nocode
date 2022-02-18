@@ -80,6 +80,7 @@ export default {
             can_format: false,
             start_time: '',
             end_time: '',
+            value: '',
             default_time: '',
           },
         };
