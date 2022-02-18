@@ -216,7 +216,6 @@
       @confirm="handleDataSourceChange">
     </data-source-dialog>
     <number-rule-dialog
-      v-if="fieldData.type!=='FORMULA'"
       :show.sync="numberRuleDialogShow"
       :fields="list"
       :rules="fieldData.meta.config"
