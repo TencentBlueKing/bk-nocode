@@ -309,7 +309,7 @@ export default {
       try {
         this.sheetLoading = true;
         const res = await this.$store.dispatch('setting/getFormList', params);
-        this.sheetList = res.data;
+        this.sheetList = res.data.items;
       } catch (e) {
         console.error(e);
       } finally {
@@ -340,8 +340,8 @@ export default {
       };
       try {
         this.appLoading = true;
-        const result = await this.$store.dispatch('setting/getProjectGranted', params);
-        this.appList = result;
+        const res = await this.$store.dispatch('setting/getProjectGranted', params);
+        this.appList = res;
       } catch (e) {
         console.warn(e);
       } finally {
