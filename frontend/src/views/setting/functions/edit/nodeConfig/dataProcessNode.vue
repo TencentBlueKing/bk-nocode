@@ -129,7 +129,14 @@
                 :searchable="true"
                 :loading="relationListLoading"
                 :disabled="relationListLoading || !editable">
-                <bk-option v-for="item in relationList" :key="item.id" :id="item.id" :name="item.name"></bk-option>
+                <bk-option-group
+                  v-for="(group, gIdx) in relationList"
+                  :key="gIdx"
+                  :name="group.name"
+                  :show-collapse="true"
+                  :is-collapse="!group.fields.some(fItm => fItm.id === expression.value)">
+                  <bk-option v-for="item in group.fields" :key="item.id" :id="item.id" :name="item.name"></bk-option>
+                </bk-option-group>
               </bk-select>
               <bk-select
                 v-else-if="expression.type === 'system'"
@@ -274,7 +281,14 @@
                 :searchable="true"
                 :loading="relationListLoading"
                 :disabled="relationListLoading || !editable">
-                <bk-option v-for="item in relationList" :key="item.id" :id="item.id" :name="item.name"></bk-option>
+                <bk-option-group
+                  v-for="(group, gIdx) in relationList"
+                  :key="gIdx"
+                  :name="group.name"
+                  :show-collapse="true"
+                  :is-collapse="!group.fields.some(fItm => fItm.id === mapping.value)">
+                  <bk-option v-for="item in group.fields" :key="item.id" :id="item.id" :name="item.name"></bk-option>
+                </bk-option-group>
               </bk-select>
               <bk-select
                 v-else-if="mapping.type === 'system'"
@@ -403,7 +417,14 @@ export default {
     },
     // 值类型为指定上级时，可选值为引用变量中的单选人员变量
     memberRelationFields() {
-      return this.relationList.filter(item => item.type === 'MEMBER');
+      const list = [];
+      this.relationList.forEach(group => {
+        const memberTypeFields = group.fields.filter(item => item.type === 'MEMBER');
+        if (memberTypeFields.length > 0) {
+          list.push({ name: group.name, fields: memberTypeFields });
+        }
+      });
+      return list;
     },
   },
   watch: {
@@ -450,18 +471,24 @@ export default {
     async getRelationList() {
       try {
         this.relationListLoading = true;
-        const res = await this.$store.dispatch('setting/getNodeVars', {
-          workflow: this.node.workflow,
-          state: this.node.id,
+        const res = await this.$store.dispatch('setting/getGroupedNodeVars', this.node.id);
+        const groupedList = [];
+        res.data.forEach(group => {
+          if (group.fields.length > 0) {
+            groupedList.push({
+              name: group.state_name,
+              fields: group.fields.map(item => {
+                const { key, name, type } = item;
+                return {
+                  type,
+                  name,
+                  id: `$\{param_${key}}`,
+                };
+              }),
+            });
+          }
         });
-        this.relationList = res.data.map(item => {
-          const { key, name, type } = item;
-          return {
-            type,
-            name,
-            id: `$\{param_${key}}`,
-          };
-        });
+        this.relationList = groupedList;
       } catch (e) {
         console.error(e);
       } finally {
