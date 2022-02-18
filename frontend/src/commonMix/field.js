@@ -40,7 +40,7 @@ export default {
               name: node.name,
               can_delete: Boolean(node.can_delete),
             });
-            // data.push(node)
+            // data.push(formula)
           });
           break;
         case 'DATADICT':

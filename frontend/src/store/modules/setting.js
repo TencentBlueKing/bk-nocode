@@ -408,5 +408,13 @@ export default {
     getWorksheetData({}, params) {
       return ajax.post('/engine/data/worksheet_data/', params).then(response => response.data);
     },
+    //  获取对某个应用授权的应用
+    getProjectGranted({}, params) {
+      return ajax.get('/project/project_white/get_project_granted_by/', { params }).then(response => response.data);
+    },
+    // 获取应用授权的表单
+    getWorkSheets({}, params) {
+      return ajax.get('/project/project_white/get_worksheets/', { params }).then(response => response.data);;
+    },
   },
 };

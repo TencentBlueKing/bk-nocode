@@ -6,9 +6,9 @@
     </div>
     <div class="config-form-wrapper">
       <div class="form-content-area">
-        <bk-form ref="configForm" form-type="vertical" :rules="rules" :model="{ name }">
-          <bk-form-item label="节点名称" property="name" error-display-type="normal" :required="true">
-            <bk-input v-model="name" :disabled="!editable"></bk-input>
+        <bk-form ref="configForm" form-type="vertical" :rules="rules" v-model="formData">
+          <bk-form-item label="节点名称" error-display-type="normal" :required="true">
+            <bk-input v-model="formData.name" :disabled="!editable"></bk-input>
           </bk-form-item>
           <bk-form-item v-if="nodeDetail.type !== 'DATA-PROC' && funcType !== 'DETAIL'" label="处理人" :required="true">
             <processors
@@ -22,6 +22,46 @@
               :disable-type="nodeDetail.type === 'SIGN'">
             </processors>
           </bk-form-item>
+          <template v-if="['APPROVAL','SIGN','NORMAL'].includes(nodeDetail.type)">
+            <bk-form-item label="是否支持转派" error-display-type="normal" :required="true">
+              <bk-radio-group v-model="formData.isTrans">
+                <bk-radio :value="true">
+                  是
+                </bk-radio>
+                <bk-radio :value="false">
+                  否
+                </bk-radio>
+              </bk-radio-group>
+            </bk-form-item>
+            <bk-form-item label="转派方式" error-display-type="normal" :required="true" v-if="formData.isTrans">
+              <div class="trans-method">
+                <bk-select
+                  v-model="formData.transMethod"
+                  style="width: 160px;"
+                  searchable>
+                  <bk-option
+                    v-for="option in transList"
+                    :key="option.id"
+                    :id="option.id"
+                    :name="option.name">
+                  </bk-option>
+                </bk-select>
+                <div class="trans-process">
+                  <processors
+                    v-if="formData.transMethod===2"
+                    ref="processorForm"
+                    v-model="formData.processorData"
+                    :editable="editable"
+                    :app-id="appId"
+                    :flow-id="flowId"
+                    :node-id="nodeId"
+                    :exclude-list="nodeDetail.type === 'APPROVAL' ? ['OPEN'] : []"
+                    :disable-type="nodeDetail.type === 'SIGN'">
+                  </processors>
+                </div>
+              </div>
+            </bk-form-item>
+          </template>
         </bk-form>
         <component
           ref="nodeForm"
@@ -71,7 +111,6 @@ import ApiNodeForm from './apiNode.vue';
 import SignNodeForm from './signNode.vue';
 import ApprovalNodeForm from './approvalNode.vue';
 import commonTrigger from './commonTrigger.vue';
-import { errorHandler } from '@/utils/errorHandler';
 
 export default {
   name: 'NodeConfigPanel',
@@ -109,7 +148,16 @@ export default {
   },
   data() {
     return {
-      name: '',
+      formData: {
+        name: '',
+        isTrans: false,
+        transMethod: '',
+        processorData: {
+          type: '',
+          processors: '',
+        },
+      },
+      transList: [{ id: 1, name: '自由转派' }, { id: 2, name: '指定范围转派' }],
       nodeDetail: {},
       nodeDetailLoading: true,
       processorData: {
@@ -264,6 +312,7 @@ export default {
   box-shadow: 0 2px 4px 0 rgba(25, 25, 41, 0.05);
   border-radius: 2px;
 }
+
 .header-wrapper {
   position: relative;
   padding: 0 24px;
@@ -273,6 +322,7 @@ export default {
   font-weight: bold;
   color: #63656e;
   background: #fafbfd;
+
   .back-to-flow-btn {
     position: absolute;
     right: 16px;
@@ -280,25 +330,40 @@ export default {
     font-size: 20px;
     font-weight: bold;
     cursor: pointer;
+
     &:hover {
       color: #3a84ff;
     }
   }
 }
+
 .config-form-wrapper {
   padding: 24px 0;
   height: calc(100% - 48px);
   overflow: auto;
   @mixin scroller;
+
   .bk-form .bk-form-item {
     margin-top: 24px;
   }
 }
+
 .form-content-area {
   margin: 0 auto;
   width: 600px;
 }
+
 .actions-wrapper {
   margin-top: 24px;
+}
+
+.trans-method {
+  display: flex;
+  align-items: flex-start
+}
+
+.trans-process {
+  margin-left: 16px;
+  width: 424px;
 }
 </style>

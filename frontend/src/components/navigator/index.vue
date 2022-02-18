@@ -90,14 +90,17 @@ export default {
     },
   },
   watch: {
-    $route() {
-      this.activeEntry = '';
-      this.activeMenu = '';
-      this.sideMenuList = [];
-      this.setNavData();
-      if (this.$route.name !== 'settingList' && this.activeEntry === 'settingHome') {
-        this.getAppList();
-      }
+    $route: {
+      handler() {
+        this.activeEntry = '';
+        this.activeMenu = '';
+        this.sideMenuList = [];
+        this.setNavData();
+        if (this.$route.name !== 'settingList' && this.activeEntry === 'settingHome') {
+          this.getAppList();
+        }
+      },
+      immediate: true,
     },
   },
   methods: {
@@ -190,18 +193,22 @@ export default {
 .top-entry-list {
   display: flex;
   align-items: center;
+
   .entry-item {
     display: flex;
     align-items: center;
     margin-right: 40px;
     height: 50px;
     font-size: 14px;
+
     & > a {
       color: #96a2b9;
     }
+
     &.active > a {
       color: #ffffff;
     }
+
     &:hover {
       > a {
         color: #d3d9e4;
@@ -209,17 +216,21 @@ export default {
     }
   }
 }
+
 .bk-navigation {
   min-width: 1366px;
-  /deep/.bk-navigation-wrapper {
+
+  /deep/ .bk-navigation-wrapper {
     .navigation-container {
       max-width: none !important;
     }
+
     .container-content {
       padding: 0;
     }
   }
 }
+
 .bk-navigation.with-app-selector /deep/ .nav-slider-list {
   padding-top: 0px;
 }
