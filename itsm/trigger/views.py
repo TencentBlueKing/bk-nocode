@@ -51,6 +51,7 @@ from itsm.trigger.serializers import (
 from .api import import_trigger
 from .validators import BulkTriggerRuleValidator
 from .permissions import WorkflowTriggerPermit
+from ..project.handler.utils import change_so_project_change
 
 
 class ComponentApiViewSet(component_viewsets.APIView):
@@ -206,6 +207,7 @@ class TriggerViewSet(component_viewsets.ModelViewSet):
         TriggerRule.objects.filter(trigger_id=instance.id).exclude(
             id__in=rules
         ).delete()
+        change_so_project_change(instance.project_key)
         return Response(rules)
 
     @action(methods=["POST"], detail=True)
