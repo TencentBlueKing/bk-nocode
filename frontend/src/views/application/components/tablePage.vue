@@ -765,7 +765,7 @@ export default {
       editorData.forEach((item) => {
         if (item.meta.worksheet) {
           for (const i in row) {
-            if (`${item.meta.worksheet.key}_${i}` === item.key) {
+            if (item.meta.worksheet.field_key === i) {
               item.value = row[i];
               if (['MULTISELECT', 'CHECKBOX', 'MEMBER', 'MEMBERS'].includes(item.type)) {
                 // 以上接受一个数组 给的是字符串
@@ -775,7 +775,7 @@ export default {
               }
             }
           }
-          if (tempKeyList.some(el => `${item.meta.worksheet.key}_${el}` === item.key)) {
+          if (tempKeyList.some(el => item.meta.worksheet.field_key === el)) {
             tempEditData.push(item);
           }
         } else if (item.key === 'id') {

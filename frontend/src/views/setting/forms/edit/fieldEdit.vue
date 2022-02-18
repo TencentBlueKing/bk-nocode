@@ -18,6 +18,8 @@
               <bk-option v-for="item in calculationFormula" :key="item.key" :id="item.key" :name="item.name">
               </bk-option>
             </bk-select>
+            <span v-if="fieldData.meta.config.type==='CUSTOM'" class="config-formula"
+                  @click="openFormulaConfig">配置公式</span>
           </bk-form-item>
           <bk-form-item label="计算字段">
             <bk-select v-model="fieldData.meta.config.fields" :multiple="true" @change="change">
@@ -124,6 +126,7 @@
         <config-default-value
           :key="fieldData.type"
           :field="defaultData"
+          :value="fieldData.meta.data_config"
           @confirm="handleSetDefaultValue"
           @changeFixedValue="handleDefaultValChange">
         </config-default-value>
@@ -203,8 +206,8 @@
         <bk-input v-model.trim="fieldData.tips" type="textarea" :rows="4" @change="change"></bk-input>
       </bk-form-item>
     </bk-form>
+    <div v-if="fieldData.type!=='FORMULA'">
     <data-source-dialog
-      v-if="fieldData.type!=='FORMULA'"
       :show.sync="dataSourceDialogShow"
       :app-id="appId"
       :source-type="fieldData.source_type"
@@ -219,6 +222,17 @@
       :rules="fieldData.meta.config"
       @confirm="handleRuleConfirm">
     </number-rule-dialog>
+    </div>
+    <!-- 配置自定义计算公式-->
+    <div v-if="fieldData.type==='FORMULA'">
+    <config-formula-dialog
+      :show.sync="configFormulaDialogShow"
+      :fields="list"
+      :value="fieldData.meta.config.value"
+      :bind-fields="fieldData.meta.config.fields"
+      @confirm="handleFormulaConfirm">
+    </config-formula-dialog>
+    </div>
   </div>
 </template>
 <script>
@@ -237,7 +251,8 @@ import DefaultValue from '@/components/form/defaultValue.vue';
 import ConfigDefaultValue from './configDefaultValue.vue';
 import DataSourceDialog from './dataSourceDialog.vue';
 import NumberRuleDialog from './numberRuleDialog.vue';
-
+import configFormulaDialog from './configFormulaDialog.vue';
+import { formatTimer } from '@/utils/util.js';
 export default {
   name: 'FieldEdit',
   components: {
@@ -245,6 +260,7 @@ export default {
     DataSourceDialog,
     NumberRuleDialog,
     ConfigDefaultValue,
+    configFormulaDialog,
   },
   model: {
     prop: 'value',
@@ -278,6 +294,7 @@ export default {
       regexList: [{ id: 'EMPTY', name: '无' }], // 校验方式列表，根据不同字段类型动态请求接口
       regexListLoading: false,
       numberRuleDialogShow: false,
+      configFormulaDialogShow: false,
       resetPeriodList: [
         { id: '0', name: '不重置' },
         { id: 'year', name: '年' },
@@ -366,7 +383,7 @@ export default {
       this.fieldData = cloneDeep(val);
       this.defaultData = this.getDefaultData();
       if (val.type === 'FORMULA' && val.meta.config.calculate_type === 'date') {
-        this.setDefaultDate(val);
+        // this.setDefaultDate(val);
       }
       if (val.type !== oldVal.type) {
         this.getRegexList();
@@ -439,6 +456,16 @@ export default {
     openDataSourceConfig() {
       this.dataSourceDialogShow = true;
     },
+    openFormulaConfig() {
+      this.configFormulaDialogShow = true;
+    },
+    handleFormulaConfirm(val) {
+      const { value, fields } = val;
+      this.fieldData.meta.config.value = value;
+      this.fieldData.meta.config.fields = fields;
+      this.change();
+      this.configFormulaDialogShow = false;
+    },
     // 数据源类型切换
     handleSourceTypeChange(val) {
       this.fieldData.source_type = val;
@@ -502,6 +529,8 @@ export default {
       this.change();
     },
     setDefaultDate(val) {
+      // console.log(this.isDate(val.meta.config.start_time));
+      // debugger;
       if (this.isDate(val.meta.config.start_time)) {
         this.startTime = 'custom';
         this.datePickerIsShow.startTimeIsshow = true;
@@ -516,7 +545,7 @@ export default {
       }
     },
     isDate(val) {
-      return  isNaN(val) && !isNaN(Date.parse(val));
+      return isNaN(val) && (!isNaN(Date.parse(val)) || !isNaN(Date.parse(`${val}`)));
     },
     handleSelectTime(type, val) {
       if (type === 'start' && val === 'custom') {
@@ -524,9 +553,11 @@ export default {
       } else if (type === 'end' && val === 'custom') {
         this.datePickerIsShow.endTimeIshow = true;
       } else if (type === 'start') {
+        console.log(val);
         this.datePickerIsShow.startTimeIsshow = false;
         this.fieldData.meta.config.start_time = val;
       } else if (type === 'end') {
+        console.log(val);
         this.datePickerIsShow.endTimeIshow = false;
         this.fieldData.meta.config.end_time = val;
       }
@@ -618,5 +649,12 @@ export default {
 .date-pick {
   margin-top: 8px;
   width: 255px;
+}
+
+.config-formula {
+  margin-top: 8px;
+  color: #3A84FF;
+  font-size: 14px;
+  cursor: pointer;
 }
 </style>

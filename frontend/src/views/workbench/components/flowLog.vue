@@ -1,8 +1,8 @@
 <template>
   <div class="flow-log" v-bkloading="{ isLoading: loading }">
-    <span class="title">
-      流转日志
-    </span>
+<!--    <span class="title">-->
+<!--      流转日志-->
+<!--    </span>-->
     <bk-timeline ext-cls="log-time-line" :list="list">
     </bk-timeline>
   </div>
