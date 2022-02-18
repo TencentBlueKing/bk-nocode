@@ -6,9 +6,9 @@
     </div>
     <div class="config-form-wrapper">
       <div class="form-content-area">
-        <bk-form ref="configForm" form-type="vertical" :rules="rules" v-model="formData">
-          <bk-form-item label="节点名称" error-display-type="normal" :required="true">
-            <bk-input v-model="formData.name" :disabled="!editable"></bk-input>
+        <bk-form ref="configForm" form-type="vertical" :rules="rules" :model="{ name }">
+          <bk-form-item label="节点名称" property="name" error-display-type="normal" :required="true">
+            <bk-input v-model="name" :disabled="!editable"></bk-input>
           </bk-form-item>
           <bk-form-item v-if="nodeDetail.type !== 'DATA-PROC' && funcType !== 'DETAIL'" label="处理人" :required="true">
             <processors
@@ -148,6 +148,7 @@ export default {
   },
   data() {
     return {
+      name: '',
       formData: {
         name: '',
         isTrans: false,
