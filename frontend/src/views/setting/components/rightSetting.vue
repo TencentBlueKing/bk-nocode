@@ -9,6 +9,7 @@
       ref="attributeForm"
       :work-sheet-id="workSheetId"
       :show-mode="showMode"
+      :conditions="conditions"
       :work-sheet-list="tableList"
       @select="handleSelect">
     </attribute-form>
@@ -31,6 +32,10 @@ export default {
     },
     workSheetId: [Number, String],
     showMode: [Number, String],
+    conditions: {
+      type: Object,
+      default: () => ({}),
+    },
   },
   data() {
     return {

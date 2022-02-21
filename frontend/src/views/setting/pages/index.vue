@@ -48,10 +48,12 @@
                 v-else
                 :is-show-work-sheet="isShowWorkSheet"
                 :type="crtPage.type"
-                @select="getTableFileds"
                 :work-sheet-id="workSheetId"
                 :show-mode="showMode"
-                :list-id="attrData.listId">
+                :conditions="conditions"
+                :list-id="attrData.listId"
+                @select="getTableFileds"
+              >
               </right-setting>
             </div>
             <div class="bottom-container">
@@ -138,6 +140,7 @@ export default {
       isShowWorkSheet: true,
       workSheetId: '',
       showMode: '',
+      conditions: {},
     };
   },
   computed: {
@@ -209,15 +212,14 @@ export default {
                 mode: 0,
               });
             }
+            if (!config.conditions) {
+              this.$set(this.pageComponent[0].config, 'conditions', { connector: '', expressions: [{ condition: '', key: '', value: '', type: 'const' }] });
+            }
             const { value } = list;
             this.listId = value;
             this.workSheetId = value || '';
             this.showMode = config.show_mode.mode || 0;
-            // Bus.$emit('selectFunction', { option: 'TABLE', workSheetId: value || '' });
-            // this.config = config;
-            // const {value, config} = JSON.parse(config);
-            // this.attrData = { listId: Number(this.pageComponent[0].value) };
-            // this.getTableFileds(Number(value));
+            this.conditions = config.conditions;
           }
         } else {
           if (this.crtPage.type === 'SHEET') {
@@ -236,6 +238,7 @@ export default {
                 searchInfo: [],
                 sys_fields: [],
                 show_mode: { mode: 0 },
+                conditions: { connector: '', expressions: [{ condition: '', key: '', value: '', type: 'const' }] },
               },
             });
           }

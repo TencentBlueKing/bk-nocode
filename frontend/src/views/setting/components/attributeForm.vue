@@ -38,16 +38,80 @@
       <bk-form-item label="按钮名称" v-show="configData.option!=='TABLE'">
         <bk-input v-model="configData.name" placeholder="请输入按钮名称" @change="change"></bk-input>
       </bk-form-item>
+      <bk-form-item label="数据筛选">
+        <div class="rule-config" @click="handleRuleConfig">配置规则</div>
+      </bk-form-item>
     </bk-form>
+    <bk-dialog
+      v-model="dialog.visible"
+      theme="primary"
+      :mask-close="false"
+      :header-position="dialog.position"
+      :width="dialog.width"
+      @confirm="handleConfirm"
+      @cancel="handleCancel"
+      title="配置规则">
+      <div class="dialog-container">
+        <div>表格将展示满足以下条件的数据</div>
+        <div class="connector-rule">
+          <label>筛选条件</label>
+          <bk-radio-group v-model="localVal.connector">
+            <bk-radio value="and">且</bk-radio>
+            <bk-radio value="or">或</bk-radio>
+          </bk-radio-group>
+        </div>
+        <div class="condition-item">
+          <div style="width: 160px; margin-right: 8px">字段名称</div>
+          <div style="width: 140px">筛选逻辑</div>
+        </div>
+        <div class="condition-item" :key="index" v-for="(expression, index) in localVal.expressions">
+          <bk-select
+            v-model="expression.key"
+            placeholder="字段"
+            style="width: 160px; margin-right: 8px"
+            :clearable="false">
+            <bk-option v-for="item in fieldList" :key="item.key" :id="item.key" :name="item.name"></bk-option>
+          </bk-select>
+          <bk-select
+            v-model="expression.condition"
+            placeholder="逻辑"
+            style="width: 100px; margin-right: 8px"
+            :clearable="false">
+            <bk-option
+              v-for="item in getConditionOptions(expression.key)"
+              :key="item.id"
+              :id="item.id"
+              :name="item.name">
+            </bk-option>
+          </bk-select>
+          <field-value
+            :style="{ width: '140px' }"
+            :field="getField(expression.key)"
+            :value="expression.value"
+            @change="handleValChange(expression, $event)">
+          </field-value>
+          <div class="operate-btns" style="margin-left: 8px">
+            <i class="custom-icon-font icon-add-circle" @click="handleAddExpression(index)"></i>
+            <i class="custom-icon-font icon-reduce-circle" @click="handleDeleteExpression(index)" v-show="index!==0">
+            </i>
+          </div>
+        </div>
+        <p v-if="errorTips" class="common-error-tips">请检查筛选条件</p>
+      </div>
+    </bk-dialog>
   </div>
 </template>
 <script>
 import Bus from '@/utils/bus.js';
 import cloneDeep from 'lodash.clonedeep';
+import { getFieldConditions } from '@/utils/form.js';
+import FieldValue from '@/components/form/fieldValue.vue';
 
 export default {
-
   name: 'AttributeForm',
+  components: {
+    FieldValue,
+  },
   props: {
     group: {
       type: String,
@@ -63,6 +127,10 @@ export default {
     },
     workSheetId: [Number, String],
     showMode: [Number, String],
+    conditions: {
+      type: Object,
+      default: () => ({}),
+    },
   },
   data() {
     return {
@@ -76,11 +144,21 @@ export default {
       },
       dataPermission: [{
         id: 0, name: '全部可见',
-      },
-      {
+      }, {
         id: 1, name: '仅本人创建的',
       }],
       buttonDetail: {},
+      dialog: {
+        visible: false,
+        position: 'left',
+        width: '560',
+      },
+      localVal: cloneDeep(this.conditions),
+      // expression: {condition: '', key: "", value: ''},
+      relationList: [],
+      fieldList: [],
+      errorTips: false,
+      relationListLoading: false,
     };
   },
   computed: {
@@ -97,6 +175,9 @@ export default {
     showMode(val) {
       this.configData.showMode = val;
     },
+    conditions(val) {
+      this.localVal = cloneDeep(val);
+    },
   },
   mounted() {
     // 选中按钮
@@ -108,6 +189,17 @@ export default {
     Bus.$off('selectFunction');
   },
   methods: {
+    async getFieldList() {
+      try {
+        this.fieldListLoading = true;
+        const res = await this.$store.dispatch('setting/getFormFields', this.configData.workSheetId);
+        this.fieldList = res.data;
+      } catch (e) {
+        console.error(e);
+      } finally {
+        this.fieldListLoading = false;
+      }
+    },
     change() {
       if (this.configData.value) {
         const { value } = this.configData;
@@ -119,13 +211,126 @@ export default {
       }
       Bus.$emit('sendFormData', this.configData);
     },
+    handleRuleConfig() {
+      if (!this.configData.workSheetId) {
+        this.$bkMessage({
+          theme: 'warning',
+          message: '请选择工作表',
+        });
+        return;
+      }
+      this.dialog.visible = true;
+      this.errorTips = false;
+      this.getFieldList();
+    },
+    handleAddExpression(index) {
+      this.localVal.expressions.splice(index + 1, 0, {
+        key: '',
+        condition: '',
+        value: '',
+      });
+    },
+    // 删除筛选条件
+    handleDeleteExpression(index) {
+      this.localVal.expressions.splice(index, 1);
+    },
+    // 筛选条件字段逻辑选项，不同类型的字段有不同的逻辑关系
+    getConditionOptions(key) {
+      if (key) {
+        const field = this.fieldList.find(i => i.key === key);
+        return field ? getFieldConditions(field.type) : [];
+      }
+      return [];
+    },
+    // 筛选条件字段
+    getField(key) {
+      if (key) {
+        return this.fieldList.find(item => item.key === key);
+      }
+      return {};
+    },
+    handleValChange(expression, val) {
+      expression.value = val;
+    },
+    handleConfirm() {
+      if (!(this.localVal.connector && this.localVal.expressions.every(i => i))) {
+        this.errorTips = true;
+      } else {
+        Bus.$emit('sendConfigRules', this.localVal);
+      }
+    },
+    handleCancel() {
+      this.localVal = cloneDeep(this.conditions);
+      this.dialog.visible = false;
+    },
   },
 };
 </script>
 
 <style scoped lang="postcss">
+@import "../../../css/scroller.css";
+
 .form-container {
   width: 272px;
   margin-left: 24px;
+}
+
+.rule-config {
+  font-size: 14px;
+  color: #3a84ff;
+
+  &:hover {
+    cursor: pointer;
+  }
+}
+
+.condition-item {
+  display: flex;
+  align-items: center;
+  margin-top: 16px;
+
+  .operate-btns {
+    color: #c4c6cc;
+    cursor: pointer;
+    user-select: none;
+
+    .disabled {
+      color: #dcdee5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.connector-rule {
+  display: flex;
+  align-items: center;
+  height: 20px;
+  margin-top: 16px;
+
+  & > label {
+    position: relative;
+    margin-right: 30px;
+    color: #63656e;
+    font-size: 14px;
+    white-space: nowrap;
+
+    &:after {
+      content: '*';
+      position: absolute;
+      top: 50%;
+      height: 8px;
+      line-height: 1;
+      color: #ea3636;
+      font-size: 12px;
+      transform: translate(3px, -50%);
+    }
+  }
+}
+
+
+.dialog-container {
+  max-height: 512px;
+  overflow: auto;
+  @mixin scroller;
 }
 </style>

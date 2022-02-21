@@ -192,6 +192,9 @@ export default {
         }
       }
     });
+    Bus.$on('sendConfigRules', (val) => {
+      this.config.conditions = val;
+    });
   },
   beforeDestroy() {
     Bus.$off('sendFormData');
@@ -235,11 +238,10 @@ export default {
         try {
           const res = await this.$store.dispatch('setting/getFormFields', val);
           if (this.config.fields.length !== 0) {
-            this.filedList =  cloneDeep(res.data).filter(item => this.list.config.fields.includes(item.id));
-            this.customFileds =  this.filedList.map(item => item.key);
+            this.filedList = cloneDeep(res.data).filter(item => this.list.config.fields.includes(item.id));
+            this.customFileds = this.filedList.map(item => item.key);
           } else {
-            console.log(res.data);
-            this.filedList =  cloneDeep(res.data);
+            this.filedList = cloneDeep(res.data);
             this.customFileds = res.data.map(item => item.key);
           }
           this.filedList.push(...tempSysfiledList);
@@ -272,10 +274,10 @@ export default {
       this.config.optionList.splice(index, 1);
     },
     getData() {
-      const { value, buttonGroup, fields, optionList, searchInfo, sys_fields, show_mode } = this.config;
+      const { value, buttonGroup, fields, optionList, searchInfo, sys_fields, show_mode, conditions } = this.config;
       const params = {
         value,
-        config: { buttonGroup, fields, optionList, searchInfo, sys_fields, show_mode },
+        config: { buttonGroup, fields, optionList, searchInfo, sys_fields, show_mode, conditions },
       };
       return params;
     },
@@ -389,6 +391,7 @@ export default {
     flex-wrap: wrap;
     width: 200px;
     z-index: 9999;
+
     i {
       font-size: 20px;
       line-height: 22px;
@@ -426,9 +429,11 @@ export default {
     justify-content: center;
     flex-shrink: 0;
     cursor: pointer;
-    &:hover{
+
+    &:hover {
       border: 1px solid #979BA5;
     }
+
     i {
       color: #979BA5;
       display: block;
@@ -510,9 +515,10 @@ export default {
   border-bottom: 1px solid #dcdee5;
 }
 
-.custom-container{
+.custom-container {
   height: 150px;
-  /deep/ .bk-form-control{
+
+  /deep/ .bk-form-control {
     height: 117px;
     overflow: auto;
     margin-bottom: 24px;
