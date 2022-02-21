@@ -73,8 +73,6 @@ export default {
   @mixin scroller;
   overflow-y: scroll;
   background: #FFFFFF;
-  box-shadow: 0 2px 4px 0 rgba(25, 25, 41, 0.05);
-  border-radius: 2px;
 
   .title {
     margin: 10px 0 0 24px;
