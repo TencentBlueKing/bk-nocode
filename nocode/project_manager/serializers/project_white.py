@@ -36,10 +36,33 @@ class ProjectWhiteSerializer(serializers.ModelSerializer):
     )
     granted_project = serializers.JSONField(required=False)
 
+    def validate(self, attrs):
+        project_list = attrs["projects"]
+        if attrs["type"] == "WORKSHEET":
+            worksheet_id = attrs["value"]
+            instance = WorkSheetModelHandler(worksheet_id=worksheet_id).instance
+            if instance.project_key in project_list:
+                project_list.remove(instance.project_key)
+                attrs["projects"] = project_list
+        return attrs
+
     def create(self, validated_data):
-        project_list = validated_data.pop("projects")
-        validated_data["granted_project"] = {"projects": project_list}
-        return super(ProjectWhiteSerializer, self).create(validated_data)
+        # 重复增加兼并
+        value = validated_data["value"]
+        value_type = validated_data["type"]
+        try:
+            instance = ProjectWhite.objects.get(value=value, type=value_type)
+            origin_granted_project = instance.granted_project["projects"]
+            granted_project_set = set(
+                origin_granted_project + validated_data["projects"]
+            )
+            instance.granted_project = {"projects": list(granted_project_set)}
+            instance.save()
+            return instance
+        except ProjectWhite.DoesNotExist:
+            project_list = validated_data.pop("projects")
+            validated_data["granted_project"] = {"projects": project_list}
+            return super(ProjectWhiteSerializer, self).create(validated_data)
 
     def to_representation(self, instance):
         data = super(ProjectWhiteSerializer, self).to_representation(instance)
