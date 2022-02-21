@@ -192,6 +192,7 @@ export default {
           }
         }
         this.$store.commit('setting/changeConfigur', globalInfo);
+        sessionStorage.setItem('globalInfo', JSON.stringify(globalInfo));
       })
         .catch((res) => {
           errorHandler(res, this);

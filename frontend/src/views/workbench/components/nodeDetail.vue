@@ -9,24 +9,26 @@
           :node-info="item"
           :node-list="nodeList"
           :ticket-info="basicInfomation"
-          :is-last-node="index === nodeList.length - 1">
+          :ticket-trigger-list="ticketTriggerList"
+          :is-last-node="index === nodeList.length - 1"
+          @successFn="$emit('refresh')">
         </node-detail-item>
       </template>
       <template v-else>
         <!-- 暂无内容 -->
         <span class="ui-empty" type="empty" scene="part">{{ "您暂无任务需要处理" }}</span>
       </template>
-<!--      <template>-->
-<!--        &lt;!&ndash; 暂无内容 &ndash;&gt;-->
-<!--        <div class="bk-no-content bk-no-status">-->
-<!--          <template v-if="basicInfomation.current_status === 'TERMINATED'">-->
-<!--            <p>{{ "该单据已被终止" }}</p>-->
-<!--          </template>-->
-<!--          <template v-else>-->
-<!--            <p>{{ "该单据已结束" }}</p>-->
-<!--          </template>-->
-<!--        </div>-->
-<!--      </template>-->
+      <!--      <template>-->
+      <!--        &lt;!&ndash; 暂无内容 &ndash;&gt;-->
+      <!--        <div class="bk-no-content bk-no-status">-->
+      <!--          <template v-if="basicInfomation.current_status === 'TERMINATED'">-->
+      <!--            <p>{{ "该单据已被终止" }}</p>-->
+      <!--          </template>-->
+      <!--          <template v-else>-->
+      <!--            <p>{{ "该单据已结束" }}</p>-->
+      <!--          </template>-->
+      <!--        </div>-->
+      <!--      </template>-->
     </div>
   </div>
 </template>
@@ -54,16 +56,20 @@ export default {
       type: Boolean,
       default: false,
     },
+    ticketTriggerList: {
+      type: Array,
+      default: () => ([]),
+    },
   },
   created() {
-    this.defaultTableHeight = document.documentElement.clientHeight - 202 ;
+    this.defaultTableHeight = document.documentElement.clientHeight - 202;
   },
 };
 </script>
 
 <style scoped lang='postcss'>
 @import "../../../css/scroller.css";
-.bk-current-node{
+.bk-current-node {
   padding: 20px;
   height: calc(100% - 98px);
   overflow-y: scroll;
