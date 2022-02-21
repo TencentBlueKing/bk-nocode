@@ -144,6 +144,7 @@
         </div>
       </collapse-transition>
     </div>
+    <ticket-trigger-dialog ref="triggerDialog" @init-info="successFn"></ticket-trigger-dialog>
   </div>
 </template>
 
@@ -152,6 +153,7 @@ import collapseTransition from '@/utils/collapse-transition.js';
 import fieldInfo from './fieldInfo.vue';
 import fieldsDone from './fieldsDone.vue';
 import commonMix from '@/commonMix/common.js';
+import ticketTriggerDialog from './ticketTriggerDialog.vue';
 import { errorHandler } from '@/utils/errorHandler.js';
 import { convertTimeArrToMS, convertTimeArrToString, convertMStoString } from '@/utils/util.js';
 
@@ -161,6 +163,7 @@ export default {
     fieldsDone,
     fieldInfo,
     collapseTransition,
+    ticketTriggerDialog,
   },
   inject: ['getNodeList'],
   mixins: [commonMix],
@@ -192,7 +195,7 @@ export default {
       type: Array,
       default: () => [],
     },
-    nodeTriggerList: {
+    ticketTriggerList: {
       type: Array,
       default: () => [],
     },
@@ -235,6 +238,7 @@ export default {
       },
       // 当审批节点为部门时 储存该部门人员
       userList: [],
+      isDropdownShow: false,
     };
   },
   computed: {
@@ -294,7 +298,7 @@ export default {
     },
     // 当前节点触发器列表
     triggers() {
-      return this.nodeTriggerList.filter(trigger => Number(trigger.sender) === Number(this.nodeInfo.state_id));
+      return this.ticketTriggerList.filter(trigger => Number(trigger.sender) === Number(this.nodeInfo.state_id));
     },
     // // 节点操作权限
     // hasNodeOptAuth() {

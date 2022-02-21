@@ -50,5 +50,9 @@ export default {
     getTicketHandleTriggers({}, { id, params }) {
       return ajax.get(`ticket/receipts/${id}/trigger_actions/`, { params }).then(res => res.data);
     },
+    // 手动触发触发器
+    executeHandleTriggers({ }, id) {
+      return ajax.post(`trigger/actions/${id}/run/`).then(response => response.data);
+    },
   },
 };

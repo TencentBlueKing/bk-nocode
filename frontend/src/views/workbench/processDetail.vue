@@ -25,7 +25,8 @@
                 :loading="loading.ticketLoading"
                 :basic-infomation="ticketInfo"
                 :node-list="nodeList"
-                @successFn="handleSuccess">
+                :ticket-trigger-list="ticketTriggerList"
+                @refresh="handleRefresh">
               </node-detail>
             </bk-tab-panel>
             <bk-tab-panel label="流程预览" name="processPreview">
@@ -57,7 +58,7 @@
         render-directive="if"
         header-position="left"
         :fullscreen="true"
-       :close-icon="false"
+        :close-icon="false"
         title="流程详情">
         <process-preview
           v-if="ticketInfo.flow_id && active==='processPreview' && showdialog"
@@ -122,6 +123,7 @@ export default {
         ticketLoading: false,
         nodeInfoLoading: false,
       },
+      ticketTriggerList: [],
       visible: false,
       showdialog: false,
     };
@@ -134,10 +136,11 @@ export default {
       this.ticketId = this.$route.params.id;
       await this.getTicketDetailInfo();
       await this.getNodeList();
+      await this.getTriggers();
     },
     handleRefresh() {
       this.initData();
-      this.$refs.flowLog.getOperationLogList();
+      this.$refs.flowLog && this.$refs.flowLog.getOperationLogList();
     },
     // 获取单据信息详情
     async getTicketDetailInfo() {
@@ -166,7 +169,7 @@ export default {
         token: this.token || undefined,
       };
       try {
-        const res = await  this.$store.dispatch('workbench/getNodeList', params);
+        const res = await this.$store.dispatch('workbench/getNodeList', params);
         this.updateNodeList(res.data);
       } catch (e) {
         console.warn(e);
@@ -205,6 +208,15 @@ export default {
       this.visible = false;
       this.showdialog = false;
     },
+    // 获取单据手动触发器
+    async getTriggers() {
+      try {
+        const res = await this.$store.dispatch('workbench/getTicketHandleTriggers', { id: this.ticketId });
+        this.ticketTriggerList = res.data.filter(trigger => trigger.signal_type === 'STATE');
+      } catch (e) {
+        console.error(e);
+      }
+    },
     // async getTicketStatus() {
     //   try {
     //     const res = await  this.polling('workbench/getNodeList', { id: this.ticketId });
@@ -230,24 +242,29 @@ export default {
 
 <style lang="postcss" scoped>
 @import "../../css/scroller.css";
-/deep/ .bk-tab-section{
+
+/deep/ .bk-tab-section {
   padding: 0;
 }
-/deep/ .page-main-wrapper{
+
+/deep/ .page-main-wrapper {
   overflow-y: hidden;
 }
+
 .workbench-processDetail-content {
-  .refresh-btn{
+  .refresh-btn {
     position: absolute;
     top: 10px;
     right: 24px;
     z-index: 100;
-    /deep/ .bk-icon{
+
+    /deep/ .bk-icon {
       line-height: 30px;
       font-size: 14px;
       top: 0;
     }
   }
+
   .detail-page-content {
     position: relative;
     display: flex;
@@ -265,14 +282,16 @@ export default {
     box-shadow: 0 2px 4px 0 rgba(25, 25, 41, 0.05);
     border-radius: 2px;
   }
-  .right-container{
+
+  .right-container {
     height: calc(100% - 48px);
     width: 452px;
     background: #ffffff;
-    box-shadow: 0 2px 4px 0 rgba(25,25,41,0.05);
+    box-shadow: 0 2px 4px 0 rgba(25, 25, 41, 0.05);
     border-radius: 2px;
   }
 }
+
 .tool-panel-container {
   position: absolute;
   right: 16px;
