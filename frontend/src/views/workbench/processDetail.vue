@@ -10,6 +10,14 @@
         icon="refresh">
         刷新
       </bk-button>
+      <bk-button
+        :theme="'default'"
+        type="submit"
+        :title="'基础按钮'"
+        @click="handleTransTicket"
+        class="trans-btn">
+        转派
+      </bk-button>
       <div class="detail-page-content">
         <div class="process-container">
           <div class="tool-panel-container" v-if="active==='processPreview'">
@@ -71,6 +79,21 @@
           </bk-button>
         </div>
       </bk-dialog>
+      <bk-dialog
+        v-model="transDialog.visible"
+        :loading="transDialog.loading"
+        :width="transDialog.width"
+        render-directive="if"
+        header-position="left"
+        @confirm="onConfirm"
+        @cancel="onCancel"
+        title="处理人转派">
+        <bk-form :model="formData" form-type="vertical" ref="transPerson">
+          <bk-form-item label="转派人" :required="true" :property="'name'" :rules="rules.name" error-display-type="normal">
+            <member-select v-model="formData.name" placeholder="请输入转派人"></member-select>
+          </bk-form-item>
+        </bk-form>
+      </bk-dialog>
     </page-wrapper>
   </section>
 </template>
@@ -84,6 +107,7 @@ import triggerRecord from './components/triggerRecord.vue';
 import processPreview from './components/processPreview.vue';
 import PageWrapper from '@/components/pageWrapper.vue';
 import { deepClone } from '@/utils/util';
+import MemberSelect from '@/components/memberSelect.vue';
 
 export default {
   name: 'ProcessDetail',
@@ -94,6 +118,7 @@ export default {
     processPreview,
     PageWrapper,
     triggerRecord,
+    MemberSelect,
   },
   mixins: [fieldMix],
   provide() {
@@ -112,6 +137,23 @@ export default {
         { name: 'flowLog', label: '流转日志', count: 20 },
         { name: 'trigger', label: '触发器记录', count: 30 },
       ],
+      transDialog: {
+        visible: false,
+        loading: false,
+        width: '640',
+      },
+      formData: {
+        name: [],
+      },
+      rules: {
+        name: [
+          {
+            required: true,
+            message: '转派人为必填项',
+            trigger: 'blur',
+          },
+        ],
+      },
       rightActive: 'basicInfo',
       ticketId: '',
       // 节点列表
@@ -217,6 +259,34 @@ export default {
         console.error(e);
       }
     },
+    handleTransTicket() {
+      this.transDialog.visible = true;
+    },
+    onConfirm() {
+      this.transDialog.loading = true;
+      this.$refs.transPerson.validate().then((validator) => {
+        this.transTicket();
+      })
+        .catch((e) => {
+          this.transDialog.loading = false;
+        });
+    },
+    onCancel() {
+      this.formData.name = [];
+      this.$refs.transPerson.clearError();
+      this.transDialog.visible = false;
+    },
+    // 转派单据
+    async transTicket() {
+      // TODO
+      try {
+
+      } catch (e) {
+
+      } finally {
+        this.transDialog.loading = false;
+      }
+    },
     // async getTicketStatus() {
     //   try {
     //     const res = await  this.polling('workbench/getNodeList', { id: this.ticketId });
@@ -256,6 +326,19 @@ export default {
     position: absolute;
     top: 10px;
     right: 24px;
+    z-index: 100;
+
+    /deep/ .bk-icon {
+      line-height: 30px;
+      font-size: 14px;
+      top: 0;
+    }
+  }
+
+  .trans-btn {
+    position: absolute;
+    top: 10px;
+    right: 110px;
     z-index: 100;
 
     /deep/ .bk-icon {
