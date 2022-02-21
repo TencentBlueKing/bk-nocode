@@ -263,6 +263,7 @@ export default {
   },
   methods: {
     async initData(localValue) {
+      console.log(localValue);
       if (Object.keys(localValue).length !== 0) {
         const { value, type, conditions, changeFields } = localValue;
         this.defaultValue = 'linkageRules';
@@ -284,15 +285,11 @@ export default {
       }
     },
     async getFieldList(workSheetId) {
-      const { version, appId, formId } = this.$route.params;
-      const params = {
-        project_key: appId,
-        version_number: version,
-        worksheet_id: workSheetId || formId,
-      };
+      const { formId } = this.$route.params;
+      const worksheet_id = Number(workSheetId) || Number(formId);
       try {
         this.SheetFieldsLoading = true;
-        const result = await this.$store.dispatch('application/getWorksheetFiledConfig', params);
+        const result = await this.$store.dispatch('setting/getFormFields', worksheet_id);
         this.currentSheetFields = result.data.filter(item => FIELDS_SHOW_CONFIG_VALUE.includes(item.type));
       } catch (e) {
         console.log(e);
@@ -309,7 +306,7 @@ export default {
       try {
         this.sheetLoading = true;
         const res = await this.$store.dispatch('setting/getFormList', params);
-        this.sheetList = res.data.items;
+        this.sheetList = res.data;
       } catch (e) {
         console.error(e);
       } finally {
@@ -326,7 +323,7 @@ export default {
       try {
         this.sheetLoading = true;
         const res = await this.$store.dispatch('setting/getWorkSheets', params);
-        this.sheetList = res;
+        this.sheetList = res.data;
       } catch (e) {
         console.error(e);
       } finally {
@@ -341,7 +338,7 @@ export default {
       try {
         this.appLoading = true;
         const res = await this.$store.dispatch('setting/getProjectGranted', params);
-        this.appList = res;
+        this.appList = res.data;
       } catch (e) {
         console.warn(e);
       } finally {
