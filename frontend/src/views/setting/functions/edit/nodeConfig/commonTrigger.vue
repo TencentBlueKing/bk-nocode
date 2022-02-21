@@ -11,7 +11,7 @@
       </label>
       <div class="common-section-card-body">
         <template v-if="showMoreConfig">
-         <collapse-transition>
+          <collapse-transition>
             <div>
               <!-- 触发器列表 -->
               <div>
@@ -36,7 +36,7 @@
                     </div>
                     <ul class="bk-dropdown-list" slot="dropdown-content">
                       <li><a href="javascript:;" @click="openNew('add')">新建</a></li>
-<!--                      <li><a href="javascript:;" @click="openNew('cite')">引用公共触发器</a></li>-->
+                      <!--                      <li><a href="javascript:;" @click="openNew('cite')">引用公共触发器</a></li>-->
                     </ul>
                   </bk-dropdown-menu>
                 </ul>
@@ -151,7 +151,8 @@ export default {
       return this.triggerDialogInfo.list.filter(trigger => trigger.checked);
     },
     globalChoise() {
-      return this.$store.state.setting.configurInfo;
+      const tempObj = this.$store.state.setting.configurInfo;
+      return Object.keys(tempObj).length > 0 ? tempObj : JSON.parse(sessionStorage.getItem('globalInfo'));
     },
     openFunction() {
       return this.$store.state.openFunction;
@@ -315,6 +316,7 @@ export default {
 
 <style scoped lang="postcss">
 @import "../../../../../css/clearfix.css";
+
 .trigger-container {
   margin: 24px 0;
 }
@@ -390,6 +392,7 @@ export default {
     border-color: #3a84ff;
   }
 }
+
 .bk-trigger-content {
   margin-top: 10px;
   display: flex;
@@ -397,10 +400,12 @@ export default {
   flex-wrap: wrap;
   width: 280px;
   @mixin clearfix;
-  .li-transition{
-    width: calc(50% - 22px)!important;
+
+  .li-transition {
+    width: calc(50% - 22px) !important;
   }
-  &>li {
+
+  & > li {
     float: left;
     width: 100%;
     margin-right: 10px;
@@ -411,18 +416,22 @@ export default {
     line-height: 50px;
     background-color: #fff;
     @mixin clearfix;
+
     &:hover {
       border-color: #3A84FF;
+
       .bk-trigger-icon {
         color: #fff;
         background-color: #3A84FF;
       }
+
       .bk-trigger-delete {
         display: block;
         color: #3A84FF;
       }
     }
   }
+
   .bk-trigger-icon {
     float: left;
     width: 50px;
@@ -434,6 +443,7 @@ export default {
     background-color: #F0F1F5;
     border-right: 1px solid #DCDEE5;
   }
+
   .bk-trigger-name {
     float: left;
     line-height: 48px;
@@ -446,6 +456,7 @@ export default {
     text-overflow: ellipsis;
     cursor: pointer;
   }
+
   .bk-trigger-delete {
     display: none;
     float: left;
