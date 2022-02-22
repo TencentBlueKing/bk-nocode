@@ -45,6 +45,7 @@ from nocode.data_engine.exceptions import (
     ImportDataError,
     DataValidateError,
 )
+from nocode.data_engine.handlers.constancts import CONDITIONS_PROTOCOL
 from nocode.data_engine.handlers.module_handlers import (
     PageComponentHandler,
     ServiceHandler,
@@ -545,16 +546,16 @@ class ChartDataHandler(ListComponentDataHandler):
 
     """
 
-    def __init__(self, page_component_id, page_id, request, version_number):
+    def __init__(
+        self, request, page_component_id=None, page_id=None, version_number=None
+    ):
         self.page_component_id = page_component_id
+        self.condition = CONDITIONS_PROTOCOL
         super(ChartDataHandler, self).__init__(
             page_id=page_id, request=request, version_number=version_number
         )
 
-    def analysis(self):
-        chart_configs = self.get_chart_config()
-        if not chart_configs:
-            return
+    def analysis(self, chart_configs):
         result = self.analysis_data(chart_configs)
         return result
 
@@ -569,18 +570,72 @@ class ChartDataHandler(ListComponentDataHandler):
             chart_configs = json.loads(chart_configs)
         return chart_configs
 
+    @property
+    def current_week(self):
+        now = datetime.datetime.now()
+        this_week_start = now - datetime.timedelta(days=now.weekday())
+        this_week_end = now + datetime.timedelta(days=6 - now.weekday())
+        time_range = (this_week_start, this_week_end)
+        return time_range
+
+    @property
+    def current_month(self):
+        now = datetime.datetime.now()
+        this_month_start = datetime.datetime(now.year, now.month, 1)
+        this_month_end = (
+            datetime.datetime(now.year, now.month + 1, 1)
+            - datetime.timedelta(days=1)
+            + datetime.timedelta(hours=23, minutes=59, seconds=59)
+        )
+        time_range = (this_month_start, this_month_end)
+        return time_range
+
+    @property
+    def current_year(self):
+        now = datetime.datetime.now()
+        this_year_start = datetime.datetime(now.year, 1, 1).strftime(
+            "%Y-%m-%d %H:%M:%S.%f"
+        )
+        this_year_end = (
+            datetime.datetime(now.year + 1, 1, 1)
+            - datetime.timedelta(days=1)
+            + datetime.timedelta(hours=23, minutes=59, seconds=59)
+        )
+        time_range = (this_year_start, this_year_end.strftime("%Y-%m-%d %H:%M:%S.%f"))
+        return time_range
+
+    @property
+    def time_selector(self):
+        return {
+            "current_week": self.current_week,
+            "current_month": self.current_month,
+            "current_year": self.current_year,
+        }
+
+    def time_filter(self, time_range):
+        if time_range["type"].upper() == "DEFINE":
+            return time_range["conditions"]
+        time_range = self.time_selector[time_range["type"].lower()]
+        (
+            self.condition["expressions"][0]["value"],
+            self.condition["expressions"][1]["value"],
+        ) = (time_range[0], time_range[1])
+        return self.condition
+
     def analysis_data(self, chart_configs):
         all_chart = []
         for chart_config in chart_configs:
             # 获取chart组件设置
-            worksheet_id = chart_config["value"]
-            chart_setting = chart_config["config"]
-            conditions = chart_setting["conditions"]
+            chart_setting = chart_config
+            worksheet_id = chart_config["worksheet_id"]
+            time_range = chart_setting["time_range"]
 
             # 数据调取
             manager = DataManager(worksheet_id)
             # 时间范围过滤条件
-            time_filters = self.convert_conditions(conditions)
+            time_conditions = self.time_filter(time_range)
+            chart_setting["time_range"]["conditions"] = time_conditions
+            time_filters = self.convert_conditions(time_conditions)
             # 时间范围过滤后所有数据
             queryset = manager.get_queryset().filter(time_filters)
 
@@ -618,13 +673,22 @@ class ChartDataHandler(ListComponentDataHandler):
 
         return all_chart
 
-    def count(self, content_list):
-        return len(content_list)
+    def count(self, content_list, depend_field, depend_value):
+        if depend_field == "total":
+            return len(content_list)
+        count = 0
+        for item in content_list:
+            if item.get(depend_field) == depend_value:
+                count += 1
+        return count
 
     def sum(self, content_list, depend_field):
         value = 0
         for content in content_list:
-            value += content[depend_field]
+            try:
+                value += int(content.get(depend_field))
+            except TypeError:
+                continue
         return value
 
     def analysis_by_time(self, queryset, x_label_key, y_label_list, chart_setting):
@@ -642,10 +706,14 @@ class ChartDataHandler(ListComponentDataHandler):
 
         # 获取时间范围
         year_filter_1 = int(
-            chart_setting["conditions"]["expressions"][0]["value"].split("-")[0]
+            chart_setting["time_range"]["conditions"]["expressions"][0]["value"].split(
+                "-"
+            )[0]
         )
         year_filter_2 = int(
-            chart_setting["conditions"]["expressions"][1]["value"].split("-")[0]
+            chart_setting["time_range"]["conditions"]["expressions"][1]["value"].split(
+                "-"
+            )[0]
         )
         # 过滤年生成器
         first_params = min(year_filter_2, year_filter_1)
@@ -670,7 +738,6 @@ class ChartDataHandler(ListComponentDataHandler):
         result.update(
             {
                 "name": chart_setting["name"],
-                "value": chart_setting["value"],
             }
         )
         return result
@@ -684,7 +751,6 @@ class ChartDataHandler(ListComponentDataHandler):
         result.update(
             {
                 "name": chart_setting["name"],
-                "value": chart_setting["value"],
             }
         )
         return result
@@ -692,16 +758,26 @@ class ChartDataHandler(ListComponentDataHandler):
     def analysis_after_sort_content(self, sorted_content, y_label_list):
         y_result = {}
         for field, content_list in sorted_content.items():
-            y_result[field] = {}
+            y_result[field] = []
             for y_label in y_label_list:
                 # 创建分类的总数统计
                 if y_label["type"] == "count":
-                    y_result[field][y_label["type"]] = self.count(content_list)
-                # 依据字段总计统计
-                if y_label["type"] == "sum":
-                    y_result[field][y_label["type"]] = self.sum(
-                        content_list, y_label["field"]
+                    result_data = self.count(
+                        content_list, y_label["field"], y_label["value"]
                     )
+                # 依据字段总计统计
+                # if y_label["type"] == "sum":
+                else:
+                    result_data = self.sum(content_list, y_label["field"])
+                result_data = {
+                    "field_key": y_label["field"],
+                    "field_value": y_label["value"],
+                    "analysis_type": y_label["type"],
+                    "result": result_data,
+                }
+
+                y_result[field].append(result_data)
+
         return y_result
 
     def sort_queryset_by_key(self, queryset, x_label_key):
@@ -763,9 +839,9 @@ class ChartDataHandler(ListComponentDataHandler):
         sorted_content = {}
         for year in year_range:
             # 月
-            month = chart_setting["conditions"]["expressions"]["0"]["value"].split("-")[
-                1
-            ]
+            month = chart_setting["time_range"]["conditions"]["expressions"]["0"][
+                "value"
+            ].split("-")[1]
             each_day_queryset = None
             if x_label_key["key"] == "create_at":
                 filter_queryset = queryset.filter(
@@ -841,17 +917,12 @@ class ChartDataHandler(ListComponentDataHandler):
 
         for year in year_range:
             sort_value = f"{year}"
-
             if x_label_key["key"] == "create_at":
-                each_year_queryset = queryset.filter(
-                    create_at__year=year,
-                )
+                # 时间范围过滤后所有数据
+                each_year_queryset = queryset.filter(create_at__year=sort_value)
             if x_label_key["key"] == "update_at":
-                each_year_queryset = queryset.filter(
-                    update_at__year=year,
-                )
-
-                # 2020/2021
+                # 时间范围过滤后所有数据
+                each_year_queryset = queryset.filter(update_at__year=sort_value)
 
             for item in each_year_queryset:
                 content = (

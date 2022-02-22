@@ -133,21 +133,18 @@ class DataInstanceViewSet(BaseApiViewSet):
     @swagger_auto_schema(
         operation_summary="获取某个图表页面的数据回馈",
         tags=DataInstanceViewTags,
-        query_serializer=query.ChartComponentSerializers(),
+        request_body=query.ChartComponentDataSerializer(),
     )
     @action(
-        detail=False, methods=["get"], serializer_class=query.ChartComponentSerializers
+        detail=False,
+        methods=["post"],
+        serializer_class=query.ChartComponentDataSerializer,
     )
     def list_chart_data(self, request, *args, **kwargs):
-        page_id = self.validated_data["page_id"]
-        version_number = self.validated_data["version_number"]
-        page_component_id = self.validated_data["page_component_id"]
+        chart_configs = self.validated_data["chart_configs"]
         data = ChartDataHandler(
-            page_id=page_id,
             request=request,
-            version_number=version_number,
-            page_component_id=page_component_id,
-        ).analysis()
+        ).analysis(chart_configs)
         return Response(data)
 
     @swagger_auto_schema(
