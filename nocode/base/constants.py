@@ -92,6 +92,8 @@ FORMULA_BUILTIN = [
     ("CUSTOM", "自定义"),
 ]
 
+TIME_RANGE_BUILTIN = ["CURRENT_WEEK", "CURRENT_MONTH", "CURRENT_YEAR", "DEFINE"]
+
 LAYOUT_CHOICES = [
     ("COL_6", "半行"),
     ("COL_12", "整行"),

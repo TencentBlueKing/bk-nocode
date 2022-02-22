@@ -26,10 +26,13 @@ from django.utils.translation import ugettext as _
 
 from rest_framework import serializers
 
+from nocode.base.constants import TIME_RANGE_BUILTIN
+from nocode.data_engine.core.constants import YEARS_APART, MONTH, DAY
 from nocode.data_engine.handlers.module_handlers import (
     WorkSheetHandler,
     PageComponentHandler,
 )
+from nocode.worksheet.models import WorkSheetField
 
 
 class ListComponentSerializers(serializers.Serializer):
@@ -49,16 +52,97 @@ class ListComponentSerializers(serializers.Serializer):
         swagger_schema_fields = {"example": {"page_component_id": 1}}
 
 
-class ChartComponentSerializers(serializers.Serializer):
-    page_id = serializers.IntegerField(help_text=_("图表页面id"))
-    page_component_id = serializers.IntegerField(help_text=_("图表页面组件id"))
-    version_number = serializers.CharField(help_text=_("项目版本"))
+class ChartComponentDataSerializer(serializers.Serializer):
+    chart_configs = serializers.JSONField(required=True, help_text="表格配置")
+
+    def time_range_check(self, config):
+        if not config.get("time_range"):
+            raise serializers.ValidationError(detail=_("当前为图表组件，请选择时间范围"))
+        time_range = config["time_range"]
+        expression_time_value = []
+        if time_range["type"].upper() not in TIME_RANGE_BUILTIN:
+            raise serializers.ValidationError(detail=_("当前为图表组件，请选择时间范围"))
+        if time_range["type"].upper() == "DEFINE":
+            conditions = time_range.get("conditions")
+            if not conditions:
+                raise serializers.ValidationError(detail=_("自定义，需提供数据起止时间范围"))
+            expression_list = conditions.get("expressions")
+            if len(expression_list) != 2 or not expression_list:
+                raise serializers.ValidationError(detail=_("当前为图表组件，需提供数据起止时间范围"))
+            for expression in expression_list:
+                if not expression.get("value"):
+                    raise serializers.ValidationError(detail=_("当前为图表组件，需提供数据起止时间范围"))
+                expression_time_value.append(expression.get("value"))
+        return expression_time_value
+
+    def x_label_check(self, config, expression_time_value):
+        x_label = config.get("xaxes")
+        time_range = config["time_range"]
+        if not x_label:
+            raise serializers.ValidationError(detail=_("当前为图表组件，需提供数据统计依据"))
+        if x_label.get("type") == "time" and time_range["type"].upper() == "DEFINE":
+            value = x_label.get("value")
+            if value == DAY:
+                expression_year_month = [
+                    item.rsplit("-", 1)[0] for item in expression_time_value
+                ]
+                if expression_year_month[0] != expression_year_month[1]:
+                    raise serializers.ValidationError(
+                        detail=_("统计类型为时间，且依据分组为天的时候，时间范围只能是某一年同一个月")
+                    )
+
+            if value == MONTH:
+                expression_year = [
+                    int(item.split("-")[0]) for item in expression_time_value
+                ]
+                if expression_year[0] - expression_year[1] >= YEARS_APART:
+                    raise serializers.ValidationError(
+                        detail=_("统计类型为时间，且依据分组为月份的时候，时间范围相隔不能超过3年")
+                    )
+
+    def y_label_check(self, config):
+        y_labels = config.get("yaxis_list")
+        if not y_labels:
+            raise serializers.ValidationError(detail=_("当前为图表组件，需数据统计依据"))
+        for y_label in y_labels:
+            if y_label["field"] != "total":
+                worksheet_id = config["worksheet_id"]
+                field = WorkSheetField.objects.get(
+                    key=y_label["field"], is_deleted=False
+                )
+                if worksheet_id != field.worksheet_id:
+                    raise serializers.ValidationError(
+                        detail=_(
+                            f"当前为图表组件，表单worksheet_id:{worksheet_id} 没有字段field_key:{field.key}"
+                        )
+                    )
+
+    def base_check(self, config):
+        if not config:
+            raise serializers.ValidationError(detail=_("当前为图表组件，组件设置不可为空"))
+        if not config.get("project_key"):
+            raise serializers.ValidationError(detail=_("当前为图表组件，需设置应用"))
+        if not config.get("worksheet_id"):
+            raise serializers.ValidationError(detail=_("当前为图表组件，需要应用下的表单作为数据源"))
+        worksheet = WorkSheetHandler(worksheet_id=config["worksheet_id"]).get_instance()
+
+        # 有数据联动的可能性
+        if worksheet.project_key != config["project_key"]:
+            raise serializers.ValidationError(detail=_("当前为图表组件，当前表单不属于该应用"))
+
+    def check_chart_config(self, attrs):
+        configs = attrs.get("chart_configs")
+        for config in configs:
+            self.base_check(config)
+            # 时间范围
+            expression_time_value = self.time_range_check(config)
+            # x轴检查
+            self.x_label_check(config, expression_time_value)
+            # y轴检查
+            self.y_label_check(config)
 
     def validate(self, attrs):
-        page_id = attrs["page_id"]
-        version_number = attrs["version_number"]
-        if not PageComponentHandler.exists(page_id, version_number):
-            raise serializers.ValidationError("当前应用版本下没有page_id={}的页面".format(page_id))
+        self.check_chart_config(attrs)
         return attrs
 
 

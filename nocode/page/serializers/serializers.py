@@ -40,7 +40,6 @@ from nocode.base.constants import (
     MANAGER,
     ONLY_MANAGER,
 )
-from nocode.data_engine.core.constants import DAY, MONTH, YEARS_APART
 from nocode.page.handlers.moudle_handler import ProjectVersionHandler
 from nocode.page.handlers.role_handler import RoleHandler
 from nocode.page.models import Page, PageComponent, PageComponentCollection
@@ -345,55 +344,11 @@ class PageComponentSerializer(serializers.ModelSerializer):
         if component_type != page.instance.type:
             raise serializers.ValidationError(detail=_("只能绑定在同类型页面下"))
 
-        if attrs.get("type") == "CHART":
-            # 对config进行校验
-            self.check_config(attrs)
-
-        if attrs["type"] in ["FUNCTION"]:
+        if component_type in ["FUNCTION"]:
             if not attrs["config"].get("name"):
                 raise serializers.ValidationError(_("功能卡片名称不可为空"))
 
         return attrs
-
-    def check_config(self, attrs):
-        config = attrs.get("config")
-        if not config:
-            raise serializers.ValidationError(detail=_("当前为图表组件，组件设置不可为空"))
-        conditions = config.get("conditions")
-        if not conditions:
-            raise serializers.ValidationError(detail=_("当前为图表组件，需提供数据起止时间范围"))
-        expression_list = conditions.get("expressions")
-        if len(expression_list) != 2 or not expression_list:
-            raise serializers.ValidationError(detail=_("当前为图表组件，需提供数据起止时间范围"))
-        expression_time_value = []
-        for expression in expression_list:
-            if not expression.get("value"):
-                raise serializers.ValidationError(detail=_("当前为图表组件，需提供数据起止时间范围"))
-            expression_time_value.append(expression.get("value"))
-
-        # x轴检查
-        x_label = config.get("xaxes")
-        if not x_label:
-            raise serializers.ValidationError(detail=_("当前为图表组件，需提供数据统计依据"))
-        if x_label.get("type") == "time":
-            value = x_label.get("value")
-            if value == DAY:
-                expression_year_month = [
-                    item.rsplit("-", 1)[0] for item in expression_time_value
-                ]
-                if expression_year_month[0] != expression_year_month[1]:
-                    raise serializers.ValidationError(
-                        detail=_("统计类型为时间，且依据分组为天的时候，时间范围只能是某一年同一个月")
-                    )
-
-            if value == MONTH:
-                expression_year = [
-                    int(item.split("-")[0]) for item in expression_time_value
-                ]
-                if expression_year[0] - expression_year[1] >= YEARS_APART:
-                    raise serializers.ValidationError(
-                        detail=_("统计类型为时间，且依据分组为月份的时候，时间范围相隔不能超过3年")
-                    )
 
     class Meta:
         model = PageComponent
