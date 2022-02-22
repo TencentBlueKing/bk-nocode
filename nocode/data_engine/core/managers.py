@@ -199,8 +199,8 @@ class DataManager:
 
             # 存在公式控件，数值计算
             sys_time_fields = {
-                "create_at": obj.create.at,
-                "update_at": obj.update_at.at,
+                "create_at": obj.create_at,
+                "update_at": obj.update_at,
             }
             data = self.add_formula_result(validated_data, sys_time_fields)
             if data:
