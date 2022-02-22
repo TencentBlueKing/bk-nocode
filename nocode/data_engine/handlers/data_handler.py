@@ -39,7 +39,7 @@ from itsm.component.drf.pagination import CustomPageNumberPagination
 from nocode.data_engine.core.constants import DAY, MONTH, YEAR
 from nocode.data_engine.core.managers import DataManager
 
-from nocode.data_engine.core.utils import ConditionTransfer
+from nocode.data_engine.core.utils import ConditionTransfer, compute_time_range
 from nocode.data_engine.exceptions import (
     GetDetailDataError,
     ImportDataError,
@@ -169,6 +169,12 @@ class ListComponentDataHandler(BaseDataHandler):
 
         if conditions:
             queryset = queryset.filter(filters)
+
+        # all表示所有的数据
+        time_range = config.get("time_range", "all")
+        if time_range != "all":
+            time_range_conditions = compute_time_range(time_range)
+            queryset = queryset.filter(time_range_conditions)
 
         # 0:展示所有数据，1:展示用户自己的数据, 2:展示范围选择
         show_mode = config.get("show_mode", {})

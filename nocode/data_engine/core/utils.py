@@ -22,6 +22,8 @@ NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES
 WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
+import datetime
+
 from celery.task import task
 from django.db import connection
 from django.db.models import Q
@@ -143,3 +145,43 @@ class ConditionTransfer(object):
         for expression in self.conditions[EXPRESSION_KEYWORD]:
             self._expression_connector(expression)
         return self.condition_filter
+
+
+def compute_time_range(time_range):
+    """
+
+    time_range: 时间范围
+
+    all 全部
+
+    current_day: 当天
+    current_week: 本周
+    current_month: 本月
+    current_year: 本年度
+
+    last_day: 昨天
+    last_week: 上周
+    last_month: 上个月
+    last_year: 上一年
+    """
+
+    now = datetime.date.today()
+
+    time_range_conditions = Q()
+
+    compute_map = {
+        "current_day": datetime.date.today(),
+        "current_week": now - datetime.timedelta(days=now.weekday()),
+        "current_month": now.replace(day=1),
+        "current_year": now.replace(month=1, day=1),
+    }
+
+    value = compute_map.get(time_range)
+
+    if isinstance(value, tuple):
+        # 未后面时间区间做扩展
+        pass
+    else:
+        time_range_conditions.add(Q(create_at__gte=value), Q.AND, squash=False)
+
+    return time_range_conditions
