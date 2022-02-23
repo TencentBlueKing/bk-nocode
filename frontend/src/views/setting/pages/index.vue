@@ -51,6 +51,7 @@
                 :work-sheet-id="workSheetId"
                 :show-mode="showMode"
                 :conditions="conditions"
+                :time-range="timeRange"
                 :list-id="attrData.listId"
                 @select="getTableFileds"
               >
@@ -141,6 +142,7 @@ export default {
       workSheetId: '',
       showMode: '',
       conditions: {},
+      timeRange: '',
     };
   },
   computed: {
@@ -215,11 +217,15 @@ export default {
             if (!config.conditions) {
               this.$set(this.pageComponent[0].config, 'conditions', { connector: '', expressions: [{ condition: '', key: '', value: '', type: 'const' }] });
             }
+            if (!config.time_range) {
+              this.$set(this.pageComponent[0].config, 'time_range', 'all');
+            }
             const { value } = list;
             this.listId = value;
             this.workSheetId = value || '';
             this.showMode = config.show_mode.mode || 0;
             this.conditions = config.conditions;
+            this.timeRange = config.time_range || 'all';
           }
         } else {
           if (this.crtPage.type === 'SHEET') {
@@ -238,6 +244,7 @@ export default {
                 searchInfo: [],
                 sys_fields: [],
                 show_mode: { mode: 0 },
+                time_range: 'all',
                 conditions: { connector: '', expressions: [{ condition: '', key: '', value: '', type: 'const' }] },
               },
             });
