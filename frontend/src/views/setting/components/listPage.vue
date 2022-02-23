@@ -281,8 +281,11 @@ export default {
         time_range } = this.config;
       const params = {
         value,
-        config: { buttonGroup, fields, optionList, searchInfo, sys_fields, show_mode, conditions, time_range },
+        config: { buttonGroup, fields, optionList, searchInfo, sys_fields, show_mode, time_range },
       };
+      if (conditions.connector) {
+        params.config.conditions = conditions;
+      }
       return params;
     },
 

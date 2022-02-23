@@ -53,14 +53,14 @@
       </bk-form-item>
     </bk-form>
     <bk-dialog
+      title="配置规则"
       v-model="dialog.visible"
       theme="primary"
       :mask-close="false"
       :header-position="dialog.position"
       :width="dialog.width"
-      @confirm="handleConfirm"
-      @cancel="handleCancel"
-      title="配置规则">
+      :confirm-fn="handleConfirm"
+      :on-close="handleCancel">
       <div class="dialog-container">
         <div>表格将展示满足以下条件的数据</div>
         <div class="connector-rule">
@@ -269,17 +269,20 @@ export default {
       expression.value = val;
     },
     handleConfirm() {
-      if (!(this.localVal.connector && this.localVal.expressions.every(i => i))) {
+      // if (!(this.localVal.connector && this.localVal.expressions.every(i => i))) {
+      if (!this.localVal.connector) {
         this.errorTips = true;
-      } else {
-        Bus.$emit('sendConfigRules', this.localVal);
+        return;
       }
+      Bus.$emit('sendConfigRules', this.localVal);
+      this.dialog.visible = false;
     },
     handleSelectTime(val) {
       Bus.$emit('sendTimeRange', val);
     },
     handleCancel() {
-      this.localVal = cloneDeep(this.conditions);
+      this.localVal = { connector: '', expressions: [{ condition: '', key: '', value: '', type: 'const' }] };
+      Bus.$emit('sendConfigRules', this.localVal);
       this.dialog.visible = false;
     },
   },
