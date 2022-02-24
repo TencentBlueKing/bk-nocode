@@ -38,19 +38,29 @@
       <bk-form-item label="按钮名称" v-show="configData.option!=='TABLE'">
         <bk-input v-model="configData.name" placeholder="请输入按钮名称" @change="change"></bk-input>
       </bk-form-item>
+      <bk-form-item label="时间筛选">
+        <bk-select v-model="localTimeRange" @selected="handleSelectTime">
+          <bk-option
+            v-for="list in timeRangeList "
+            :key="list.id"
+            :id="list.id"
+            :name="list.name">
+          </bk-option>
+        </bk-select>
+      </bk-form-item>
       <bk-form-item label="数据筛选">
         <div class="rule-config" @click="handleRuleConfig">配置规则</div>
       </bk-form-item>
     </bk-form>
     <bk-dialog
+      title="配置规则"
       v-model="dialog.visible"
       theme="primary"
       :mask-close="false"
       :header-position="dialog.position"
       :width="dialog.width"
-      @confirm="handleConfirm"
-      @cancel="handleCancel"
-      title="配置规则">
+      :confirm-fn="handleConfirm"
+      :on-close="handleCancel">
       <div class="dialog-container">
         <div>表格将展示满足以下条件的数据</div>
         <div class="connector-rule">
@@ -106,7 +116,7 @@ import Bus from '@/utils/bus.js';
 import cloneDeep from 'lodash.clonedeep';
 import { getFieldConditions } from '@/utils/form.js';
 import FieldValue from '@/components/form/fieldValue.vue';
-
+import { TIME_RANGE } from '@/constants/sysField.js';
 export default {
   name: 'AttributeForm',
   components: {
@@ -127,6 +137,7 @@ export default {
     },
     workSheetId: [Number, String],
     showMode: [Number, String],
+    timeRange: String,
     conditions: {
       type: Object,
       default: () => ({}),
@@ -142,6 +153,8 @@ export default {
         type: '',
         showMode: cloneDeep(this.showMode),
       },
+      localTimeRange: cloneDeep(this.timeRange),
+      timeRangeList: TIME_RANGE,
       dataPermission: [{
         id: 0, name: '全部可见',
       }, {
@@ -177,6 +190,9 @@ export default {
     },
     conditions(val) {
       this.localVal = cloneDeep(val);
+    },
+    timeRange(val) {
+      this.localTimeRange = cloneDeep(val);
     },
   },
   mounted() {
@@ -253,14 +269,20 @@ export default {
       expression.value = val;
     },
     handleConfirm() {
-      if (!(this.localVal.connector && this.localVal.expressions.every(i => i))) {
+      // if (!(this.localVal.connector && this.localVal.expressions.every(i => i))) {
+      if (!this.localVal.connector) {
         this.errorTips = true;
-      } else {
-        Bus.$emit('sendConfigRules', this.localVal);
+        return;
       }
+      Bus.$emit('sendConfigRules', this.localVal);
+      this.dialog.visible = false;
+    },
+    handleSelectTime(val) {
+      Bus.$emit('sendTimeRange', val);
     },
     handleCancel() {
-      this.localVal = cloneDeep(this.conditions);
+      this.localVal = { connector: '', expressions: [{ condition: '', key: '', value: '', type: 'const' }] };
+      Bus.$emit('sendConfigRules', this.localVal);
       this.dialog.visible = false;
     },
   },

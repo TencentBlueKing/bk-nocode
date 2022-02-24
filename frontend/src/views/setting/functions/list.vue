@@ -57,6 +57,16 @@
             </template>
           </bk-table-column>
           <bk-table-column label="更新时间" prop="update_at" :width="160"></bk-table-column>
+          <bk-table-column label="状态" :width="160">
+            <template slot-scope="props">
+              <span class="bk-status-color"
+                    :class="{ 'bk-status-primary': !props.row.is_valid }">
+              </span>
+              <span style="margin-left: 5px">
+                    {{props.row.is_valid ? '启用': '未启用'}}
+             </span>
+            </template>
+          </bk-table-column>
           <bk-table-column label="操作" :width="120" fixed="right">
             <template slot-scope="props">
               <bk-button :text="true" @click="onEditFunc(props.row)">
@@ -71,7 +81,7 @@
               </bk-button
               >
             </template>
-          </bk-table-column>
+          </bk-table-column></bk-table></div></page-wrapper></section></span></template></bk-table-column>
         </bk-table>
       </div>
     </page-wrapper>
@@ -330,5 +340,17 @@ export default {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
+}
+
+.bk-status-color {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #2DCB56;
+}
+
+.bk-status-primary {
+  background-color: #3a84ff;
 }
 </style>
