@@ -142,6 +142,16 @@ class FormulaGenerator:
             )
         return result
 
+    def time_format(self, params, validated_data, sys_time_fields):
+        # 指定时间字段
+        if params in validated_data:
+            params = validated_data[params]
+        # 系统时间字段
+        if params in sys_time_fields:
+            params = sys_time_fields.get(params, datetime.now())
+        # 最终返回（常量）
+        return params
+
     def generate_formula_result(self, validated_data, sys_time_fields):
         params_keys = self.configs["fields"]
         if self.configs["calculate_type"] == "number":
@@ -163,20 +173,13 @@ class FormulaGenerator:
                 return ",".join(data)
             return self.property_add(result)
         else:
-            if params_keys:
-                params_dict = {}
-                for key in params_keys:
-                    if key == "create_at":
-                        params_dict[key] = sys_time_fields.get("create_at")
-                        continue
-                    if key == "update_at":
-                        params_dict[key] = sys_time_fields.get(
-                            "update_at", datetime.now()
-                        )
-                        continue
-                    params_dict[key] = validated_data[key]
 
-                result = self.configs["value"].format_map(params_dict)
-            else:
-                result = self.configs["value"]
+            start_time = self.time_format(
+                self.configs["start_time"], validated_data, sys_time_fields
+            )
+            end_time = self.time_format(
+                self.configs["end_time"], validated_data, sys_time_fields
+            )
+
+            result = f"{end_time} - {start_time}"
             return result
