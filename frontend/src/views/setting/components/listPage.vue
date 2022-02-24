@@ -195,6 +195,9 @@ export default {
     Bus.$on('sendConfigRules', (val) => {
       this.config.conditions = val;
     });
+    Bus.$on('sendTimeRange', (val) => {
+      this.config.time_range = val;
+    });
   },
   beforeDestroy() {
     Bus.$off('sendFormData');
@@ -274,11 +277,15 @@ export default {
       this.config.optionList.splice(index, 1);
     },
     getData() {
-      const { value, buttonGroup, fields, optionList, searchInfo, sys_fields, show_mode, conditions } = this.config;
+      const { value, buttonGroup, fields, optionList, searchInfo, sys_fields, show_mode, conditions,
+        time_range } = this.config;
       const params = {
         value,
-        config: { buttonGroup, fields, optionList, searchInfo, sys_fields, show_mode, conditions },
+        config: { buttonGroup, fields, optionList, searchInfo, sys_fields, show_mode, time_range },
       };
+      if (conditions.connector) {
+        params.config.conditions = conditions;
+      }
       return params;
     },
 

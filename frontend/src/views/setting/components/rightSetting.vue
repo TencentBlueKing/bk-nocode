@@ -10,6 +10,7 @@
       :work-sheet-id="workSheetId"
       :show-mode="showMode"
       :conditions="conditions"
+      :time-range="timeRange"
       :work-sheet-list="tableList"
       @select="handleSelect">
     </attribute-form>
@@ -32,6 +33,7 @@ export default {
     },
     workSheetId: [Number, String],
     showMode: [Number, String],
+    timeRange: String,
     conditions: {
       type: Object,
       default: () => ({}),

@@ -125,6 +125,8 @@ class StateSerializer(serializers.ModelSerializer):
         read_only_fields = model.FIELDS
 
     def update(self, instance, validated_data):
+        if self.context["view"].action == "partial_update":
+            return super(StateSerializer, self).update(instance, validated_data)
         with transaction.atomic():
             if validated_data.get("type", "") == "TASK":
                 api_info = validated_data.pop("api_info", {})
@@ -201,7 +203,6 @@ class StateSerializer(serializers.ModelSerializer):
 
             # 内置提单节点不可为空
             if instance.type == "NORMAL" and instance.is_builtin:
-                # if not validated_data.get("fields"):
                 if "fields" not in validated_data.keys():
                     raise serializers.ValidationError(_("内置提单节点字段信息不可为空"))
             state = super(StateSerializer, self).update(instance, validated_data)

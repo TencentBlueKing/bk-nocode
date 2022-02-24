@@ -33,11 +33,12 @@
                 </bk-radio>
               </bk-radio-group>
             </bk-form-item>
-            <bk-form-item label="转派方式" error-display-type="normal" :required="true" v-if="formData.isTrans">
+            <bk-form-item label="转派范围" error-display-type="normal" :required="true" v-if="formData.isTrans">
               <div class="trans-method">
                 <bk-select
                   v-model="formData.transMethod"
                   style="width: 160px;"
+                  :clearable="false"
                   searchable>
                   <bk-option
                     v-for="option in transList"
@@ -150,15 +151,14 @@ export default {
     return {
       name: '',
       formData: {
-        name: '',
         isTrans: false,
-        transMethod: '',
+        transMethod: 2,
         processorData: {
           type: '',
           processors: '',
         },
       },
-      transList: [{ id: 1, name: '自由转派' }, { id: 2, name: '指定范围转派' }],
+      transList: [{ id: 2, name: '指定范围转派' }],
       nodeDetail: {},
       nodeDetailLoading: true,
       processorData: {
@@ -202,11 +202,19 @@ export default {
         const res = await this.$store.dispatch('setting/getNodeDetail', this.nodeId);
         this.nodeDetail = res.data;
         const { name, processors_type: processorsType, processors } = res.data;
+        const { can_deliver, delivers_type, delivers } = res.data;
         this.name = name;
         this.processorData = {
           type: this.nodeDetail.type === 'SIGN' ? 'PERSON' : processorsType,
           processors: cloneDeep(processors),
         };
+        if (['APPROVAL', 'SIGN', 'NORMAL'].includes(this.nodeDetail.type)) {
+          this.formData.isTrans = can_deliver;
+          if (can_deliver) {
+            this.formData.processorData.type = delivers_type;
+            this.formData.processorData.processors = delivers;
+          }
+        }
       } catch (e) {
         console.error(e);
       } finally {
@@ -259,6 +267,15 @@ export default {
           processors,
           fields,
         };
+        if (['APPROVAL', 'SIGN', 'NORMAL'].includes(this.nodeDetail.type)) {
+          const { isTrans } = this.formData;
+          const { type: processorsType, processors } = this.formData.processorData;
+          params.can_deliver = isTrans;
+          if (isTrans) {
+            params.delivers = processors;
+            params.delivers_type = processorsType;
+          }
+        }
         if (type === 'DATA-PROC') {
           params.extras = {
             dataManager: this.$refs.nodeForm.getData(),

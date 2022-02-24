@@ -77,12 +77,10 @@ class ProjectWhiteHandler:
         )
         worksheets_info = []
         for item in worksheets:
-            fields = WorkSheetField.objects.filter(id__in=item["fields"]).values(
-                "id", "key", "name", "type"
-            )
+            fields = WorkSheetField.objects.filter(id__in=item["fields"])
             fields_list = []
             for field in fields:
-                fields_list.append(field)
+                fields_list.append(field.tag_data())
             item["fields"] = fields_list
             worksheets_info.append(item)
         return worksheets_info
