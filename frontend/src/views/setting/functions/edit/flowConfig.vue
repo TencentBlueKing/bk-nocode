@@ -1,7 +1,7 @@
 <template>
   <section class="flow-config" style="height: 100%">
     <div class="flow-container" v-bkloading="{ isLoading: flowDataLoading }">
-      <div class="tip-box" v-show="tipIsShow">
+      <div class="tip-box" v-show="tipIsShow&&!funcData.is_builtin">
         <bk-icon type="info-circle" class="info" />
         {{tips[funcData.type]}}
         <i class="bk-icon icon-close" @click="tipIsShow=false"></i>

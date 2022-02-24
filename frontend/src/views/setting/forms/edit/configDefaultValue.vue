@@ -252,6 +252,11 @@ export default {
       return FIELDS_TYPES.find(el => el.type === this.field.type).comp;
     },
   },
+  watch: {
+    value(val) {
+      this.initData(cloneDeep(val));
+    },
+  },
   beforeCreate() {
     const fields = registerField();
     Object.keys(fields).forEach((item) => {
@@ -272,16 +277,19 @@ export default {
         this.formData.changeFields = changeFields;
         this.formData.condition = conditions;
         if (type === 2) {
-          this.formData.sheetId = localValue.target.worksheet_id;
           await this.getSheetList();
           await this.getFieldList(localValue.target.worksheet_id);
-        } else if (type === 3) {
           this.formData.sheetId = localValue.target.worksheet_id;
-          this.formData.appId = localValue.target.project_key;
+        } else if (type === 3) {
           await this.getAppList();
           await this.getSheetListFromApp(localValue.target.project_key);
+          this.formData.sheetId = localValue.target.worksheet_id;
+          this.formData.appId = localValue.target.project_key;
           this.currentSheetFields = this.sheetList.find(item => item.id === localValue.target.worksheet_id).fields;
         }
+      } else {
+        this.defaultValue = 'defaultValue';
+        this.resetForm();
       }
     },
     async getFieldList(workSheetId) {
@@ -364,7 +372,8 @@ export default {
       if (this.formData.container !== 3) {
         this.getFieldList(val);
       } else {
-        this.currentSheetFields = this.sheetList.find(item => item.id === val).fields;
+        this.currentSheetFields = this.sheetList.find(item => item.id === val).fields
+          .filter(it => FIELDS_SHOW_CONFIG_VALUE.includes(it.type));
       }
     },
     async handleSelectApp(val) {
@@ -392,6 +401,7 @@ export default {
     },
     handleAddLinkAgeRules() {
       this.getFieldList();
+      this.initData(cloneDeep(this.value));
       this.visible = true;
     },
     handleAddCondition() {
@@ -410,8 +420,20 @@ export default {
       this.formData.condition.splice(index, 1);
     },
     handleChangeContainer(val) {
+      this.resetForm(val);
+      if (val === 1) {
+        this.getFieldList();
+      }
+      if (val === 2) {
+        this.getSheetList();
+      }
+      if (val === 3) {
+        this.getAppList();
+      }
+    },
+    resetForm(val) {
       this.formData = {
-        container: val,
+        container: val || 1,
         condition: [{
           key: `${uuid(8)}`,
           id: '',
@@ -426,15 +448,6 @@ export default {
         value: '',
         changeFields: true,
       };
-      if (val === 1) {
-        this.getFieldList();
-      }
-      if (val === 2) {
-        this.getSheetList();
-      }
-      if (val === 3) {
-        this.getAppList();
-      }
     },
     onCancel() {
       this.formData = {
