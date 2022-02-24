@@ -199,6 +199,7 @@ export default {
     this.defaultTableHeight = document.documentElement.clientHeight - 104 - 48 - 48;
     this.initData();
     this.getAppList();
+    this.getAllAppList();
   },
   methods: {
     async initData(searchParams) {
@@ -226,11 +227,20 @@ export default {
     async getAppList() {
       try {
         const params = {
-          show_type: 'manager_center',
+          need_page: 0,
         };
         const res = await this.$store.dispatch('setting/getAllApp', params);
-        this.applicationList = res.data;
+        // this.applicationList = res.data;
         this.appList = res.data.filter(item => item.publish_status !== 'UNRELEASED');
+      } catch (e) {
+        console.error(e);
+      } finally {
+      }
+    },
+    async getAllAppList() {
+      try {
+        const res = await this.$store.dispatch('setting/getAllApp');
+        this.applicationList = res.data;
       } catch (e) {
         console.error(e);
       } finally {
@@ -357,7 +367,6 @@ export default {
     async handleSelect(val) {
       await this.getFormsList(val);
       this.applicationList = this.appList.filter(item => item.key !== val);
-      console.log(val);
     },
     async onSubmit() {
       this.formStatus === 'ADD' ? this.addOpenSheetList() : this.updateOpenSheet();
