@@ -115,6 +115,8 @@ class WorkSheetField(Model):
         _("字段展示说明"), max_length=LEN_MIDDLE, default=EMPTY_STRING, null=True, blank=True
     )
 
+    num_range = jsonfield.JSONField(_("数据范围, 只针对多选相关的情况"), default=EMPTY_LIST)
+
     change_flag = True
 
     @property
