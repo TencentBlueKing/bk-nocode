@@ -147,6 +147,7 @@ class BaseField(Model):
     related_fields = jsonfield.JSONField(
         _("级联字段"), default=EMPTY_DICT, null=True, blank=True
     )
+    num_range = jsonfield.JSONField(_("数据范围, 只针对多选相关的情况"), default=EMPTY_LIST)
     meta = jsonfield.JSONField(_("复杂描述信息"), default=EMPTY_DICT)
 
     class Meta:

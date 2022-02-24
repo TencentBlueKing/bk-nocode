@@ -422,6 +422,7 @@ class ServiceMigrate(object):
                     workflow_filed.regex = field.regex
                     workflow_filed.meta = meta
                     workflow_filed.tips = field.tips
+                    workflow_filed.num_range = field.num_range
                     workflow_filed.save()
 
     def drop_fields(self, drop_fields):

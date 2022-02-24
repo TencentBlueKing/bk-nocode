@@ -203,6 +203,7 @@ class WorkSheetFieldItemSerializer(serializers.ModelSerializer):
     regex_config = serializers.JSONField(required=False, initial={})
     unique = serializers.BooleanField(required=False, default=False)
     type = serializers.CharField(required=True)
+    num_range = serializers.JSONField(required=False)
 
     def validated_formula(self, formula, fields_key_list):
         """
@@ -250,6 +251,15 @@ class WorkSheetFieldItemSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         if attrs.get("type") == FORMULA:
             self.validated_formula_config(attrs)
+
+        if attrs.get("type") in ["CHECKBOX", "MULTISELECT", "TREESELECT"]:
+            num_range = attrs.get("num_range")
+            # 如果传了num_range 但是数量等于不是两个
+            if num_range and len(num_range) != 2:
+                raise serializers.ValidationError(_("字段范围格式不正确"))
+            if num_range[0] == num_range[1]:
+                raise serializers.ValidationError(_("最小范围和最大范围不能相同"))
+
         return attrs
 
     class Meta:
