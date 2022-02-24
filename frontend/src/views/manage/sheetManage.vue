@@ -210,8 +210,6 @@ export default {
       if (searchParams) {
         params.project_key = searchParams;
       }
-      console.log(searchParams);
-      console.log(params);
       try {
         this.tableLoading = true;
         const res = await this.$store.dispatch('manage/getOpenSheetList', params);
@@ -239,7 +237,7 @@ export default {
     },
     async getAllAppList() {
       try {
-        const res = await this.$store.dispatch('setting/getAllApp');
+        const res = await this.$store.dispatch('setting/getAppList', { need_page: 0 });
         this.applicationList = res.data;
       } catch (e) {
         console.error(e);
