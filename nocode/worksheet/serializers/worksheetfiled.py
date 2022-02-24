@@ -34,7 +34,7 @@ from itsm.postman.models import RemoteApi, RemoteApiInstance
 from itsm.postman.serializers import ApiInstanceSerializer
 from itsm.project.handler.project_handler import ProjectHandler
 from nocode.base.basic import check_user_owner_creator
-from nocode.base.constants import CUSTOM, FORMULA, WORKSHEET
+from nocode.base.constants import CUSTOM, FORMULA, WORKSHEET, CALCULATE_LIMIT
 from nocode.project_manager.handlers.project_white_handler import ProjectWhiteHandler
 from nocode.worksheet.handlers.worksheet_field_handler import WorkSheetFieldIndexHandler
 from nocode.worksheet.models import WorkSheetField, WorkSheet
@@ -229,6 +229,14 @@ class WorkSheetFieldItemSerializer(serializers.ModelSerializer):
         # 数值计算
         if not config.get("fields") and config.get("calculate_type") == "number":
             raise serializers.ValidationError(_("计算控件需绑定数值"))
+
+        # 使用内置计算计算方法,需要两个字段
+        at_least_method = ["PRODUCT", "SUM"]
+        if (
+            config["type"] in at_least_method
+            and len(config["fields"]) <= CALCULATE_LIMIT
+        ):
+            raise serializers.ValidationError(_("使用内置求和，乘积方法需要至少绑定2个数值控件，可考虑自定义公式"))
 
         # 验证公式绑定字段类型
         num_fields_type = WorkSheetField.objects.filter(

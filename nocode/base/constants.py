@@ -83,6 +83,8 @@ MIN = "MIN"
 AVERAGE = "AVERAGE"
 PRODUCT = "PRODUCT"
 
+CALCULATE_LIMIT = 1
+
 FORMULA_BUILTIN = [
     ("SUM", "求和"),
     ("MAX", "最大值"),
@@ -90,6 +92,9 @@ FORMULA_BUILTIN = [
     ("AVERAGE", "均值"),
     ("PRODUCT", "乘积"),
     ("CUSTOM", "自定义"),
+    ("COUNT", "计数"),
+    ("MEDIAN", "中位数"),
+    ("ARGMAX", "众数"),
 ]
 
 TIME_RANGE_BUILTIN = ["CURRENT_WEEK", "CURRENT_MONTH", "CURRENT_YEAR", "DEFINE"]
