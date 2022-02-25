@@ -1,16 +1,35 @@
 <template>
   <div class="worksheet-data-wrapper">
-    <bk-form ref="sourceForm" class="select-worksheet" form-type="vertical" :model="localVal" :rules="sourceRules">
+    <bk-radio-group
+      style="margin-bottom: 24px;"
+      :value="localVal.target.project_key === appId"
+      @change="handleChangeFormType">
+      <bk-radio :value="true">本应用表单</bk-radio>
+      <bk-radio :value="false">其他应用表单</bk-radio>
+    </bk-radio-group>
+    <bk-form ref="sourceForm" class="select-worksheet" form-type="vertical" :model="formModel" :rules="sourceRules">
       <bk-form-item v-if="changeSource" label="数据源" :required="true">
         <bk-select value="WORKSHEET" :clearable="false" @change="$emit('sourceTypeChange', $event)">
           <bk-option v-for="item in sourceTypeList" :key="item.id" :id="item.id" :name="item.name"></bk-option>
         </bk-select>
       </bk-form-item>
-      <bk-form-item label="表单" property="target" :required="true">
+      <bk-form-item v-if="localVal.target.project_key !== appId" label="应用" property="appId" :required="true">
+        <bk-select
+          placeholder="请选择应用"
+          :value="localVal.target.project_key"
+          :clearable="false"
+          :disabled="appListLoading"
+          :loading="appListLoading"
+          @selected="handleSelectApp">
+          <bk-option v-for="item in appList" :key="item.key" :id="item.key" :name="item.name"></bk-option>
+        </bk-select>
+      </bk-form-item>
+      <bk-form-item label="表单" property="formId" :required="true">
         <bk-select
           placeholder="请选择表单"
           :value="localVal.target.worksheet_id"
           :clearable="false"
+          :searchable="true"
           :disabled="formListLoading"
           :loading="formListLoading"
           @selected="handleSelectForm">
@@ -22,6 +41,7 @@
           v-model="localVal.field"
           placeholder="请选择字段"
           :clearable="false"
+          :searchable="true"
           :disabled="fieldListLoading"
           :loading="fieldListLoading"
           @selected="update">
@@ -132,6 +152,8 @@ export default {
   data() {
     return {
       localVal: cloneDeep(this.value),
+      appList: [],
+      appListLoading: false,
       formList: [],
       formListLoading: false,
       fieldList: [],
@@ -140,11 +162,16 @@ export default {
       relationListLoading: false,
       errorTips: false,
       sourceRules: {
-        target: [
+        appId: [
           {
-            validator(val) {
-              return typeof val.worksheet_id === 'number';
-            },
+            required: true,
+            message: '必填项',
+            trigger: 'blur',
+          },
+        ],
+        formId: [
+          {
+            required: true,
             message: '必填项',
             trigger: 'blur',
           },
@@ -159,12 +186,20 @@ export default {
       },
     };
   },
+  computed: {
+    // 传入bk-form用来做表单校验
+    formModel() {
+      const { field, target } = this.localVal;
+      return { field, appId: target.project_key, formId: target.worksheet_id };
+    },
+  },
   watch: {
     value(val) {
       this.localVal = cloneDeep(val);
     },
   },
   created() {
+    this.getAppList();
     this.getFormList();
     if (this.value.target.worksheet_id) {
       this.getFieldList();
@@ -174,11 +209,23 @@ export default {
     }
   },
   methods: {
+    // 获取有访问数据权限的应用列表
+    async getAppList() {
+      try {
+        this.appListLoading = true;
+        const res = await this.$store.dispatch('setting/getProjectGranted', { project_key: this.appId });
+        this.appList = res.data;
+      } catch (e) {
+        console.error(e);
+      } finally {
+        this.appListLoading = false;
+      }
+    },
     async getFormList() {
       try {
         this.formListLoading = true;
         const params = {
-          project_key: this.appId,
+          project_key: this.localVal.target.project_key,
           page_size: 10000,
         };
         const res = await this.$store.dispatch('setting/getFormList', params);
@@ -231,22 +278,49 @@ export default {
       }
       return {};
     },
-    // 选择表单，清空已选数据
-    handleSelectForm(val) {
+    // 切换本应用表单、其他应用表单
+    handleChangeFormType(isCrt) {
+      this.localVal.target.worksheet_id = '';
+      this.localVal.conditions.connector = '';
+      this.localVal.conditions.expressions = [];
+      this.localVal.field = '';
+      this.fieldList = [];
+      if (isCrt) {
+        this.localVal.target.project_key = this.appId;
+        this.getFormList();
+      } else {
+        this.localVal.target.project_key = '';
+        this.formList = [];
+      }
+      this.update();
+      this.$refs.sourceForm.clearError();
+    },
+    // 选择应用
+    handleSelectApp(val) {
       this.localVal = {
         field: '',
         source: {
           project_key: this.appId,
         },
         target: {
-          project_key: this.appId,
-          worksheet_id: val,
+          project_key: val,
+          worksheet_id: '',
         },
         conditions: {
           connector: '',
           expressions: [],
         },
       };
+      this.fieldList = [];
+      this.getFormList();
+      this.update();
+    },
+    // 选择表单，清空已选数据
+    handleSelectForm(val) {
+      this.localVal.target.worksheet_id = val;
+      this.localVal.conditions.connector = '';
+      this.localVal.conditions.expressions = [];
+      this.localVal.field = '';
       this.getFieldList();
       this.update();
     },

@@ -51,6 +51,7 @@ from itsm.trigger.serializers import (
 from .api import import_trigger
 from .validators import BulkTriggerRuleValidator
 from .permissions import WorkflowTriggerPermit
+from ..project.handler.utils import change_so_project_change
 
 
 class ComponentApiViewSet(component_viewsets.APIView):
@@ -64,13 +65,13 @@ class ComponentApiViewSet(component_viewsets.APIView):
         for code, component_cls in ComponentLibrary.components.get(
             "trigger", {}
         ).items():
-            if code not in [
-                "send_message",
-                "modify_field",
-                "modify_processor",
-                "automatic_announcement",
-                "modify_specified_state_processor",
-            ]:
+            ignore_trigger = [
+                "api",
+                "modify_ticket_status",
+                "unbind_parent_child_tickets",
+                "update_ticket_status",
+            ]
+            if code in ignore_trigger:
                 continue
             if getattr(component_cls, "is_sub_class", False) or (
                 code not in query_codes and query_codes
@@ -206,6 +207,7 @@ class TriggerViewSet(component_viewsets.ModelViewSet):
         TriggerRule.objects.filter(trigger_id=instance.id).exclude(
             id__in=rules
         ).delete()
+        change_so_project_change(instance.project_key)
         return Response(rules)
 
     @action(methods=["POST"], detail=True)

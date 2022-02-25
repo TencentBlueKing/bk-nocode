@@ -31,11 +31,13 @@ from itsm.component.constants import (
     TRIGGER_SOURCE_TYPE,
     EMPTY_LIST,
     EMPTY_DICT,
-    OPT_TYPE_CHOICE, LEN_SHORT,
+    OPT_TYPE_CHOICE,
+    LEN_SHORT,
 )
 from itsm.component.drf.serializers import AuthModelSerializer
 from itsm.trigger.models import Trigger, TriggerRule, ActionSchema, Action
 from .validators import TriggerValidator
+from ..project.handler.utils import change_so_project_change
 
 
 class TriggerSerializer(AuthModelSerializer):
@@ -63,14 +65,20 @@ class TriggerSerializer(AuthModelSerializer):
         source_table_id = data.pop("source_table_id", None)
         if source_table_id:
             # 仅配置了source_table_id的时候，才真正的对应的table id记录
-            data['source_table_id'] = source_table_id
+            data["source_table_id"] = source_table_id
 
         internal_data = super(TriggerSerializer, self).to_internal_value(data)
-        if internal_data.get('is_draft') is True:
-            internal_data['is_enabled'] = False
+        if internal_data.get("is_draft") is True:
+            internal_data["is_enabled"] = False
 
         return internal_data
-    
+
+    def create(self, validated_data):
+        instance = super(TriggerSerializer, self).create(validated_data)
+        project_key = instance.project_key
+        change_so_project_change(project_key)
+        return instance
+
     def to_representation(self, instance):
         data = super(TriggerSerializer, self).to_representation(instance)
         return self.update_auth_actions(instance, data)
@@ -87,8 +95,12 @@ class TriggerRuleSerializer(AuthModelSerializer):
 
     condition = serializers.JSONField(default={})
     action_schemas = serializers.JSONField(default=EMPTY_LIST)
-    trigger_id = serializers.IntegerField(required=True,)
-    name = serializers.CharField(required=False, max_length=LEN_LONG, allow_blank=True, allow_null=True)
+    trigger_id = serializers.IntegerField(
+        required=True,
+    )
+    name = serializers.CharField(
+        required=False, max_length=LEN_LONG, allow_blank=True, allow_null=True
+    )
 
     class Meta:
         model = TriggerRule
@@ -102,12 +114,16 @@ class ActionSchemaSerializer(AuthModelSerializer):
     """
 
     # 参数
-    name = serializers.CharField(required=False, max_length=LEN_LONG, allow_blank=True, allow_null=True)
+    name = serializers.CharField(
+        required=False, max_length=LEN_LONG, allow_blank=True, allow_null=True
+    )
     component_type = serializers.CharField(required=True, max_length=LEN_LONG)
 
     operate_type = serializers.ChoiceField(choices=OPT_TYPE_CHOICE, default="BACKEND")
     can_repeat = serializers.BooleanField(default=False)
-    display_name = serializers.CharField(max_length=LEN_LONG, allow_blank=True, allow_null=True)
+    display_name = serializers.CharField(
+        max_length=LEN_LONG, allow_blank=True, allow_null=True
+    )
     delay_params = serializers.JSONField(required=False)
 
     # 参数
@@ -144,4 +160,11 @@ class ActionDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Action
         read_only_fields = model.DISPLAY_FIELDS
-        fields = model.FIELDS + ("fields", "trigger_name", "rule_name", "operate_type", "signal_name", "create_at",)
+        fields = model.FIELDS + (
+            "fields",
+            "trigger_name",
+            "rule_name",
+            "operate_type",
+            "signal_name",
+            "create_at",
+        )

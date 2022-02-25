@@ -382,8 +382,12 @@ class DataProcessingService(Service):
             fields=log_data,
         )
         if is_failed:
-            logger.info(
-                "DataProcessingService exit with err: {}".format(log_data.get("err"))
+            error_message = "DataProcessingService exit with err: {}"
+            logger.info(error_message.format(log_data.get("err")))
+            # 终止单据
+            ticket.terminate(
+                state_id=state_id,
+                terminate_message=error_message.format(log_data.get("err")),
             )
             return False
         logger.info("DataProcessingService exit without err")

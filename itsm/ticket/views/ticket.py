@@ -1087,6 +1087,7 @@ class TicketModelViewSet(ModelViewSet):
         """获取工单对应的触发器响应事件"""
         instance = self.get_object()
         operate_type = request.query_params.get("operate_type", "")
+        need_page = request.query_params.get("need_page")
 
         if operate_type != "all":
             # 手动执行的，直接返回手动按钮
@@ -1105,6 +1106,11 @@ class TicketModelViewSet(ModelViewSet):
             Q(Q(source_id=instance.id) & Q(source_type=SOURCE_TICKET))
             | Q(Q(source_id__in=task_ids) & Q(source_type=SOURCE_TASK))
         ).exclude(status=ACTION_STATUS_CREATED)
+
+        if need_page:
+            page = self.paginate_queryset(action_query_set)
+            serializer = ActionSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
 
         return Response(ActionSerializer(action_query_set, many=True).data)
 

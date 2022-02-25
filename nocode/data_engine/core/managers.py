@@ -198,7 +198,11 @@ class DataManager:
                 obj.save()
 
             # 存在公式控件，数值计算
-            data = self.add_formula_result(validated_data)
+            sys_time_fields = {
+                "create_at": obj.create_at,
+                "update_at": obj.update_at,
+            }
+            data = self.add_formula_result(validated_data, sys_time_fields)
             if data:
                 obj.contents.update(data)
                 obj.save()
@@ -237,21 +241,25 @@ class DataManager:
     def get_auto_number_fields(self):
         return [field for field in self.fields if field["type"] == "AUTO-NUMBER"]
 
-    def add_formula_result(self, validated_data):
+    def add_formula_result(self, validated_data, sys_time_fields):
         data = {}
         fields = self.get_formula_fields()
         if not fields:
             return data
         for field in fields:
-            result = self.generate_formula_result(field, validated_data)
+            result = self.generate_formula_result(
+                field, validated_data, sys_time_fields
+            )
             data.setdefault(field["key"], result)
         return data
 
     def get_formula_fields(self):
         return [field for field in self.fields if field["type"] == "FORMULA"]
 
-    def generate_formula_result(self, field, validated_data):
-        return FormulaGenerator(field).generate_formula_result(validated_data)
+    def generate_formula_result(self, field, validated_data, sys_time_fields):
+        return FormulaGenerator(field).generate_formula_result(
+            validated_data, sys_time_fields
+        )
 
     def delete(self, pk):
         with transaction.atomic():
@@ -263,11 +271,11 @@ class DataManager:
         with transaction.atomic():
             # 生成一个对象
             obj = self.model.objects.get(id=pk)
-            obj.contents = self.update_content(obj.contents, validated_data)
+            obj.contents = self.update_content(obj.contents, validated_data, obj)
             obj.updated_by = updated_by
             obj.save()
 
-    def update_content(self, obj_contents, validated_data):
+    def update_content(self, obj_contents, validated_data, obj):
         # content数据更新
         contents = copy.deepcopy(obj_contents)
         # 兼容隐藏字段直接采用原数据
@@ -276,7 +284,8 @@ class DataManager:
                 continue
             contents[key] = value
         # 计算控件重新计算
-        data = self.add_formula_result(contents)
+        sys_time_fields = {"create_at": obj.create_at, "update_at": obj.update_at}
+        data = self.add_formula_result(contents, sys_time_fields)
         if data:
             contents.update(data)
         return contents

@@ -320,11 +320,14 @@ class ServiceMigrate(object):
         生成变更列表
         """
         workflow_fields = set([field.key for field in self.workflow.fields.all()])
-
-        worksheet_fields_list = [
-            "{}_{}".format(self.worksheet.key, self.fields.get(id=field_id).key)
-            for field_id in self.worksheet.fields
-        ]
+        worksheet_fields_list = []
+        for field_id in self.worksheet.fields:
+            field = self.fields.get(id=field_id)
+            # 过滤计算控件和自动编号
+            if ignore_fields_type(field.type):
+                continue
+            key = "{}_{}".format(self.worksheet.key, field.key)
+            worksheet_fields_list.append(key)
 
         worksheet_fields = set(worksheet_fields_list)
         # 默认的 title 字段
@@ -333,13 +336,13 @@ class ServiceMigrate(object):
         if self.action == UPDATE_STATE:
             worksheet_fields_list.insert(0, "id")
             worksheet_fields.add("id")
-        # 获取被移除的字段
-        add_fields = worksheet_fields.difference(workflow_fields)
         # 获取需要添加的字段
+        add_fields = worksheet_fields.difference(workflow_fields)
+        # 获取被移除的字段
         drop_fields = workflow_fields.difference(worksheet_fields)
         # 获取需要更新的字段
         update_fields = worksheet_fields.intersection(worksheet_fields)
-        # 重新排序
+
         return add_fields, drop_fields, update_fields, worksheet_fields_list
 
     def add_fields(self, add_fields):
@@ -422,6 +425,7 @@ class ServiceMigrate(object):
                     workflow_filed.regex = field.regex
                     workflow_filed.meta = meta
                     workflow_filed.tips = field.tips
+                    workflow_filed.num_range = field.num_range
                     workflow_filed.save()
 
     def drop_fields(self, drop_fields):

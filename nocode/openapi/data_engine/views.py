@@ -23,11 +23,8 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 import copy
-import hashlib
 import json
-import os
 import uuid
-import datetime
 
 from django.db.models import Q
 from django.utils.decorators import method_decorator
@@ -39,10 +36,6 @@ from rest_framework.response import Response
 from blueapps.account.decorators import login_exempt
 
 from config.default import TOKEN_EXPIRE_TIME
-from itsm.component.decorators import validate_filepath_settings, validate_files_name
-from itsm.component.utils.response import Success
-from itsm.iadmin.models import SystemSettings
-from itsm.misc.validator.image_validator import image_format_validate, IMAGE_VALIDATE
 from itsm.project.handler.project_handler import ProjectHandler
 from itsm.service.validators import service_validate
 from itsm.ticket.models import Ticket, TicketEventLog
@@ -133,21 +126,18 @@ class DataInstanceViewSet(BaseApiViewSet):
     @swagger_auto_schema(
         operation_summary="获取某个图表页面的数据回馈",
         tags=DataInstanceViewTags,
-        query_serializer=query.ChartComponentSerializers(),
+        request_body=query.ChartComponentDataSerializer(),
     )
     @action(
-        detail=False, methods=["get"], serializer_class=query.ChartComponentSerializers
+        detail=False,
+        methods=["post"],
+        serializer_class=query.ChartComponentDataSerializer,
     )
     def list_chart_data(self, request, *args, **kwargs):
-        page_id = self.validated_data["page_id"]
-        version_number = self.validated_data["version_number"]
-        page_component_id = self.validated_data["page_component_id"]
+        chart_configs = self.validated_data["chart_configs"]
         data = ChartDataHandler(
-            page_id=page_id,
             request=request,
-            version_number=version_number,
-            page_component_id=page_component_id,
-        ).analysis()
+        ).analysis(chart_configs)
         return Response(data)
 
     @swagger_auto_schema(
@@ -285,57 +275,6 @@ class TicketModelViewSet(BaseApiViewSet):
         return Response(
             {"sn": instance.sn, "id": instance.id, "ticket_url": instance.pc_ticket_url}
         )
-
-    @validate_filepath_settings
-    @validate_files_name
-    @swagger_auto_schema(
-        operation_summary="文件上传",
-    )
-    @action(detail=False, methods=["post"])
-    def upload(self, request):
-        """ """
-        token = request.POST.get("token")
-        if not token:
-            raise OpenLinkVerifyError()
-        flag = OpenLinkVerifyHandler(token).verify()
-        if not flag:
-            raise OpenLinkVerifyError("当前页面绑定的功能不存在")
-
-        root = SystemSettings.objects.get(key="SYS_FILE_PATH").value
-        file_path_root = os.path.join(root, "fields")
-
-        succeed_files = {}
-        file_list = request.FILES.getlist("field_file")
-        if request.POST.get("type") == "IMAGE":
-            [image_format_validate(image) for image in file_list]
-        for upload_file in file_list:
-            origin_name = upload_file.name
-            file_name = f"{datetime.datetime.now()}{origin_name}"  # noqa
-            file_name = hashlib.md5(file_name.encode()).hexdigest()
-
-            # 文件名重组
-            # 如果是图片
-            file_type = origin_name.split(".")[-1]
-            file_name = f"{file_name}.{file_type}"
-            if file_type.lower() in IMAGE_VALIDATE:
-                file_path = os.path.join(file_path_root, file_name)
-                succeed_files[file_name] = {
-                    "origin_name": origin_name,
-                    "file_name": file_name,
-                    "path": f"api/misc/download_file/?file_name={file_name}",
-                }
-            else:
-                file_path = os.path.join(file_path_root, file_name)
-                succeed_files[file_name] = {
-                    "origin_name": origin_name,
-                    "file_name": file_name,
-                    "path": file_path,
-                }
-            store.save(file_path, upload_file)
-
-        # 前端控件要求: PC端code必须为0，WEIXIN端code必须为OK
-        code = "OK" if "weixin" in request.path else 0
-        return Success({"succeed_files": succeed_files}, code=code).json()
 
 
 @method_decorator(login_exempt, name="dispatch")

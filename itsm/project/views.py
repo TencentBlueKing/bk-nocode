@@ -70,6 +70,15 @@ class ProjectViewSet(component_viewsets.AuthModelViewSet):
         ).delete_collection_history()
         super().perform_destroy(instance)
 
+    def list(self, request, *args, **kwargs):
+        need_page = request.query_params.get("need_page", 1)
+        if not need_page:
+            queryset = self.filter_queryset(self.get_queryset())
+            serializer = self.get_serializer(queryset, many=True)
+            serializer.context["request"] = request
+            return Response(serializer.data)
+        return super(ProjectViewSet, self).list(request, *args, **kwargs)
+
     @action(detail=False, methods=["get"])
     def all(self, request, *args, **kwargs):
         """

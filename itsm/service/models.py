@@ -456,7 +456,9 @@ class Service(ObjectManagerMixin, Model):
     def covert_crontab(self, cron_config):
         """
         cron_config: {
-            day = "1,3,5",
+            day_of_month:"*",
+            month_of_year:"*",
+            day_of_week = "1,3,5",
             time = "17:20, 18:20, 19:21"
         }
 
@@ -465,8 +467,8 @@ class Service(ObjectManagerMixin, Model):
                 "minute": 20,
                 "hour": 17, 18,
                 "day_of_week": 1,3,5,
-                "day_of_month": "*",
-                "month_of_year": "*",
+                "day_of_month": "1,3,5",
+                "month_of_year": "1,11,12",
             },
             {
                 "minute": 21,
@@ -477,8 +479,9 @@ class Service(ObjectManagerMixin, Model):
             }
         ]
         """
-
-        day_of_week = cron_config.get("day", "*")
+        day_of_week = cron_config.get("day_of_week", "*")
+        day_of_month = cron_config.get("day_of_month", "*")
+        month_of_year = cron_config.get("month_of_year", "*")
         time_list = cron_config.get("time").split(",")
         time_map = {}
 
@@ -497,8 +500,8 @@ class Service(ObjectManagerMixin, Model):
                 "minute": minute,
                 "hour": ",".join(hours),
                 "day_of_week": day_of_week,
-                "day_of_month": "*",
-                "month_of_year": "*",
+                "day_of_month": day_of_month,
+                "month_of_year": month_of_year,
             }
             cron_list.append(cron)
 

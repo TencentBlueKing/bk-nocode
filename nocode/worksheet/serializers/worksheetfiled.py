@@ -34,7 +34,7 @@ from itsm.postman.models import RemoteApi, RemoteApiInstance
 from itsm.postman.serializers import ApiInstanceSerializer
 from itsm.project.handler.project_handler import ProjectHandler
 from nocode.base.basic import check_user_owner_creator
-from nocode.base.constants import CUSTOM, FORMULA, WORKSHEET
+from nocode.base.constants import CUSTOM, FORMULA, WORKSHEET, CALCULATE_LIMIT
 from nocode.project_manager.handlers.project_white_handler import ProjectWhiteHandler
 from nocode.worksheet.handlers.worksheet_field_handler import WorkSheetFieldIndexHandler
 from nocode.worksheet.models import WorkSheetField, WorkSheet
@@ -203,6 +203,7 @@ class WorkSheetFieldItemSerializer(serializers.ModelSerializer):
     regex_config = serializers.JSONField(required=False, initial={})
     unique = serializers.BooleanField(required=False, default=False)
     type = serializers.CharField(required=True)
+    num_range = serializers.JSONField(required=False)
 
     def validated_formula(self, formula, fields_key_list):
         """
@@ -230,6 +231,14 @@ class WorkSheetFieldItemSerializer(serializers.ModelSerializer):
         if not config.get("fields") and config.get("calculate_type") == "number":
             raise serializers.ValidationError(_("计算控件需绑定数值"))
 
+        # 使用内置计算计算方法,需要两个字段
+        at_least_method = ["PRODUCT", "SUM"]
+        if (
+            config["type"] in at_least_method
+            and len(config["fields"]) <= CALCULATE_LIMIT
+        ):
+            raise serializers.ValidationError(_("使用内置求和，乘积方法需要至少绑定2个数值控件，可考虑自定义公式"))
+
         # 验证公式绑定字段类型
         num_fields_type = WorkSheetField.objects.filter(
             key__in=config.get("fields")
@@ -250,6 +259,15 @@ class WorkSheetFieldItemSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         if attrs.get("type") == FORMULA:
             self.validated_formula_config(attrs)
+
+        if attrs.get("type") in ["CHECKBOX", "MULTISELECT", "TREESELECT"]:
+            num_range = attrs.get("num_range")
+            # 如果传了num_range 但是数量等于不是两个
+            if num_range and len(num_range) != 2:
+                raise serializers.ValidationError(_("字段范围格式不正确"))
+            if num_range[0] == num_range[1]:
+                raise serializers.ValidationError(_("最小范围和最大范围不能相同"))
+
         return attrs
 
     class Meta:

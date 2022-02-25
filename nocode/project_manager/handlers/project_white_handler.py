@@ -27,7 +27,7 @@ from itsm.component.exceptions import ProjectWhiteNotFound
 from itsm.project.models import Project
 from nocode.base.constants import WORKSHEET
 from nocode.project_manager.models import ProjectWhite
-from nocode.worksheet.models import WorkSheet
+from nocode.worksheet.models import WorkSheet, WorkSheetField
 
 
 class ProjectWhiteHandler:
@@ -72,17 +72,25 @@ class ProjectWhiteHandler:
             type=WORKSHEET,
         ).values_list("value")
         # 授权应用下的表单
-        worksheets_info = WorkSheet.objects.filter(id__in=worksheet_ids).values(
+        worksheets = WorkSheet.objects.filter(id__in=worksheet_ids).values(
             "id", "name", "key", "fields"
         )
+        worksheets_info = []
+        for item in worksheets:
+            fields = WorkSheetField.objects.filter(id__in=item["fields"])
+            fields_list = []
+            for field in fields:
+                fields_list.append(field.tag_data())
+            item["fields"] = fields_list
+            worksheets_info.append(item)
         return worksheets_info
 
     def get_project_granted_by(self, project_key):
         project_key_list = self.all.filter(
             granted_project__projects__icontains=project_key, type="WORKSHEET"
         ).values_list("project_key", flat=True)
-        projects_info = self.get_projects(project_key_list).values("name", "key")
-        return projects_info
+        project_queryset = self.get_projects(project_key_list).values("key", "name")
+        return [item for item in project_queryset]
 
     def is_project_in_white_list(self, source_project_key):
         white_list = self.instance.granted_project["projects"]

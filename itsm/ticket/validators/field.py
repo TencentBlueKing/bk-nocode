@@ -179,6 +179,21 @@ def choice_validate(field, field_obj, key_value, **kwargs):
                 _("【{}】选项不匹配，请重新选择").format(field_obj.name)
             )
 
+    # 验证数量, 如果类型为Bunch，说明是提单的时候的校验
+    if isinstance(field_obj, Bunch):
+        # 如果有边界设置，则校验
+        num_range = field_obj.num_range
+        if field_obj.num_range and len(num_range) == 2:
+            value_length = len(field["value"].split(","))
+            if value_length < num_range[0]:
+                raise serializers.ValidationError(
+                    _("【{}】最少选{}个").format(field_obj.name, num_range[0])
+                )
+            if num_range[1] != 9999 and value_length > num_range[1]:
+                raise serializers.ValidationError(
+                    _("【{}】最多选{}个").format(field_obj.name, num_range[1])
+                )
+
 
 def get_choice(field_obj, key_value, **kwargs):
     if field_obj.source_type == "CUSTOM":
