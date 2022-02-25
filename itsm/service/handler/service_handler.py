@@ -101,21 +101,23 @@ class ServiceHandler:
             project.save()
 
     @classmethod
-    def filter_by_worksheet(cls, queryset, worksheet_name):
+    def filter_by_worksheet(cls, queryset, worksheet_name, project_key):
         """
         根据表单名称反向查询功能
         """
         from itsm.service.handler.worksheet_handler import WorksheetHandler
 
+        if not worksheet_name:
+            return queryset
         worksheet_list = (
             WorksheetHandler()
-            .filter(name__icontains=worksheet_name)
+            .filter(name__icontains=worksheet_name, project_key=project_key)
             .values_list("id", flat=True)
         )
         queryset_obj = queryset.none()
         for worksheet_id in worksheet_list:
-            queryset = queryset.filter(worksheet_ids__icontains=str(worksheet_id))
-            queryset_obj = queryset_obj | queryset
+            item = queryset.filter(worksheet_ids__icontains=worksheet_id)
+            queryset_obj = queryset_obj | item
         return queryset_obj
 
 

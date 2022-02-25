@@ -421,13 +421,12 @@ class ServiceViewSet(component_viewsets.AuthModelViewSet):
             "project_key", DEFAULT_PROJECT_PROJECT_KEY
         )
         worksheet_name = request.query_params.get("worksheet_name__icontains", "")
-        # 表单关联反向查询
-        if worksheet_name:
-            self.queryset = ServiceHandler.filter_by_worksheet(
-                self.get_queryset(), worksheet_name
-            )
         queryset = self.filter_queryset(
             self.get_queryset().filter(project_key=project_key)
+        )
+        # 表单关联反向查询
+        queryset = ServiceHandler.filter_by_worksheet(
+            queryset, worksheet_name, project_key
         )
         page = self.paginate_queryset(queryset)
         if page is not None:
