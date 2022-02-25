@@ -290,7 +290,8 @@ export default {
   },
   computed: {
     globalChoice() {
-      return this.$store.state.setting.configurInfo;
+      const tempObj = this.$store.state.setting.configurInfo;
+      return Object.keys(tempObj).length > 0 ? tempObj : JSON.parse(sessionStorage.getItem('globalInfo'));
     },
   },
   mounted() {
@@ -342,7 +343,7 @@ export default {
       // 统一管理新增触发器来源
       if (this.originInfoToTrigger.id) {
         // 保留整个触发器内使用的流程信息
-        const id = this.originInfoToTrigger.sender;
+        const id = this.originInfoToTrigger.source === 'workflow' ? this.originInfoToTrigger.id : this.originInfoToTrigger.sender;
         const { type } = this.originInfoToTrigger;
         const params = {
           workflow: this.originInfoToTrigger.id,
@@ -355,6 +356,7 @@ export default {
           params.state = this.originInfoToTrigger.sender;
         }
         // 获取对应来源的变量
+        console.log(id, type, params);
         await this.$store.dispatch('setting/getTriggerVariables', { id, type, params }).then((res) => {
           this.$store.commit('setting/changeTriggerVariables', res.data);
         });

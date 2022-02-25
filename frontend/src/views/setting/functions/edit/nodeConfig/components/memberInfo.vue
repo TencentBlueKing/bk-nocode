@@ -119,7 +119,8 @@ export default {
   },
   computed: {
     globalChoise() {
-      return this.$store.state.setting.configurInfo;
+      const tempObj = this.$store.state.setting.configurInfo;
+      return Object.keys(tempObj).length > 0 ? tempObj : JSON.parse(sessionStorage.getItem('globalInfo'));
     },
     ...mapState('setting', {
       triggerVariables: state => state.triggerVariables,
