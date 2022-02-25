@@ -343,7 +343,7 @@ export default {
       // 统一管理新增触发器来源
       if (this.originInfoToTrigger.id) {
         // 保留整个触发器内使用的流程信息
-        const id = this.originInfoToTrigger.source === 'workflow' ? this.originInfoToTrigger.id : this.originInfoToTrigger.sender;
+        const id = this.originInfoToTrigger.filter === 'STATE' ? this.originInfoToTrigger.sender : this.originInfoToTrigger.id ;
         const { type } = this.originInfoToTrigger;
         const params = {
           workflow: this.originInfoToTrigger.id,

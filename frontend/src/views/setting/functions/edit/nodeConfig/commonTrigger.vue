@@ -258,7 +258,7 @@ export default {
       this.originInfoToTrigger = {
         id: this.sourceId,
         signal: this.signal,
-        sender: this.node.id || this.sourceId,
+        sender: this.node.id,
         filter: this.triggerEventListFilter,
         source: this.sourceType,
         type: this.type,
