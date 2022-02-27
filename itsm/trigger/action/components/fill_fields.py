@@ -38,7 +38,9 @@ class FieldForms(BaseForm):
     发送通知的输入数据格式
     """
 
-    field_groups = JSONField(name=_("填充的字段组"))
+    field_groups = JSONField(
+        name=_("填充的字段组"), source_type="RPC", source_uri="table_fields"
+    )
 
 
 class ModifyPublicFieldComponent(BaseComponent):
