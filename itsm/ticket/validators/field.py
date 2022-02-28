@@ -24,6 +24,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 import datetime
+import json
 
 from django.utils.translation import ugettext as _
 from rest_framework import serializers
@@ -146,6 +147,9 @@ def choice_validate(field, field_obj, key_value, **kwargs):
     ]:
         return
 
+    if field_obj.source_type == "WORKSHEET":
+        return
+
     choice = get_choice(field_obj, key_value, **kwargs)
 
     if not choice:
@@ -182,7 +186,7 @@ def choice_validate(field, field_obj, key_value, **kwargs):
     # 验证数量, 如果类型为Bunch，说明是提单的时候的校验
     if isinstance(field_obj, Bunch):
         # 如果有边界设置，则校验
-        num_range = field_obj.num_range
+        num_range = json.loads(field_obj.num_range)
         if field_obj.num_range and len(num_range) == 2:
             value_length = len(field["value"].split(","))
             if value_length < num_range[0]:
