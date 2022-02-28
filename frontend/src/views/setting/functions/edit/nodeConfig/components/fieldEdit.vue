@@ -339,7 +339,8 @@ export default {
         });
         this.fieldList = res.data.map((item) => {
           const { key, name, type } = item;
-          return { key: `\${params_${key}}`, name, type };
+          return { key, name, type };
+          // return { key: `\${params_${key}}`, name, type };
         });
       } catch (e) {
         console.error(e);
