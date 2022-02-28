@@ -397,11 +397,24 @@ class WorkflowPipelineValidator(object):
             for item in self.instance.transitions.all()
             if item.condition_type == "by_field"
         ]
+        # 隐藏条件
         conditions.extend(
             [
                 {"condition": item.show_conditions, "name": item.name, "obj_type": "字段"}
                 for item in self.instance.fields.all()
                 if item.show_conditions
+            ]
+        )
+        # 必填条件
+        conditions.extend(
+            [
+                {
+                    "condition": item.mandatory_conditions,
+                    "name": item.name,
+                    "obj_type": "字段",
+                }
+                for item in self.instance.fields.all()
+                if item.mandatory_conditions
             ]
         )
 
