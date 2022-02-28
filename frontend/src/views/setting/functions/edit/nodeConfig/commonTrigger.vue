@@ -1,12 +1,15 @@
 <template>
   <div class="trigger-container">
-    <div @click="showMoreConfig = !showMoreConfig" class="more-configuration">
+    <div @click="showMoreConfig = !showMoreConfig" class="more-configuration" v-if="origin!=='workflow'">
       <i v-if="!showMoreConfig" class="bk-icon icon-right-shape"></i>
       <i v-else class="bk-icon icon-down-shape"></i>
       <span>高级配置</span>
     </div>
-    <div v-if="showMoreConfig" class="common-section-card-block">
-      <label class="common-section-card-label">
+    <div v-if="showMoreConfig"
+         :class="origin!=='workflow'?
+         'common-section-card-block'
+         :'common-section-card-node-block'">
+      <label class="common-section-card-label" v-if="origin!=='workflow'">
         触发器
       </label>
       <div class="common-section-card-body">
@@ -333,7 +336,9 @@ export default {
     margin-right: 6px;
   }
 }
-
+common-section-card-node-block {
+  background: #ffffff;
+}
 .common-section-card-block {
   margin: 24px 0;
   padding: 20px;

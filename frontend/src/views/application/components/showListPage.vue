@@ -248,7 +248,7 @@ export default {
     align-items: center;
     justify-content: center;
     border: 1px solid #c4c6cc;
-    height: 26px;
+    height: 32px;
     border-radius: 2px;
     padding: 0 15px;
     color: #63656E;

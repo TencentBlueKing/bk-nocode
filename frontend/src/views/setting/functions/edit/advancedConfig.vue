@@ -75,6 +75,17 @@
             </bk-checkbox>
           </bk-form-item>
         </div>
+        <div v-show="extendSettingOpen" class="form-section trigger-section">
+          <h4>触发器
+            <span v-bk-tooltips.top-start="'满足触发条件后要完成的特定动作'" class="top-start">
+            <i class="bk-icon icon-info-circle-shape"></i>
+            </span>
+          </h4>
+          <common-trigger
+            :origin="'workflow'"
+            :source-id="funcData.id">
+          </common-trigger>
+        </div>
       </bk-form>
     </div>
     <div class="action-wrapper">
@@ -94,9 +105,12 @@
 </template>
 <script>
 import cloneDeep from 'lodash.clonedeep';
-
+import commonTrigger from './nodeConfig/commonTrigger.vue';
 export default {
   name: 'AdvancedConfig',
+  components: {
+    commonTrigger,
+  },
   props: {
     appId: {
       type: String,
@@ -244,12 +258,22 @@ export default {
       color: #63656e;
     }
 
+    & > h5 {
+      margin: 0 0 16px;
+      height: 22px;
+      line-height: 22px;
+      font-size: 12px;
+      color: #979ba5;
+    }
     .half-row-form {
       display: inline-block;
       width: 49%;
     }
   }
 
+  .trigger-section{
+    margin: 24px auto;
+  }
   .extend-setting-btn {
     margin: 24px auto 0;
     width: 600px;

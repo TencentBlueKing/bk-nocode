@@ -251,7 +251,6 @@ import ConfigDefaultValue from './configDefaultValue.vue';
 import DataSourceDialog from './dataSourceDialog.vue';
 import NumberRuleDialog from './numberRuleDialog.vue';
 import configFormulaDialog from './configFormulaDialog.vue';
-import { formatTimer } from '@/utils/util.js';
 export default {
   name: 'FieldEdit',
   components: {
@@ -381,9 +380,6 @@ export default {
     value(val, oldVal) {
       this.fieldData = cloneDeep(val);
       this.defaultData = this.getDefaultData();
-      if (val.type === 'FORMULA' && val.meta.config.calculate_type === 'date') {
-        // this.setDefaultDate(val);
-      }
       if (val.type !== oldVal.type) {
         this.getRegexList();
       }
@@ -524,12 +520,12 @@ export default {
     handleChangeType(val) {
       if (val === 'date') {
         this.fieldData.meta.config.type = 'custom';
+      } else {
+        this.fieldData.meta.config.type = '';
       }
       this.change();
     },
     setDefaultDate(val) {
-      // console.log(this.isDate(val.meta.config.start_time));
-      // debugger;
       if (this.isDate(val.meta.config.start_time)) {
         this.startTime = 'custom';
         this.datePickerIsShow.startTimeIsshow = true;
@@ -552,11 +548,9 @@ export default {
       } else if (type === 'end' && val === 'custom') {
         this.datePickerIsShow.endTimeIshow = true;
       } else if (type === 'start') {
-        console.log(val);
         this.datePickerIsShow.startTimeIsshow = false;
         this.fieldData.meta.config.start_time = val;
       } else if (type === 'end') {
-        console.log(val);
         this.datePickerIsShow.endTimeIshow = false;
         this.fieldData.meta.config.end_time = val;
       }

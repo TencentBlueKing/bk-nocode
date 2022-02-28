@@ -218,13 +218,13 @@ export const CALCULATION_FORMULA = [
   { key: 'CUSTOM', name: '自定义' },
   { key: 'AVERAGE', name: '平均值' },
   { key: 'PRODUCT', name: '乘积' },
-  { key: 'COUNT', name: '求和' },
+  { key: 'COUNT', name: '计数' },
   { key: 'MEDIAN', name: '中位數' },
   { key: 'ARGMAX', name: '众数' },
 ];
 // 开始/结束 日期系统默认数据源
 export const DEAFAULT_TIME = [
-  { key: 'creat_at', name: '创建日期' },
+  { key: 'create_at', name: '创建日期' },
   { key: 'update_at', name: '最近更新日期' },
   { key: 'custom', name: '指定日期' },
 ];
