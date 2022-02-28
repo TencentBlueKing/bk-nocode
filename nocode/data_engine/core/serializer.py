@@ -69,7 +69,11 @@ class ChoiceGenerator(BaseGenerator):
     serializer_field_class = serializers.ChoiceField
 
     def _build_serializer_params(self):
-        params = {"choices": self._build_choice_params()}
+        params = {}
+        if self.filed["source_type"] == "CUSTOM":
+            params["choices"] = self._build_choice_params()
+        else:
+            self.serializer_field_class = serializers.CharField
         if self.filed["validate_type"] == "OPTION":
             params["required"] = False
             params["allow_blank"] = True
