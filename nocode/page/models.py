@@ -35,12 +35,12 @@ from nocode.base.constants import (
     LEN_MIDDLE,
     LEN_NORMAL,
     LEN_X_LONG,
-    LAYOUT_CHOICES,
     EMPTY_LIST,
     EMPTY_STRING,
     DEFAULT_PROJECT_PROJECT_KEY,
     FIRST_ORDER,
     DISPLAY_CHOICES,
+    EMPTY_DICT,
 )
 
 
@@ -140,12 +140,7 @@ class PageComponent(Model):
         verbose_name=_("表单组件/列表组件/功能卡片"), choices=TYPE_CHOICES, max_length=LEN_SHORT
     )
     value = models.CharField(verbose_name=_("组件绑定的值"), max_length=LEN_X_LONG)
-    layout = models.CharField(
-        verbose_name=_("字段布局"),
-        max_length=LEN_SHORT,
-        choices=LAYOUT_CHOICES,
-        default="COL_6",
-    )
+    layout = models.JSONField(verbose_name=_("组件布局"), default=EMPTY_DICT)
     config = jsonfield.JSONField(verbose_name=_("页面配置"))
     page_id = models.IntegerField(verbose_name=_("页面id"))
 
