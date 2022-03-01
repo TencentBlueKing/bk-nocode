@@ -286,6 +286,8 @@ class TemplateFieldSerializer(AuthModelSerializer):
         validated_data = super(TemplateFieldSerializer, self).run_validation(data)
         if validated_data["source_type"] == "API":
             self.to_api_internal_value(validated_data)
+        if validated_data["source_type"] == "WORKSHEET":
+            validated_data.pop("api_info", None)
         return validated_data
 
     def update_public_field_auth_actions(self, instance, data):
