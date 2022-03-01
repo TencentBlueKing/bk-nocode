@@ -93,8 +93,8 @@
                 @selected="((val) => handleCurrentFieldsSelect(item,val))">
                 <bk-option
                   v-for="option in currentSheetFields"
-                  :key="option.id"
-                  :id="option.id"
+                  :key="option.key"
+                  :id="option.key"
                   :name="option.name">
                 </bk-option>
               </bk-select>
@@ -116,7 +116,7 @@
                 :loading="SheetFieldsLoading"
                 @selected="handleSelect">
                 <bk-option
-                  v-for="option in item.relationCurrentSheet" :key="option.id" :id="option.id"
+                  v-for="option in fieldList" :key="option.key" :id="option.key"
                   :name="option.name">
                 </bk-option>
               </bk-select>
@@ -141,11 +141,21 @@
             <span>则默认值为</span>
             <div class="default-com">
               <component
+                v-if="formData.container===1"
                 :is="defaultValueFieldComp"
                 :field="field"
                 :value="formData.value"
                 @change="handleDefaultValueChange">
               </component>
+              <bk-select
+                v-else
+                v-model="formData.value"
+                :searchable="true"
+                @selected="handleSelect">
+                <bk-option
+                  v-for="option in currentSheetFields" :key="option.key" :id="option.key" :name="option.name">
+                </bk-option>
+              </bk-select>
             </div>
             <span>的值</span>
           </div>
@@ -201,6 +211,10 @@ export default {
     disabled: {
       type: Boolean,
       default: false,
+    },
+    fieldList: {
+      type: Array,
+      default: () => ([]),
     },
   },
   data() {
@@ -358,7 +372,8 @@ export default {
       this.$emit('change', cloneDeep(val));
     },
     handleCurrentFieldsSelect(item, val) {
-      const { type } = this.currentSheetFields.find(el => el.id === val);
+      console.log(this.currentSheetFields.find(el => el.key === val));
+      const { type } = this.currentSheetFields.find(el => el.key === val);
       if (item.type === 'variable') {
         item.relationCurrentSheet = this.currentSheetFields
           .filter(field => field.type === type && field.id !== item.id);
@@ -388,7 +403,7 @@ export default {
         });
         return;
       }
-      const { type } = this.currentSheetFields.find(el => el.id === item.id);
+      const { type } = this.currentSheetFields.find(el => el.key === item.id);
       if (val === 'variable') {
         item.relationCurrentSheet = this.currentSheetFields
           .filter(field => field.type === type && field.id !== item.id);

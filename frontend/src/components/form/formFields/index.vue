@@ -41,8 +41,11 @@ export default {
     fields() {
       this.localValue = this.getFieldsValue();
     },
-    value() {
-      this.localValue = this.getFieldsValue();
+    value: {
+      handler() {
+        this.localValue = this.getFieldsValue();
+      },
+      deep: true,
     },
   },
   methods: {
@@ -64,7 +67,7 @@ export default {
     },
     handleChange(key, value) {
       this.localValue[key] = value;
-      this.$emit('change', cloneDeep(this.localValue));
+      this.$emit('change', key, cloneDeep(this.localValue));
     },
   },
 };

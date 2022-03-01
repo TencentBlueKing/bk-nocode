@@ -126,6 +126,7 @@
         <config-default-value
           :key="fieldData.type"
           :field="defaultData"
+          :field-list="list"
           :value="fieldData.meta.data_config"
           @confirm="handleSetDefaultValue"
           @changeFixedValue="handleDefaultValChange">
