@@ -109,7 +109,6 @@ class DataInstanceViewSet(BaseApiViewSet):
             return Response()
         data_config_bytes = settings.REDIS_INST.get(token)
         data_config = json.loads(data_config_bytes)
-        settings.REDIS_INST.delete(token)
 
         conditions = self.validated_data.get("conditions", {})
         worksheet_id = data_config["target"]["worksheet_id"]
