@@ -3,7 +3,7 @@
     <div v-if="!showSuccess" class="form-fields-content">
       <template v-if="!fieldListLoading">
         <template v-if="fieldList.length > 0">
-          <form-fields style="width: 760px" :fields="fieldList" :value="formValue" @change="formValue = $event">
+          <form-fields style="width: 760px" :fields="fieldList" :value="formValue" @change="debounceChange">
           </form-fields>
           <div class="btn-actions">
             <bk-button
@@ -45,7 +45,8 @@
         <div class="icon-wrapper" v-if="ticketStatus === 'FAILED'">
           <i class="bk-icon icon-close-circle error-icon"></i>
           <p>
-            提交失败,<bk-button theme="primary" @click="goToDetail" text class="detail-btn">查看流程详情</bk-button>
+            提交失败,
+            <bk-button theme="primary" @click="goToDetail" text class="detail-btn">查看流程详情</bk-button>
           </p>
         </div>
       </div>
@@ -58,6 +59,7 @@ import permission from '@/components/permission/mixins.js';
 import { FIELDS_TYPES } from '@/constants/forms.js';
 import FormFields from '@/components/form/formFields/index.vue';
 import CreateTicketSuccess from './createTicketSuccess.vue';
+import { debounce } from '@/utils/util';
 
 export default {
   name: 'CreateTicket',
@@ -121,6 +123,7 @@ export default {
       this.getFieldList();
       this.getBuiltInService();
     }
+    this.debounceChange = debounce(this.handleChangeFormValue, 600);
   },
   methods: {
     async getFieldList() {
@@ -248,6 +251,102 @@ export default {
     goToDetail() {
       this.$router.push({ name: 'processDetail', params: { id: this.ticketId } });
     },
+    async handleChangeFormValue(key, $event) {
+      this.formValue = $event;
+      // this.fieldList.forEach(async  (item) => {
+      const item = this.fieldList;
+      for (let i = 0 ;i < item.length;i++) {
+        if (item[i].meta.data_config) {
+          const { type, conditions, value } = item[i].meta.data_config;
+          // 判断变化的字段是不是被联动的字段
+          const isRelationFields = conditions.map(condition => `${item[i].meta.worksheet.key}_${condition.id}`).includes(key);
+          // 当前表单
+          let isConditonFlag;
+          if (type === 1 && isRelationFields) {
+            isConditonFlag = conditions.every((condition) => {
+              const tempkey = `${item[i].meta.worksheet.key}_${condition.id}`;
+              if (condition.type === 'variable') {
+                return $event[tempkey] === $event[`${item[i].meta.worksheet.key}_${condition.relationCurrentValue}`];
+              }
+              return $event[tempkey] === condition.relationCurrentValue;
+            });
+            isConditonFlag ? this.formValue[item[i].key] = value : this.formValue[item[i].key] = '';
+          } else if (type === 2 || type === 3) {
+            let res;
+            // let tempOtherkey;
+            // 当前应用其他表单
+            // isConditonFlag = conditions.every(async (condition) => {
+            //   // 来源表单字段
+            //   // tempOtherkey = `${item.meta.worksheet.key}_${condition.id}`;
+            //   const  field = condition.id;
+            //   if (condition.type === 'variable') {
+            //     // 当前表单字段
+            //     const curKey = `${item.meta.worksheet.key}_${condition.relationCurrentValue}`;
+            //     const params = this.getConditionParams({ key: field, value: $event[curKey],
+            //       token: item.token, fields: [item.meta.data_config.value] });
+            //     try {
+            //       res = await this.$store.dispatch('setting/getWorksheetData', params);
+            //       console.log(3);
+            //       return res.data && res.data.length > 0;
+            //     } catch (e) {
+            //       console.error(e);
+            //     }
+            //     console.log(res);
+            //   }
+            // });
+            let validateFlag;
+            for (let j = 0; j < conditions.length;j++) {
+              const field = conditions[j].id;
+              // 当前表单字段
+              const curKey = `${item[i].meta.worksheet.key}_${conditions[j].relationCurrentValue}`;
+              console.log(conditions[j].type);
+              const params = this.getConditionParams({
+                key: field,
+                value: conditions[j].type === 'variable' ? $event[curKey] : conditions[j].relationCurrentValue,
+                token: item[i].token, fields: [item[i].meta.data_config.value],
+              });
+              console.log(params);
+              try {
+                res = await this.$store.dispatch('setting/getWorksheetData', params);
+                if (res.data && res.data.length > 0) {
+                  validateFlag = true;
+                } else {
+                  validateFlag = false;
+                  break;
+                }
+              } catch (e) {
+                console.error(e);
+              }
+            }
+            validateFlag
+              ? this.$set(this.formValue, item[i].key, res.data[0][item[i].meta.data_config.value])
+              : this.$set(this.formValue, item[i].key, '');
+          } else {
+            // 其他应用开放表单
+          }
+        }
+      }
+      // });
+    },
+    getConditionParams(info) {
+      const   { key, value, token, fields } = info;
+      const params = {
+        token,
+        fields,
+        conditions: {
+          connector: 'and',
+          expressions: [
+            {
+              key,
+              value,
+              type: 'const',
+              condition: '==',
+            },
+          ],
+        },
+      };
+      return params;
+    },
   },
 };
 </script>
@@ -264,6 +363,7 @@ export default {
 
 .btn-actions {
   margin-top: 40px;
+
   .submit-btn {
     margin-right: 4px;
   }
@@ -278,9 +378,11 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+
   .detail-btn {
     font-size: 16px;
   }
+
   & > i {
     font-size: 56px;
     color: #2dcb56;

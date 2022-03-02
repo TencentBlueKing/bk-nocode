@@ -1,6 +1,6 @@
 /* eslint-disable */
 import cloneDeepWith from 'lodash/cloneDeepWith';
-import { checkDataType } from './getDataType';
+import {checkDataType} from './getDataType';
 
 export function deepClone(obj) {
   return cloneDeepWith(obj);
@@ -22,10 +22,11 @@ export function convertTimeArrToMS(tArr = [0, 0, 0, 0, 0, 0]) {
   }, 0);
 }
 
-export  function unique(arr) {
+export function unique(arr) {
   const res = new Map();
   return arr.filter((arr) => !res.has(arr.id) && res.set(arr.id, 1))
 }
+
 /**
  * 时间数组实例化成 x年 x月 x日 x时 x分 x秒
  * @param {*} tArr 时间数组 [年，月，日，时，分，秒]
@@ -94,12 +95,13 @@ export function isEmpty(val) {
   }
   return isValid;
 }
+
 /**
  *
  *  @param {Object} queryObject - 对象形式得参数
  *  @return {String} str - 转换后的字符串
  */
-export function getQuery (queryObject) {
+export function getQuery(queryObject) {
   const query = Object.entries(queryObject)
     .reduce((result, entry) => {
       result.push(entry.join('='))
@@ -108,7 +110,7 @@ export function getQuery (queryObject) {
   return `?${query}`
 }
 
-export function  formatTimer(value) {
+export function formatTimer(value) {
   const date = new Date(value);
   const y = date.getFullYear();
   let MM = date.getMonth() + 1;
@@ -127,7 +129,7 @@ export function  formatTimer(value) {
 /**
  * 匹配 html 字符串中 a 标签是否有 target 属性，没有则加上 target="_blank"
  */
-export function appendTargetAttrToHtml (html) {
+export function appendTargetAttrToHtml(html) {
   return html.replace(/\<a (.*?)\>/g, matchStr => {
     const targetReg = /target\=[\'\"](.*?)[\'\"]/g
     const hasTargetAttr = targetReg.test(matchStr)
@@ -135,4 +137,19 @@ export function appendTargetAttrToHtml (html) {
       ? matchStr
       : matchStr.replace(/.$/, ' target="_blank">')
   })
+}
+
+// 防抖函数
+export function debounce(fn, delay=300) {
+  let timer = null
+  return function () {
+    if (timer !== null) {
+      clearTimeout(timer)
+    }
+    let _this = this
+    let args = arguments
+    timer = setTimeout(() => {
+      fn.apply(_this,args)
+    }, delay)
+  }
 }
