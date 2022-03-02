@@ -121,7 +121,7 @@
               <span v-else>{{ row[field.key] | formatData }}</span>
             </template>
           </bk-table-column>
-          <bk-table-column label="操作" width="200" fixed="right">
+          <bk-table-column label="操作" width="200" fixed="right" v-if="config.optionList.length>0">
             <template slot-scope="{ row }">
               <bk-button
                 v-for="(btn, index) in config.optionList.slice(0, 3)"
@@ -177,12 +177,12 @@
       <div slot="header">{{ slideTitle }}</div>
       <div slot="content" v-bkloading="{ isLoading: editorLoading }">
         <item-from :field-list="showFiled" v-if="!isEditor &&showFiled.length!==0" />
-        <editor-form
+        <edit console.log($event);or-form
           :fields="editorList"
           @change="handleChange"
           v-if="isEditor && editorList.length !== 0"
           :value="editorValue"></editor-form>
-      </div>
+      </edit></div>
       <div slot="footer" v-if="isEditor" class="king-slider-footer">
         <bk-button theme="primary" @click="submit" :loading="submitPending"> 确定</bk-button>
         <bk-button theme="default" @click="handleClose" style="margin-left: 8px">取消</bk-button>
@@ -255,7 +255,7 @@ import editorForm from './editorForm.vue';
 import showSearchInfo from './showSearchInfo.vue';
 import permission from '@/components/permission/mixins.js';
 import { SYS_FIELD } from '@/constants/sysField.js';
-import {  formatTimer } from '../../../utils/util';
+import { formatTimer } from '../../../utils/util';
 import CreateTicketSuccess from './createTicketSuccess.vue';
 import customTable from '@/components/form/formFields/fields/table.vue';
 import SearchTag from './searchTag.vue';
@@ -346,6 +346,8 @@ export default {
       selectionFields: [],
       fields: [],
       fieldList: [],
+      // 编辑和详情需要的全部字段
+      editFiledsList: [],
       fieldListLoading: false,
       isDropdownShow: false,
       btnValue: '',
@@ -379,7 +381,8 @@ export default {
               } else if (Array.isArray(this.searchFormData[key])) {
                 if (!this.searchFormData[key].length > 0) {
                   return;
-                };
+                }
+                ;
                 const tempName = this.searchFormData[key].map(it => el.choice.find(ele => it === ele.key).name);
                 searchArr.push({
                   name: el.name,
@@ -396,7 +399,8 @@ export default {
               } else {
                 if (!this.searchFormData[key]) {
                   return;
-                };
+                }
+                ;
                 searchArr.push({ name: el.name, value: this.searchFormData[key], key });
               }
             }
@@ -464,12 +468,12 @@ export default {
                 : tempArr.push({ key, value: formatTimer(el), type: 'const', condition: '<=' });
             }
           });
-        //  多选下拉框以及checkbox
+          //  多选下拉框以及checkbox
         } else if (Array.isArray(item[key])) {
           if (item[key].length > 0) {
             tempArr.push({ key, value: item[key].toString(), type: 'const', condition: '==' });
           }
-        //  数字类型
+          //  数字类型
         } else if (tempIntType.includes(key)) {
           if (item[key].length > 0) {
             tempArr.push({ key, value: Number(item[key]), type: 'const', condition: '==' });
@@ -539,6 +543,7 @@ export default {
         const result = await this.$store.dispatch('application/getWorksheetFiledConfig', params);
         this.fieldList = result.data.filter(item => fields.indexOf(item.id) !== -1);
         this.fieldList.push(...tempSysfiledList);
+        this.editFiledsList = [...result.data, ...tempSysfiledList];
         this.fields = this.transFiledByOrder(result.data);
         this.selectionFields = cloneDeep(this.fieldList);
       } catch (e) {
@@ -626,7 +631,7 @@ export default {
         const res = await this.$store.dispatch('application/getDetail', params);
         const resData = res.data[0];
         const showFiled = [];
-        this.fieldList.forEach((item) => {
+        this.editFiledsList.forEach((item) => {
           if (typeof (resData[item.key]) !== 'undefined') {
             if (['IMAGE'].includes(item.type)) {
               const arr = (new Function(`return( ${resData[item.key]} );`))();
@@ -644,6 +649,20 @@ export default {
         console.log(e);
       } finally {
         this.editorLoading = false;
+      }
+    },
+    // 获取当前某行数据的全部值
+    async getTotalValue(value, row) {
+      const params = {
+        pk: row.id,
+        service_id: value,
+        worksheet_id: this.formId,
+      };
+      try {
+        const res = await this.$store.dispatch('application/getDetail', params);
+        return res.data[0];
+      } catch (e) {
+        console.warn(e);
       }
     },
     handleClick(btn, row = {}, actionType) {
@@ -759,19 +778,20 @@ export default {
       this.sidesliderIsShow = true;
       this.editorLoading = true;
       const value = {};
+      const editorValue = await this.getTotalValue(id, row);
       const editorData = await this.getSheetPage(id);
-      const  tempEditData = [];
-      const  tempKeyList = this.fieldList.map(item => item.key);
+      const tempEditData = [];
+      const tempKeyList = this.editFiledsList.map(item => item.key);
       editorData.forEach((item) => {
         if (item.meta.worksheet) {
-          for (const i in row) {
+          for (const i in editorValue) {
             if (item.meta.worksheet.field_key === i) {
-              item.value = row[i];
+              item.value = editorValue[i];
               if (['MULTISELECT', 'CHECKBOX', 'MEMBER', 'MEMBERS'].includes(item.type)) {
                 // 以上接受一个数组 给的是字符串
-                value[item.key] = (row[i] && row[i].split(',')) || [];
+                value[item.key] = (editorValue[i] && editorValue[i].split(',')) || [];
               } else {
-                value[item.key] = row[i] || '';
+                value[item.key] = editorValue[i] || '';
               }
             }
           }
@@ -850,7 +870,9 @@ export default {
     transformFields(field, row) {
       let showValue = '';
       if (['SELECT', 'RADIO', 'CHECKBOX', 'INPUTSELECT', 'MULTISELECT'].includes(field.type)) {
-        if (['CHECKBOX', 'MULTISELECT'].includes(field.type)) {
+        if (['API', 'WORKSHEET'].includes(field.source_type)) {
+          showValue = row[field.key];
+        } else if (['CHECKBOX', 'MULTISELECT'].includes(field.type)) {
           const tempArr = [];
           field.choice.forEach((item) => {
             if (row[field.key] && Array.isArray(row[field.key].split(','))) {
@@ -1176,10 +1198,15 @@ export default {
 }
 
 .custom-form {
+  @mixin scroller;
+  height: 500px;
+  overflow: auto;
+
   /deep/ .bk-form-content {
+    @mixin scroller;
     font-size: 14px;
     color: #63656e;
-    overflow: hidden;
+    overflow: auto;
   }
 }
 

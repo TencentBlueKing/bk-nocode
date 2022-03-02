@@ -145,6 +145,13 @@
       </collapse-transition>
     </div>
     <ticket-trigger-dialog ref="triggerDialog" @init-info="successFn"></ticket-trigger-dialog>
+    <node-deal-dialog
+      :node-info="nodeInfo"
+      :submitting="submitting"
+      :open-form-info="openFormInfo"
+      :all-groups="allGroups"
+      :ticket-info="ticketInfo"
+      @submitFormAjax="submitFormAjax"></node-deal-dialog>
   </div>
 </template>
 
@@ -156,6 +163,7 @@ import commonMix from '@/commonMix/common.js';
 import ticketTriggerDialog from './ticketTriggerDialog.vue';
 import { errorHandler } from '@/utils/errorHandler.js';
 import { convertTimeArrToMS, convertTimeArrToString, convertMStoString } from '@/utils/util.js';
+import nodeDealDialog from './nodeDealDialog.vue';
 
 export default {
   name: 'NodeDetailItem',
@@ -164,6 +172,7 @@ export default {
     fieldInfo,
     collapseTransition,
     ticketTriggerDialog,
+    nodeDealDialog,
   },
   inject: ['getNodeList'],
   mixins: [commonMix],
