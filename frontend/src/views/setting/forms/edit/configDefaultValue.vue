@@ -113,8 +113,7 @@
                 v-model="item.relationCurrentValue"
                 :disabled="item.type!=='variable'"
                 :searchable="true"
-                :loading="SheetFieldsLoading"
-                @selected="handleSelect">
+                :loading="SheetFieldsLoading">
                 <bk-option
                   v-for="option in fieldList" :key="option.key" :id="option.key"
                   :name="option.name">
@@ -282,7 +281,6 @@ export default {
   },
   methods: {
     async initData(localValue) {
-      console.log(localValue);
       if (Object.keys(localValue).length !== 0) {
         const { value, type, conditions, changeFields } = localValue;
         this.defaultValue = 'linkageRules';
@@ -372,7 +370,6 @@ export default {
       this.$emit('change', cloneDeep(val));
     },
     handleCurrentFieldsSelect(item, val) {
-      console.log(this.currentSheetFields.find(el => el.key === val));
       const { type } = this.currentSheetFields.find(el => el.key === val);
       if (item.type === 'variable') {
         item.relationCurrentSheet = this.currentSheetFields
@@ -412,6 +409,7 @@ export default {
       }
     },
     handleDefaultValChange(val) {
+      console.log(val);
       this.$emit('changeFixedValue', val);
     },
     handleAddLinkAgeRules() {

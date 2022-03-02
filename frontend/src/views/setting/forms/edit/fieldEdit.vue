@@ -129,6 +129,7 @@
           :field-list="list"
           :value="fieldData.meta.data_config"
           @confirm="handleSetDefaultValue"
+          @change="handleSelectType"
           @changeFixedValue="handleDefaultValChange">
         </config-default-value>
       </bk-form-item>
@@ -575,6 +576,9 @@ export default {
     },
     change() {
       this.$emit('change', this.fieldData);
+    },
+    handleSelectType() {
+      this.fieldData.meta = {};
     },
   },
 };
