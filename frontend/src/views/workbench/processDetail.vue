@@ -10,14 +10,6 @@
         icon="refresh">
         刷新
       </bk-button>
-      <bk-button
-        :theme="'default'"
-        type="submit"
-        :title="'基础按钮'"
-        @click="handleTransTicket"
-        class="trans-btn">
-        转派
-      </bk-button>
       <div class="detail-page-content">
         <div class="process-container">
           <div class="tool-panel-container" v-if="active==='processPreview'">
@@ -79,21 +71,6 @@
           </bk-button>
         </div>
       </bk-dialog>
-      <bk-dialog
-        v-model="transDialog.visible"
-        :loading="transDialog.loading"
-        :width="transDialog.width"
-        render-directive="if"
-        header-position="left"
-        @confirm="onConfirm"
-        @cancel="onCancel"
-        title="处理人转派">
-        <bk-form :model="formData" form-type="vertical" ref="transPerson">
-          <bk-form-item label="转派人" :required="true" :property="'name'" :rules="rules.name" error-display-type="normal">
-            <member-select v-model="formData.name" placeholder="请输入转派人"></member-select>
-          </bk-form-item>
-        </bk-form>
-      </bk-dialog>
     </page-wrapper>
   </section>
 </template>
@@ -137,11 +114,6 @@ export default {
         { name: 'flowLog', label: '流转日志', count: 20 },
         { name: 'trigger', label: '触发器记录', count: 30 },
       ],
-      transDialog: {
-        visible: false,
-        loading: false,
-        width: '640',
-      },
       formData: {
         name: [],
       },
