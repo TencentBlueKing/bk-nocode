@@ -31,6 +31,7 @@ from rest_framework.response import Response
 
 from itsm.component.utils.misc import JsonEncoder
 from itsm.project.handler.project_handler import ProjectHandler
+from itsm.project.serializers import ProjectSerializer
 from nocode.base.base_viewset import BaseApiViewSet
 from nocode.project_manager.handlers.operate_handler import OperateLogHandler
 from nocode.project_manager.handlers.project_export_handler import ProjectExportHandler
@@ -139,6 +140,12 @@ class ProjectManagerViewSet(BaseApiViewSet):
     )
     @action(detail=False, methods=["post"])
     def import_project(self, request, *args, **kwargs):
+        project_data = request.data
+        project_serializer = ProjectSerializer(
+            data=project_data, context={"request": request}
+        )
+        project_serializer.is_valid(raise_exception=True)
+
         data = json.loads(request.FILES.get("file").read())
-        ProjectImportHandler(data, request).import_project()
+        ProjectImportHandler(data, request).import_project(project_serializer)
         return Response()
