@@ -366,11 +366,17 @@ class ServiceMigrate(object):
                     "worksheet": {
                         "id": self.worksheet.id,
                         "key": self.worksheet.key,
+                        "name": self.worksheet.name,
                         "field_key": field.key,
                     }
                 }
             )
             if key in add_fields:
+                # 默认规则
+                is_readonly = False
+                if meta.get("data_config"):
+                    if not meta.get("data_config")["changeFields"]:
+                        is_readonly = True
                 fields.append(
                     Field(
                         type=field.type,
@@ -389,6 +395,7 @@ class ServiceMigrate(object):
                         meta=meta,
                         regex=field.regex,
                         tips=field.tips,
+                        is_readonly=is_readonly,
                     )
                 )
         Field.objects.bulk_create(fields)
@@ -402,6 +409,7 @@ class ServiceMigrate(object):
                 {
                     "worksheet": {
                         "id": self.worksheet.id,
+                        "name": self.worksheet.name,
                         "key": self.worksheet.key,
                         "field_key": field.key,
                     }
@@ -415,6 +423,10 @@ class ServiceMigrate(object):
                     # 字段更新进行迁移时，跳过无需迁移控件
                     if ignore_fields_type(field.type):
                         continue
+                    is_readonly = False
+                    if meta.get("data_config"):
+                        if not meta.get("data_config")["changeFields"]:
+                            is_readonly = True
                     workflow_filed.type = field.type
                     workflow_filed.name = field.name
                     workflow_filed.layout = field.layout
@@ -428,6 +440,7 @@ class ServiceMigrate(object):
                     workflow_filed.meta = meta
                     workflow_filed.tips = field.tips
                     workflow_filed.num_range = field.num_range
+                    workflow_filed.is_readonly = is_readonly
                     workflow_filed.save()
 
     def drop_fields(self, drop_fields):
