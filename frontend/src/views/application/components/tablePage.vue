@@ -115,7 +115,8 @@
                 点击跳转
               </bk-button>
               <span v-else-if=" ['create_at','update_at'].includes(field.id)">{{ row[field.key] | formatTimer }}</span>
-              <span v-else-if="['SELECT', 'RADIO','CHECKBOX', 'INPUTSELECT', 'MULTISELECT'].includes(field.type)">
+              <span
+                v-else-if="['SELECT', 'RADIO','CHECKBOX', 'INPUTSELECT', 'MULTISELECT','FORMULA'].includes(field.type)">
                 {{ transformFields(field, row) }}</span
               >
               <span v-else>{{ row[field.key] | formatData }}</span>
@@ -177,12 +178,12 @@
       <div slot="header">{{ slideTitle }}</div>
       <div slot="content" v-bkloading="{ isLoading: editorLoading }">
         <item-from :field-list="showFiled" v-if="!isEditor &&showFiled.length!==0" />
-        <edit console.log($event);or-form
+        <editor-form
           :fields="editorList"
           @change="handleChange"
           v-if="isEditor && editorList.length !== 0"
           :value="editorValue"></editor-form>
-      </edit></div>
+      </div>
       <div slot="footer" v-if="isEditor" class="king-slider-footer">
         <bk-button theme="primary" @click="submit" :loading="submitPending"> 确定</bk-button>
         <bk-button theme="default" @click="handleClose" style="margin-left: 8px">取消</bk-button>
@@ -892,7 +893,52 @@ export default {
           });
         }
       }
+      if (field.type === 'FORMULA' && field.meta.config && field.meta.config.calculate_type === 'date') {
+        const { accuracy, can_format, can_affix, default_time } = field.meta.config;
+        const timeStampArr = row[field.key].split(' - ').map(item => new Date(item || '2022-03-03 23:11:29.818567').getTime());
+        const timeStamp = timeStampArr[0] - timeStampArr[1] ;
+        //	时间精确度
+        if (accuracy) {
+          if (timeStamp < 0) {
+            showValue = '当前时间为负数，请检查是否设置前缀自适应';
+          } else if (accuracy === 'hour') {
+            showValue = this.$dayjs(timeStamp).format('DD天 HH');
+          } else if (accuracy === 'minute') {
+            showValue = this.$dayjs(timeStamp).format('DD天 HH:mm');
+          } else if (accuracy === 'day') {
+            showValue = this.$dayjs(timeStamp).format('DD天');
+          }
+        } else {
+          showValue = default_time;
+        }
+        // 是否前缀自适应
+        if (can_affix && accuracy) {
+          if (timeStamp < 0) {
+            const abSoluteValue = Math.abs(timeStamp);
+            showValue = this.formatDay(abSoluteValue);
+          } else {
+            showValue = this.formatDay(timeStamp);
+          }
+        }
+        //	是否格式自适应
+        if (can_format && accuracy) {
+          showValue = timeStamp > 0 ? `已经${this.formatDay(timeStamp)}` : `还有${this.formatDay(Math.abs(timeStamp))}`;
+        }
+        // console.log(timeStamp, field);
+      }
       return showValue || '--';
+    },
+
+    formatDay(abSoluteValue) {
+      let totalYear;
+      let totalDay;
+      let totalMonth;
+      const day = Math.floor(abSoluteValue / 1000 /  60 / 60 / 24) ;
+      console.log(day);
+      totalYear =  Math.floor(day / 365);
+      totalMonth =  Math.floor((day % 365) / 30);
+      totalDay = day - (365 * totalYear) - (30 * totalMonth);
+      return `${totalYear > 0 ? `${totalYear}年` : ''}${totalMonth > 0 ? `${totalMonth}月` : ''}${totalDay > 0 ? `${totalDay}天` : ''}`;
     },
     handleSelect(selection) {
       this.selection = selection;
