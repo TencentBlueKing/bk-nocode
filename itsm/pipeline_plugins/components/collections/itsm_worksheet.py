@@ -385,9 +385,9 @@ class DataProcessingService(Service):
             error_message = "DataProcessingService exit with err: {}"
             logger.info(error_message.format(log_data.get("err")))
             # 终止单据
-            ticket.terminate(
+            ticket.failed(
                 state_id=state_id,
-                terminate_message=error_message.format(log_data.get("err")),
+                failed_message=error_message.format(log_data.get("err")),
             )
             return False
         logger.info("DataProcessingService exit without err")

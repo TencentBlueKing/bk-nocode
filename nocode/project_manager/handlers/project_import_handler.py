@@ -24,13 +24,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 import random
 import string
-from datetime import datetime
 
 from common.log import logger
-from itsm.component.constants import OPERATE_CATALOG
-from itsm.project.handler.permit_engine_handler import PermitInitManagerDispatcher
-from itsm.project.handler.project_handler import PageModelHandler, ProjectHandler
-from itsm.project.models import Project, ProjectConfig
+from itsm.project.models import ProjectConfig
 from itsm.service.handler.service_handler import ServiceCatalogHandler
 from itsm.service.models import Service
 from itsm.workflow.models import Workflow
@@ -59,28 +55,16 @@ class ProjectImportHandler:
         num = string.ascii_letters
         return "".join(random.sample(num, 10))
 
-    def create_project(self, project_data):
+    def create_project(self, project_serializer):
+        project_data = project_serializer.validated_data
+        project_data["creator"] = self.request.user.username
         try:
             logger.info("正在导入应用")
-            version_number = datetime.now().strftime("%Y%m%d%H%M%S")
-            project_data["name"] = "{}_{}".format(project_data["name"], version_number)
-            project_data["key"] = self.generate_project_key()
-            project_data["creator"] = self.request.user.username
-            logger.info("新的应用的project_key为:{}".format(project_data["key"]))
-            project_data["owner"] = {"users": [self.request.user.username]}
 
-            project = Project.objects.create(**project_data)
-            self.project_key = project.key
-            logger.info("应用创建成功，正在初始化项目目录:{}".format(project_data["key"]))
-            # no_code init
-            # 创建根目录
-            PageModelHandler().create_root(project_key=self.project_key)
-            # 初始化项目操作目录
-            ProjectHandler(instance=project).init_operate_catalogs(OPERATE_CATALOG)
-            logger.info("应用目录初始化成功，正在初始化应用权限:{}".format(project_data["key"]))
-            PermitInitManagerDispatcher(instance=project).init_permit()
-        except Exception:
-            logger.exception("应用初始化失败: {}".format(project_data["key"]))
+            project_serializer.save()
+
+        except Exception as e:
+            logger.exception("应用初始化失败: {}, {}".format(project_data["key"], e))
             raise ProjectInitError()
 
     def create_project_config(self, project_config_data):
@@ -223,17 +207,16 @@ class ProjectImportHandler:
             )
             service.bind_catalog(catalog_id)
 
-    def import_project(self):
-        project_data = self.data.get("project")
-        project_config = self.data.get("project_config")
+    def import_project(self, project_serializer):
+
         worksheet = self.data.get("worksheet")
         worksheet_field = self.data.get("worksheet_field")
         page = self.data.get("page")
         page_component = self.data.get("page_component")
         service = self.data.get("service")
 
-        self.create_project(project_data)
-        self.create_project_config(project_config)
+        self.create_project(project_serializer)
+
         self.create_worksheet(worksheet)
         self.create_worksheet_filed(worksheet_field)
         self.create_page(page)

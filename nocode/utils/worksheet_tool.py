@@ -39,6 +39,7 @@ from itsm.component.constants import (
     NORMAL_STATE,
     DETAIL_STATE,
     EXPORT_STATE,
+    IMPORT_STATE,
 )
 from itsm.service.handler.service_handler import ServiceCatalogHandler
 from itsm.service.models import Service, CatalogService
@@ -250,6 +251,7 @@ class ServiceInit(object):
             "DELETE": "删除",
             "DETAIL": "详情",
             "EXPORT": "导出",
+            "IMPORT": "导入",
         }
 
         data = {
@@ -295,7 +297,7 @@ class WorksheetAutoInit(object):
             ServiceInit(
                 self.worksheet_id, workflow_version.id, action, self.project_key
             ).create_service()
-        for action in (DETAIL_STATE, EXPORT_STATE):
+        for action in (DETAIL_STATE, EXPORT_STATE, IMPORT_STATE):
             workflow_json = WorkFlowInit(self.worksheet_id, action).build_review_json()
             workflow = Workflow.objects.restore(workflow_json, self.username)[0]
             self.update_first_state(workflow)

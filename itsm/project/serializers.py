@@ -37,7 +37,7 @@ from itsm.component.constants import (
     CATALOG,
     OPERATE_CATALOG,
     DEFAULT_PROJECT_CONFIG,
-    EMPTY_STRING,
+    EMPTY_DICT,
 )
 from itsm.project.handler.permit_engine_handler import PermitInitManagerDispatcher
 from itsm.project.handler.project_handler import ProjectHandler, ProjectConfigHandler
@@ -99,8 +99,8 @@ class ProjectSerializer(ModelSerializer):
         self.validate_project(validated_data)
         validated_config = None
         # 校验项目设置
-        project_config = validated_data.pop("project_config")
-        if project_config.get("workflow_prefix") != EMPTY_STRING:
+        project_config = validated_data.pop("project_config", EMPTY_DICT)
+        if project_config.get("workflow_prefix"):
             validated_config = self.validated_project_config(project_config)
 
         if validated_data.get("color"):

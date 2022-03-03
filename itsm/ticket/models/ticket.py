@@ -3889,6 +3889,61 @@ class Ticket(Model):
         status.fields = [field for field in all_fields]
         status.save()
 
+    def failed(self, state_id, operator="", failed_message="--"):
+        """节点报错, 终止单据"""
+        node_status = self.status(state_id)
+        message = _("{operator}处理节点【{name}】(流程被终止，【终止原因】:{detail_message}).")
+        # 创建流转日志
+        with transaction.atomic():
+            # 撤销流程
+            res = task_service.revoke_pipeline(self.id)
+
+            if not res.result:
+                raise RevokePipelineError(res.message)
+
+            for ticket in self.master_slave_tickets:
+                TicketEventLog.objects.create_log(
+                    ticket,
+                    state_id,
+                    operator,
+                    TRANSITION_OPERATE,
+                    message=message,
+                    detail_message=failed_message,
+                    from_state_name=node_status.name,
+                    transition_id=VIRTUAL_TRANSITION_ID,
+                    to_state_id=self.end_state.get("id"),
+                )
+
+                # 单据结束创建评价信息
+                TicketComment.objects.get_or_create(ticket_id=ticket.id)
+                ticket.end_at = datetime.now()
+                ticket.save()
+
+            # 单据状态设置：某个节点失败 -> 终止整个流程
+            self.update_current_status(FAILED)
+
+            self.send_trigger_signal(TERMINATE_TICKET)
+
+            # 向提单人发送通知
+            message = message.format(
+                operator=operator,
+                name=node_status.name,
+                detail_message=failed_message,
+            )
+            self.close_moa_ticket(state_id, operator)
+            self.callback_request()
+            self.notify(
+                state_id=state_id,
+                receivers=self.creator,
+                message=message,
+                action=TERMINATE_OPERATE,
+                retry=False,
+            )
+
+        self.stop_all_sla()
+
+        return {"result": True, "message": _("流程执行失败：%s") % res.message, "code": 0}
+
     def terminate(self, state_id, operator="", terminate_message="--"):
         """终止单据"""
         node_status = self.status(state_id)
