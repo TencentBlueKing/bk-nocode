@@ -11,6 +11,7 @@ import 'bk-magic-vue/dist/bk-magic-vue.min.css';
 import '@/css/app.postcss';
 import Viewer from 'v-viewer';
 import 'viewerjs/dist/viewer.css';
+import dayjs from 'dayjs';
 Viewer.setDefaults({
   Options: { zIndexInline: 9999, inline: true, button: true, navbar: true, toolbar: true, tooltip: true, movable: true, zoomable: true, rotatable: true, scalable: true, transition: true, fullscreen: true,  url: 'data-source' },
 });
@@ -18,6 +19,8 @@ Vue.use(Viewer);
 Vue.use(bkMagic);
 Vue.prototype.$bkMessage = bkMessage;
 Vue.prototype.$bkInfoBox = bkInfoBox;
+Vue.prototype.$dayjs = dayjs;
+
 const ace = require('brace');
 Vue.prototype.$ace = ace;
 require('brace/mode/javascript');

@@ -28,7 +28,7 @@
                   desc-type="icon">
       <!--     :placeholder="item.desc"-->
       <bk-input :class="{ 'bk-border-error': item.checkValue }"
-                v-model="item.value||item.val"
+                v-model="item.val"
                 :maxlength="maxLength"
                 :disabled="(item.is_readonly && !isCurrent) || disabled"
                 @focus="item.checkValue = false">
@@ -83,7 +83,8 @@ export default {
     },
   },
   watch: {
-    'item.val'() {
+    'item.val'(val) {
+      this.item.value = val;
       this.conditionField(this.item, this.fields);
     },
   },

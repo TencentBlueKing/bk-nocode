@@ -35,7 +35,7 @@
             <div v-bk-overflow-tips class="cell">{{ getTypeName(field.type) }}</div>
           </td>
           <td>
-            <div class="cell">{{ getSourceType(field.source_type) }}</div>
+            <div class="cell">{{ getSourceType(field) }}</div>
           </td>
           <td>
             <div class="cell">{{ field.validate_type === 'REQUIRE' ? '是' : '否' }}</div>
@@ -178,16 +178,19 @@ export default {
       const form = FIELDS_TYPES.find(item => item.type === type);
       return form ? form.name : '--';
     },
-    getSourceType(type) {
-      const typeItem = this.fieldsSourceType.find(item => item.id === type);
+    getSourceType(field) {
+      if (field.source_type === 'CUSTOM' && field.meta.worksheet) {
+        return field.meta.worksheet.name || '--';
+      }
+      const typeItem = this.fieldsSourceType.find(item => item.id === field.source_type);
       return typeItem ? typeItem.name : '--';
     },
     // 字段删除按钮禁用
     isFieldDelDisabled(field) {
       return (
-        field.meta.code === 'APPROVE_RESULT' ||
-        (field.is_builtin && this.node.is_first_state) ||
-        this.node.type === 'APPROVAL'
+        field.meta.code === 'APPROVE_RESULT'
+        || (field.is_builtin && this.node.is_first_state)
+        || this.node.type === 'APPROVAL'
       );
     },
     onAddFieldClick() {
