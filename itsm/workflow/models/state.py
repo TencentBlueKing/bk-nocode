@@ -438,7 +438,7 @@ class State(Model):
             field_variables = FieldVariablesGroupSerializer(
                 field_queryset, many=True
             ).data
-            valid_inputs += self.variable_group(field_variables)
+            valid_inputs += field_variables
 
         if resource_type in ["both", "global"]:
             valid_state_ids = [s.id for s in valid_states]
@@ -449,8 +449,9 @@ class State(Model):
             global_variable = GlobalVariableGroupSerializer(
                 global_variables_queryset, many=True
             ).data
-            valid_inputs += self.variable_group(global_variable)
-        return valid_inputs
+            valid_inputs += global_variable
+        group_data = self.variable_group(valid_inputs)
+        return list(group_data)
 
     def variable_group(self, variable_data):
         variable_dict = {}
