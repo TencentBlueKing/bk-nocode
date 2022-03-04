@@ -46,7 +46,11 @@ class TicketConfig(AppConfig):
 
     def ready(self):
         from itsm.ticket.models import Ticket
-        from itsm.ticket.handlers import before_ticket_status_updated, after_ticket_created, create_trigger_action_log
+        from itsm.ticket.handlers import (
+            before_ticket_status_updated,
+            after_ticket_created,
+            create_trigger_action_log,
+        )
 
         # 耗时数据迁移初始化方案：在启动celery的时候，下放到celery中，确保可以重入
         # if sys.argv[1] == 'celery' and sys.argv[2] == 'worker':

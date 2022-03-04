@@ -39,22 +39,26 @@ def pipeline_end_handler(sender, root_pipeline_id, **kwargs):
         ticket_pipeline_end_handler(root_pipeline_id, **kwargs)
 
 
-def task_pipeline_end_handler(root_pipeline_id, **kwargs):
+def task_pipeline_end_handler(root_pipeline_id):
     """任务流程结束之后的处理器"""
     pass
 
 
-def ticket_pipeline_end_handler(root_pipeline_id, **kwargs):
+def ticket_pipeline_end_handler(root_pipeline_id, signal):
     """单据流程结束之后的处理器"""
     ticket = Ticket.objects.get(id=root_pipeline_id)
-    ticket.do_before_end_pipeline(by_flow=kwargs.get("by_flow"))
+    ticket.do_before_end_pipeline()
 
 
 def after_ticket_created(sender, instance, created, *args, **kwargs):
     """单据创建后的处理器"""
     if created:
-        start_status = TicketStatus.objects.get(service_type=instance.service_type, is_start=True)
-        StatusTransitLog.objects.create(ticket_id=instance.id, from_status="DRAFT", to_status=start_status.key)
+        start_status = TicketStatus.objects.get(
+            service_type=instance.service_type, is_start=True
+        )
+        StatusTransitLog.objects.create(
+            ticket_id=instance.id, from_status="DRAFT", to_status=start_status.key
+        )
 
 
 def before_ticket_status_updated(sender, instance, *args, **kwargs):
@@ -66,12 +70,17 @@ def before_ticket_status_updated(sender, instance, *args, **kwargs):
     # 单据状态发生修改
     if ticket.current_status != instance.current_status:
         StatusTransitLog.objects.create(
-            ticket_id=instance.id, from_status=ticket.current_status, to_status=instance.current_status
+            ticket_id=instance.id,
+            from_status=ticket.current_status,
+            to_status=instance.current_status,
         )
 
 
 def create_trigger_action_log(sender, instance, **kwargs):
-    if instance.source_type != SOURCE_TICKET or instance.action_schema.operate_type != MANUAL:
+    if (
+        instance.source_type != SOURCE_TICKET
+        or instance.action_schema.operate_type != MANUAL
+    ):
         # 如果非单据的触发器， 不做操作记录
         return
     ticket = Ticket.objects.get(id=instance.source_id)
@@ -87,5 +96,5 @@ def create_trigger_action_log(sender, instance, **kwargs):
         action=_("处理"),
         from_state_name=instance.display_name,
         fields=instance.get_fields(flat=True),
-        detail_message=instance.ex_data[0].get('message') or "",
+        detail_message=instance.ex_data[0].get("message") or "",
     )

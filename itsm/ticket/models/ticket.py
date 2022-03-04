@@ -147,7 +147,6 @@ from itsm.component.constants.trigger import (
     DELETE_TICKET,
     ENTER_STATE,
     LEAVE_STATE,
-    THROUGH_TRANSITION,
     SOURCE_TICKET,
 )
 from common.shortuuid import uuid as _uu
@@ -3302,10 +3301,6 @@ class Ticket(Model):
         2. 判断是否启动任务模块
         3. 发送通知信息
         """
-        # 线条信号
-        from_transitions = self.get_from_transition(kwargs.get("by_flow"))
-        for from_transition in from_transitions:
-            self.send_trigger_signal(THROUGH_TRANSITION, sender=from_transition["id"])
 
         # 更新节点
         status = self.update_state_before_enter(state_id, **kwargs)
@@ -3361,10 +3356,6 @@ class Ticket(Model):
         4. Update Ticket processors
         5. Send notify
         """
-        # 线条信号
-        from_transitions = self.get_from_transition(kwargs.get("by_flow"))
-        for from_transition in from_transitions:
-            self.send_trigger_signal(THROUGH_TRANSITION, sender=from_transition["id"])
 
         state = self.flow.get_state(state_id)
         variables = state["variables"].get("outputs", [])
