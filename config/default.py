@@ -44,10 +44,9 @@ INSTALLED_APPS += (
     "itsm.helper",
     # 引擎相关的内容
     "pipeline",
-    "pipeline.log",
     "pipeline.engine",
     "pipeline.component_framework",
-    "pipeline.variable_framework",
+    "pipeline.eri",
     # "pipeline.contrib.periodic_task",
     "django_signal_valve",
     # itsm

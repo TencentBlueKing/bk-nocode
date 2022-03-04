@@ -279,7 +279,10 @@ class TicketModelViewSet(ModelViewSet):
         instance.do_after_create(
             data["fields"], request.data.get("from_ticket_id", None)
         )
-        start_pipeline.apply_async([instance])
+        if instance.service_instance.is_builtin:
+            instance.start_builtin_ticket()
+        else:
+            start_pipeline.apply_async([instance])
         return Response(
             {"sn": instance.sn, "id": instance.id, "ticket_url": instance.pc_ticket_url}
         )

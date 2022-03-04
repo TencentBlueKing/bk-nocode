@@ -24,9 +24,21 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 from django.utils.translation import gettext as _
+from pipeline.core.flow import ExecutableEndEvent
+
 from itsm.component.constants import TASK_PI_PREFIX, SOURCE_TICKET, MANUAL
+
 from itsm.ticket_status.models import TicketStatus
 from .models import StatusTransitLog, Ticket, TicketEventLog
+
+
+class TicketEndEvent(ExecutableEndEvent):
+    def execute(self, in_subprocess, root_pipeline_id, current_pipeline_id):
+        if str(root_pipeline_id).startswith(TASK_PI_PREFIX):
+            pass
+        else:
+            ticket = Ticket.objects.get(id=root_pipeline_id)
+            ticket.do_before_end_pipeline()
 
 
 def pipeline_end_handler(sender, root_pipeline_id, **kwargs):

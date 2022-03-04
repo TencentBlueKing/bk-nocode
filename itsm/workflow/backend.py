@@ -23,7 +23,6 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-
 # pipeline适配类
 #     建立Workflow和Pipeline的关系
 
@@ -34,6 +33,7 @@ import os
 import time
 
 import six
+from bamboo_engine import api
 from django.utils.translation import ugettext as _
 
 from itsm.component.constants import (
@@ -53,6 +53,7 @@ from itsm.component.constants import (
     APPROVAL_STATE,
     DATA_PROC_STATE,
 )
+from itsm.component.custom_pipeline_engine.runtime import CustomBambooDjangoRuntime
 from itsm.component.exceptions import WorkFlowInvalidError
 from itsm.component.utils.basic import merge_dict_list
 from itsm.component.utils.bk_bunch import Bunch, bunchify, unbunchify
@@ -92,6 +93,9 @@ class PipelineWrapper(object):
             self.states_map,
             self.transitions_map,
         ) = self.get_workflow_data()
+
+        self.pipeline_tree = None
+        self.start_builtin = False
 
     @contextlib.contextmanager
     def build_tree_exception_handler(self, state):
@@ -234,6 +238,8 @@ class PipelineWrapper(object):
                 "type": PE.ServiceActivity,
                 "name": state["name"],
                 "optional": False,
+                "skippable": True,
+                "retryable": True,
                 "error_ignorable": False,
                 "outgoing": outgoing_id,
                 "incoming": [t["unique_id"] for t in incomings],
@@ -334,6 +340,9 @@ class PipelineWrapper(object):
             "id": state["unique_id"],
             "name": "结束",
         }
+
+        if self.start_builtin:
+            end_event["type"] = "TicketEndEvent"
 
         return end_event, None
 
@@ -630,16 +639,18 @@ class PipelineWrapper(object):
                     flows.update(flow_to)
                     activities.update(activity)
 
+        self.pipeline_tree = {
+            PE.activities: activities,
+            PE.gateways: gateways,
+            PE.flows: flows,
+            PE.data: self.data,
+            PE.start_event: start_event,
+            PE.end_event: end_event,
+            PE.id: ticket_id,
+        }
+
         return {
-            "pipeline_tree": {
-                PE.activities: activities,
-                PE.gateways: gateways,
-                PE.flows: flows,
-                PE.data: self.data,
-                PE.start_event: start_event,
-                PE.end_event: end_event,
-                PE.id: ticket_id,
-            },
+            "pipeline_tree": self.pipeline_tree,
             "states_map": self.states_map,
             "transitions_map": self.transitions_map,
             "exclusive_gateway_source_state": exclusive_gateway_source_state,
@@ -693,6 +704,7 @@ class PipelineWrapper(object):
         root_pipeline_data=None,
         need_start=False,
         use_cache=False,
+        start_builtin=False,
         **kwargs
     ):
         """
@@ -703,7 +715,7 @@ class PipelineWrapper(object):
         :param use_cache 是否启用缓存
         :return: Pipeline Instance
         """
-
+        self.start_builtin = start_builtin
         pipeline_data = self.build_tree(ticket_id, use_cache=use_cache, **kwargs)
 
         # 解析并获得pipeline，传入全局上下文：root_pipeline_data
@@ -722,10 +734,23 @@ class PipelineWrapper(object):
 
         if need_start:
             t = time.time()
+            if start_builtin:
+                self.start_builtin_pipeline()
             self.start_pipeline()
             print("start_pipeline elapsed time: %s" % (time.time() - t))
 
         return pipeline_data
+
+    def start_builtin_pipeline(self):
+        runtime = CustomBambooDjangoRuntime()
+        root_pipeline_data = {"ticket_id": self.pipeline_tree["id"]}
+        action_result = api.run_pipeline(
+            runtime=runtime,
+            pipeline=self.pipeline_tree,
+            root_pipeline_data=root_pipeline_data,
+        )
+        if not action_result.result:
+            logger.info("start pipeline error: %s" % action_result.message)
 
     def start_pipeline(self, check_workers=False):
         """

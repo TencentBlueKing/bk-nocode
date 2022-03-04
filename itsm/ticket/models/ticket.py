@@ -3204,6 +3204,16 @@ class Ticket(Model):
         self.pipeline_data = pipeline_data
         self.save(update_fields=("pipeline_data",))
 
+    def start_builtin_ticket(self, **kwargs):
+        # 创建并启动 自定义运行时pipeline
+        print("\n-------  ticket pipeline start  ----------\n")
+        pipeline_wrapper = PipelineWrapper(kwargs.pop("flow", self.flow))
+        pipeline_data = pipeline_wrapper.create_pipeline(
+            self.id, need_start=True, start_builtin=True, **kwargs
+        )
+        self.pipeline_data = pipeline_data
+        self.save(update_fields=("pipeline_data",))
+
     def clone_pipeline(self, parent_ticket):
         # 创建并启动pipeline
         print("\n-------  clone parent ticket pipeline start  ----------\n")
