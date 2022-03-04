@@ -736,7 +736,8 @@ class PipelineWrapper(object):
             t = time.time()
             if start_builtin:
                 self.start_builtin_pipeline()
-            self.start_pipeline()
+            else:
+                self.start_pipeline()
             print("start_pipeline elapsed time: %s" % (time.time() - t))
 
         return pipeline_data
