@@ -22,7 +22,7 @@
                   @click="openFormulaConfig">配置公式</span>
           </bk-form-item>
           <bk-form-item label="计算字段">
-            <bk-select v-model="fieldData.meta.config.fields" :multiple="true" @change="change">
+            <bk-select v-model="fieldData.meta.config.fields" multiple  @change="change"  :key="fieldData.meta.config.type">
               <bk-option v-for="item in formulaFieldList" :key="item.key" :id="item.key" :name="item.name">
               </bk-option>
             </bk-select>
@@ -53,7 +53,7 @@
         </template>
         <template v-if="fieldData.meta.config.calculate_type==='date'">
           <bk-form-item label="开始日期">
-            <bk-select v-model="startTime" @change="(val) => handleSelectTime('start',val)" placeholder="选择开始日期">
+            <bk-select v-model="startTime" @change="(val) => handleSelectTime('start',val)" :key="fieldData.meta.config.type"placeholder="选择开始日期">
               <bk-option v-for="item in formulaFieldList" :key="item.key" :id="item.key" :name="item.name">
               </bk-option>
             </bk-select>
@@ -61,11 +61,11 @@
               v-model="fieldData.meta.config.start_time"
               :placeholder="'选择日期'"
               ext-cls="date-pick"
-              v-show="datePickerIsShow.startTimeIsshow">
+              v-if="datePickerIsShow.startTimeIsshow">
             </bk-date-picker>
           </bk-form-item>
           <bk-form-item label="结束日期">
-            <bk-select v-model="endTime" @change="(val) => handleSelectTime('end',val)" placeholder="选择结束日期">
+            <bk-select v-model="endTime" @change="(val) => handleSelectTime('end',val)" :key="fieldData.meta.config.type" placeholder="选择结束日期">
               <bk-option v-for="item in formulaFieldList" :key="item.key" :id="item.key" :name="item.name">
               </bk-option>
             </bk-select>
@@ -74,7 +74,7 @@
               :placeholder="'选择日期'"
               ext-cls="date-pick"
               @change="change"
-              v-show="datePickerIsShow.endTimeIshow">
+              v-if="datePickerIsShow.endTimeIshow">
             </bk-date-picker>
           </bk-form-item>
           <bk-form-item label="结果精确度" desc-type="icon" desc="精确度将同步作为结果格式，若选择「工作日」，则只计算工作日时。">
@@ -224,7 +224,7 @@
       @confirm="handleRuleConfirm">
     </number-rule-dialog>
     </div>
-    <!-- 配置自定义计算公式-->
+<!--     配置自定义计算公式-->
     <div v-if="fieldData.type==='FORMULA'">
     <config-formula-dialog
       :show.sync="configFormulaDialogShow"
@@ -374,8 +374,11 @@ export default {
       if (this.fieldData.meta.config.calculate_type === 'number') {
         return this.list.filter(item => item.type === 'INT');
       }
+      if (this.fieldData.meta.config.calculate_type === 'date') {
+        return DEAFAULT_TIME.concat(this.list.filter(item => ['DATETIME', 'DATE'].includes(item.type)));
+      }
+      return [];
       // 系统字段加上表单的时间类型字段
-      return DEAFAULT_TIME.concat(this.list.filter(item => ['DATETIME', 'DATE'].includes(item.type)));
     },
   },
   watch: {
@@ -566,7 +569,7 @@ export default {
     },
     triggerHandler(env) {
       this.$refs.dropdown.hide();
-      this.fieldData.meta.affix_type = env;
+      this.fieldData.meta.config.affix_type = env;
       this.$emit('change', this.fieldData);
     },
     handleRuleConfirm(rules) {
@@ -575,6 +578,7 @@ export default {
       this.change();
     },
     change() {
+      console.log('change')
       this.$emit('change', this.fieldData);
     },
     handleSelectType() {
