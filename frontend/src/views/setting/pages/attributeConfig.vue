@@ -58,6 +58,7 @@ export default {
   },
   data() {
     return {
+      cancel: true,
       formData: cloneDeep(this.value),
       functionList: [],
       functionListLoading: false,
@@ -131,7 +132,12 @@ export default {
       }
     },
     change() {
-      if (this.linkIsOpen) {
+      const { funcId } = this.value;
+      if (!this.cancel) {
+        this.cancel = true;
+        return;
+      }
+      if (this.linkIsOpen && this.cancel) {
         this.$bkInfo({
           title: '此操作删除访问外链，确认吗？',
           type: 'warning',
@@ -141,7 +147,12 @@ export default {
             await this.removeLinkAddress();
             this.$emit('change', this.formData);
           },
+          cancelFn: () => {
+            this.formData.funcId = funcId;
+            this.cancel = false;
+          },
         });
+        return;
       }
       this.$emit('change', this.formData);
     },
@@ -162,6 +173,9 @@ export default {
               await this.removeLinkAddress();
               this.$emit('change', this.formData);
               resolve();
+            },
+            cancelFn: () => {
+              reject();
             },
           });
         } else {

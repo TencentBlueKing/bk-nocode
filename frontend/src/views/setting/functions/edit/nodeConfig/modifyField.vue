@@ -9,7 +9,8 @@
                  v-model="fieldKeyItem.value"
                  searchable
                  @selected="selectedFieldKey">
-        <bk-option v-for="option in fieldKeyItem.choice"
+        <bk-option
+                    v-for="option in fieldKeyItem.choice"
                    :key="option.key"
                    :id="option.key"
                    :name="option.name">
@@ -118,7 +119,9 @@ export default {
       this.$set(this.fieldValueItem, 'itemInfo', []);
       if (this.fieldKeyItem.value) {
         const tempItemInfo = this.fieldKeyItem.choice.filter(item => item.key === this.fieldKeyItem.value);
-        tempItemInfo[0].value = tempItemInfo[0].val = this.fieldValueItem.value;
+        if (tempItemInfo.length > 0) {
+          tempItemInfo[0].value = tempItemInfo[0].val = this.fieldValueItem.value;
+        }
         this.fieldValueItem.itemInfo = tempItemInfo;
         this.show = true;
       }

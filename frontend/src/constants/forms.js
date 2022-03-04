@@ -224,6 +224,7 @@ export const CALCULATION_FORMULA = [
 ];
 // 开始/结束 日期系统默认数据源
 export const DEAFAULT_TIME = [
+  { key: new Date(), name: '当前时刻' },
   { key: 'create_at', name: '创建日期' },
   { key: 'update_at', name: '最近更新日期' },
   { key: 'custom', name: '指定日期' },

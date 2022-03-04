@@ -356,7 +356,6 @@ export default {
           params.state = this.originInfoToTrigger.sender;
         }
         // 获取对应来源的变量
-        console.log(id, type, params);
         await this.$store.dispatch('setting/getTriggerVariables', { id, type, params }).then((res) => {
           this.$store.commit('setting/changeTriggerVariables', res.data);
         });
@@ -654,7 +653,6 @@ export default {
           if (this.originInfoToTrigger.id) {
             params.source_type = this.originInfoToTrigger.source;
             params.source_id = params.sender = this.originInfoToTrigger.id;
-            params.sender = this.originInfoToTrigger.sender;
           }
           if (this.projectId) {
             params.project_key = this.projectId;
@@ -765,6 +763,9 @@ export default {
                 });
                 paramsItem.params.push(subContent);
               } else {
+                if (response.wayInfo.key === 'modify_field' && field.key === 'field_value' && field.referenceType === 'custom') {
+                  field.value = field.itemInfo[0].value;
+                }
                 const paramsContent = {
                   key: field.key,
                   value: this.formattingValue(field),
@@ -851,13 +852,22 @@ export default {
         if (!this.originInfoToTrigger.id || this.originInfoToTrigger.source === 'task') {
           this.responseWayList = this.responseWayList.filter(way => way.key !== 'modify_field' && way.key !== 'modify_specified_state_processor');
         } else {
-          this.responseWayList.forEach((way) => {
-            way.field_schema.forEach(async (schema) => {
-              if (schema.source_type === 'RPC') {
-                await this.getResponseFields(schema);
+          // 之前的foreach 不支持同步 异步函数
+          for (let i = 0;i < this.responseWayList.length;i++) {
+            for (let j = 0;j < this.responseWayList[i].field_schema.length;j++) {
+              if (this.responseWayList[i].field_schema[j].source_type === 'RPC') {
+                await this.getResponseFields(this.responseWayList[i].field_schema[j]);
               }
-            });
-          });
+            }
+          }
+          //
+          // this.responseWayList.forEach((way) => {
+          //   way.field_schema.forEach(async (schema) => {
+          //     if (schema.source_type === 'RPC') {
+          //       await this.getResponseFields(schema);
+          //     }
+          //   });
+          // });
         }
       } catch (e) {
         console.warn(e);

@@ -43,6 +43,21 @@
                 <span v-else>{{ row[field.id] || '--' }}</span>
               </template>
             </bk-table-column>
+            <bk-table-column
+              :label="'节点状态'"
+              prop="current_status_display"
+              :filters="statusFilters"
+              :filter-method="statusFilterMethod"
+              :filter-multiple="true">
+              <template slot-scope="{ row }">
+                <div>
+                    <span :class="['status',statusMap[row.current_status]]"
+                          v-if="!['RUNNING','QUEUEING'].includes(row.current_status)"></span>
+                  <bk-spin size="mini" v-else></bk-spin>
+                  <span>{{row.current_status_display||'--'}}</span>
+                </div>
+              </template>
+            </bk-table-column>
             <bk-table-column type="setting">
               <bk-table-setting-content
                 :fields="settingList"
@@ -61,6 +76,7 @@ import PageWrapper from '@/components/pageWrapper.vue';
 import ColumnSn from './components/columnSn.vue';
 import { errorHandler } from '../../utils/errorHandler';
 import { getQuery } from '../../utils/util';
+import  status  from './mixin/status.js';
 
 const COLUMN_LIST = [
   {
@@ -97,12 +113,6 @@ const COLUMN_LIST = [
     prop: 'create_at',
   },
   {
-    id: 'current_status_display',
-    label: '节点状态',
-    minWidth: '140',
-    prop: 'current_status_display',
-  },
-  {
     id: 'operate',
     label: '操作',
     minWidth: '80',
@@ -115,6 +125,7 @@ export default {
     PageWrapper,
     ColumnSn,
   },
+  mixins: [status],
   data() {
     return {
       keyword: '',
@@ -248,5 +259,25 @@ export default {
       width: 240px;
     }
   }
+  .status{
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+  }
+  .wait-status{
+    background: #FFE8C3;
+    border: 1px solid #FF9C01;
+  }
+  .finish-status{
+    background: #E5F6EA;
+    border: 1px solid #3FC06D;
+  }
+  .fail-status{
+    background: #FFE6E6;
+    border: 1px solid #EA3636;
+  }
+
 }
 </style>
