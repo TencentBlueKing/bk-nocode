@@ -72,7 +72,7 @@ class ProjectViewSet(component_viewsets.AuthModelViewSet):
 
     def list(self, request, *args, **kwargs):
         need_page = request.query_params.get("need_page", 1)
-        if not need_page:
+        if not int(need_page):
             queryset = self.filter_queryset(self.get_queryset())
             serializer = self.get_serializer(queryset, many=True)
             serializer.context["request"] = request
