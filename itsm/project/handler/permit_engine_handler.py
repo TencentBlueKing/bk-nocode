@@ -346,7 +346,9 @@ class PermitInitManagerOpen(BasePermitInitManager):
         )
 
         if not result:
-            logger.info("用户组人员移除失败 request_data = {}, message={}".format(data, message))
+            logger.error(
+                "用户组人员移除失败 request_data = {}, message={}".format(data, message)
+            )
             raise DeleteUserGroupMembersError()
 
     def recreate_data_user_group(self, username_set):
@@ -593,12 +595,15 @@ class PermitInitManagerIeod(BasePermitInitManager):
         )
 
         if not data["result"]:
-            logger.info(
+            logger.error(
                 "用户组人员移除失败 request_data = {}, message={}".format(
                     members, data["message"]
                 )
             )
             raise DeleteUserGroupMembersError()
+        logger.info(
+            "用户组人员移除成功 request_data = {}, message={}".format(members, data["message"])
+        )
 
     def recreate_data_user_group(self, username_set):
         logger.info("数据管理员用户组重新同步")
@@ -614,6 +619,7 @@ class PermitInitManagerIeod(BasePermitInitManager):
         current_username_set = set()
         for item in self.get_user_group_members():
             current_username_set.add(item["id"])
+        logger.info("数据管理员用户组当前用户有， username_list = {}".format(current_username_set))
         # 初始无成员
         if not current_username_set:
             username_struct = [{"id": user, "type": "user"} for user in username_set]
@@ -621,6 +627,7 @@ class PermitInitManagerIeod(BasePermitInitManager):
                 self.instance.user_group_id, username_struct
             )
             self.instance.save()
+            logger.info("数据管理员用户组添加管理员成功， username_list = {}".format(username_set))
             return
         remove_user = current_username_set - username_set
         add_user = username_set - current_username_set

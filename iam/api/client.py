@@ -256,6 +256,9 @@ class Client(object):
             http_delete, path, data, bk_token, bk_username, timeout=15
         )
         if not ok:
+            logger.error(
+                "用户组人员移除失败 request_data = {}, message={}".format(data, message)
+            )
             return False, message
 
         return True, message
