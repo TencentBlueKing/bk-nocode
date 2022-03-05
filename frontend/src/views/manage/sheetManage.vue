@@ -15,15 +15,6 @@
            >
             <bk-option v-for="option in appList" :key="option.key" :id="option.key" :name="option.name"></bk-option>
           </bk-select>
-          <!--          <bk-input-->
-          <!--            class="search-width"-->
-          <!--            :placeholder="'请选择应用'"-->
-          <!--            :left-icon="'bk-icon icon-search'"-->
-          <!--            v-model="project_key"-->
-          <!--            @change="handleChange"-->
-          <!--            @enter="handlerSearch"-->
-          <!--            @right-icon-click="handlerSearch">-->
-          <!--          </bk-input>-->
         </div>
         <div class="sheet-manage-table">
           <bk-table
@@ -37,7 +28,7 @@
             :max-height="defaultTableHeight"
             @page-change="handlePageChange"
             @page-limit-change="handlePageLimitChange">
-            <bk-table-column v-for="field in columnList" :key="field.id" :label="field.label">
+            <bk-table-column v-for="field in columnList" :key="field.id" :label="field.label" show-overflow-tooltip>
               <template slot-scope="{ row }">
                 <bk-button
                   v-if="field.id==='operate'"
@@ -225,11 +216,10 @@ export default {
     async getAppList() {
       try {
         const params = {
-          need_page: 0,
+          show_type: 'manager_center',
         };
         const res = await this.$store.dispatch('setting/getAllApp', params);
-        // this.applicationList = res.data;
-        this.appList = res.data.filter(item => item.publish_status !== 'UNRELEASED');
+        this.appList = res.data;
       } catch (e) {
         console.error(e);
       } finally {
@@ -330,6 +320,7 @@ export default {
       this.AddSheetDialogVisible = true;
     },
     handleSearch(val) {
+      this.pagination.current =1
       this.initData(val);
     },
     handlePageChange(page) {
@@ -342,7 +333,6 @@ export default {
     },
     handleEditor(row) {
       this.formStatus = 'EDIT';
-      console.log(row);
       this.addSheetFormData.openApplication = row.granted_project;
       this.addSheetFormData.id = row.id;
       this.AddSheetDialogVisible = true;
@@ -364,7 +354,7 @@ export default {
     },
     async handleSelect(val) {
       await this.getFormsList(val);
-      this.applicationList = this.appList.filter(item => item.key !== val);
+      this.applicationList = this.applicationList.filter(item => item.key !== val);
     },
     async onSubmit() {
       this.formStatus === 'ADD' ? this.addOpenSheetList() : this.updateOpenSheet();
