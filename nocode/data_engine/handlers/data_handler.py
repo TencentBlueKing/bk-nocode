@@ -84,7 +84,7 @@ class ListComponentDataHandler(BaseDataHandler):
         self.page_id = page_id
         self.version_number = version_number
 
-    def get_list_components_data(self, conditions=None, need_page=True):
+    def get_list_components_data(self, conditions=None, need_page=True, tab_id=None):
         """
         获取列表组件的data
         """
@@ -108,7 +108,7 @@ class ListComponentDataHandler(BaseDataHandler):
         logger.info("[get_list_components_data] -> keys={}".format(keys))
 
         page_config_queryset = self.get_page_config_queryset(
-            manager, page_config["config"]
+            manager, page_config["config"], tab_id
         )
         if not page_config_queryset:
             queryset = []
@@ -134,7 +134,7 @@ class ListComponentDataHandler(BaseDataHandler):
         page_queryset = pagination.paginate_queryset(queryset, self.request)
         return pagination.get_paginated_response(self.get_response_data(page_queryset))
 
-    def get_page_config_queryset(self, manager, config):
+    def get_page_config_queryset(self, manager, config, tab_id):
         """
         "show_mode": {
             "mode": 0,1,2
@@ -165,7 +165,17 @@ class ListComponentDataHandler(BaseDataHandler):
         if len(ordering) > 1:
             queryset = queryset.order_by(ordering[0])
         # 筛选条件支持
-        conditions = config.get("conditions", {})
+        if tab_id:
+            # 子选项卡
+            tab_config = config["tab_config"]
+            conditions = {}
+            for item in tab_config:
+                if item["tab_id"] == tab_id:
+                    conditions = config.get("conditions", {})
+                    break
+        else:
+            # 默认选项卡
+            conditions = config.get("conditions", {})
         filters = self.convert_conditions(conditions)
 
         if conditions:
@@ -440,6 +450,7 @@ class ExportDataHandler:
     def get_keys(self, headers):
         keys = []
         for item in headers:
+            item = str(item)
             key = self.pattern.findall(item)
             if len(key) != 1:
                 raise ImportDataError(

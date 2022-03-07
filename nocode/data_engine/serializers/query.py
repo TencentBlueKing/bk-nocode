@@ -37,6 +37,7 @@ from nocode.worksheet.models import WorkSheetField
 
 class ListComponentSerializers(serializers.Serializer):
     page_id = serializers.IntegerField(help_text=_("页面id"))
+    tab_id = serializers.IntegerField(required=False, help_text=_("列表选项卡id"))
     conditions = serializers.JSONField(help_text=_("查询参数"), required=False)
     version_number = serializers.CharField(help_text=_("项目版本"))
     ids = serializers.ListField(help_text=_("批量记录id"), required=False)
