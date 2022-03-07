@@ -1,7 +1,11 @@
 <template>
   <div class="checkbox">
     <bk-checkbox-group v-model="val" @change="change">
-      <bk-checkbox v-for="option in sourceData" :value="option.key" :disabled="disabled" :key="option.key">
+      <bk-checkbox
+        v-for="option in sourceData"
+        :value="option.key"
+        :disabled="getDisableStatus(option.key)"
+        :key="option.key">
         {{ option.name }}
       </bk-checkbox>
     </bk-checkbox-group>
@@ -38,6 +42,21 @@ export default {
     },
   },
   methods: {
+    getDisableStatus(key) {
+      if (this.disabled) {
+        return true;
+      };
+      if (
+        'num_range' in this.field
+        && typeof this.field.num_range[1] === 'number'
+        && Array.isArray(this.value)
+        && this.value.length >= this.field.num_range[1]
+        && !this.value.includes(key)
+      ) {
+        return true;
+      }
+      return false;
+    },
     change(val) {
       this.$emit('change', val);
     },

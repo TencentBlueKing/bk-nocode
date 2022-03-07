@@ -107,6 +107,38 @@
             @change="handleDataSourceChange">
           </data-source>
         </template>
+        <bk-form-item
+          v-if="['MULTISELECT', 'CHECKBOX', 'MEMBERS'].includes(fieldData.type)"
+          label="值数目范围"
+          desc-type="icon"
+          desc="字段的值为多个时，配置值数目的范围，默认最少0个、最多不限制">
+          <div class="value-num-config">
+            最少选择
+            <bk-input
+              style="width: 100px; margin: 0 4px;"
+              type="number"
+              :value="fieldData.num_range[0]"
+              :min="0"
+              :max="9999"
+              :precision="0"
+              @change="handleValNumMinChange">
+            </bk-input>
+            个
+          </div>
+          <div class="value-num-config">
+            最多选择
+            <bk-input
+              :value="fieldData.num_range[1]"
+              style="width: 100px; margin: 0 4px;"
+              type="number"
+              :min="0"
+              :max="9999"
+              :precision="0"
+              @change="handleValNumMaxChange">
+            </bk-input>
+            个
+          </div>
+        </bk-form-item>
         <bk-form-item label="布局" :required="true">
           <bk-radio-group v-model="fieldData.layout">
             <bk-radio value="COL_6" :disabled="fieldProps.fieldsFullLayout.includes(fieldData.type)">半行</bk-radio>
@@ -227,7 +259,7 @@ export default {
   },
   data() {
     return {
-      fieldData: cloneDeep(this.field),
+      fieldData: Object.assign({ num_range: [] }, cloneDeep(this.field)), // 兼容旧数据没有num_range字段
       calculationFormula: CALCULATION_FORMULA,
       fieldProps: {
         fieldTypeList: FIELDS_TYPES.filter(item => item.type !== 'AUTO-NUMBER'),
@@ -491,6 +523,26 @@ export default {
       this.$refs.dropdown.hide();
       this.meta.affix_type = env;
     },
+    // 值数目可选范围最小个数变更
+    handleValNumMinChange(val) {
+      let numVal;
+      if (val === '') {
+        numVal = undefined;
+      } else {
+        numVal = Number(val);
+      }
+      this.fieldData.num_range.splice(0, 1, numVal);
+    },
+    // 值数目可选范围最大个数变更
+    handleValNumMaxChange(val) {
+      let numVal;
+      if (val === '') {
+        numVal = undefined;
+      } else {
+        numVal = Number(val);
+      }
+      this.fieldData.num_range.splice(1, 1, numVal);
+    },
     handleSave() {
       this.fieldSavePending = true;
       this.$refs.fieldForm
@@ -508,6 +560,7 @@ export default {
               layout,
               desc,
               source_type,
+              num_range,
               tips,
               choice,
               meta,
@@ -534,6 +587,7 @@ export default {
               is_readonly,
               desc,
               source_type,
+              num_range,
               tips,
               choice,
               meta: type === 'FORMULA' ? this.meta : meta,
@@ -598,6 +652,17 @@ export default {
   .field-data-source-container {
     margin-top: 20px;
     width: 100%;
+  }
+
+  .value-num-config {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    font-size: 12px;
+    color: #63656e;
+    &:first-of-type {
+      margin-bottom: 10px;
+    }
   }
 
   .add-condition {
