@@ -27,19 +27,24 @@
             :max-height="defaultTableHeight"
             @page-change="handlePageChange"
             @page-limit-change="handlePageLimitChange">
-            <bk-table-column type="index" label="No." width="60"></bk-table-column>
+            <bk-table-column type="index" label="No." width="60" fixed="left"></bk-table-column>
+            <bk-table-column label="流程编号" width="150" fixed="left">
+              <template slot-scope="{ row }">
+                <column-sn :row="row"></column-sn>
+              </template>
+            </bk-table-column>
             <bk-table-column v-for="field in columnList" :key="field.id" :label="field.label">
               <template slot-scope="{ row }">
-                <column-sn v-if="field.id === 'sn'" :row="row"></column-sn>
-                <span v-else-if="field.id==='current_steps'">
-                  {{row.current_steps[0]&&row.current_steps[0].name|| '--' }}
+                <!--                <column-sn v-if="field.id === 'sn'" :row="row"></column-sn>-->
+                <span v-if="field.id==='current_steps'">
+                  {{ row.current_steps[0] && row.current_steps[0].name || '--' }}
                 </span>
-                <bk-button
-                  v-else-if="field.id==='operate'"
-                  theme="primary"
-                  text
-                  @click="handleUnsubscribe(props.row)">取消关注
-                </bk-button>
+                <!--                <bk-button-->
+                <!--                  v-else-if="field.id==='operate'"-->
+                <!--                  theme="primary"-->
+                <!--                  text-->
+                <!--                  @click="handleUnsubscribe(props.row)">取消关注-->
+                <!--                </bk-button>-->
                 <span v-else>{{ row[field.id] || '--' }}</span>
               </template>
             </bk-table-column>
@@ -54,8 +59,17 @@
                     <span :class="['status',statusMap[row.current_status]]"
                           v-if="!['RUNNING','QUEUEING'].includes(row.current_status)"></span>
                   <bk-spin size="mini" v-else></bk-spin>
-                  <span>{{row.current_status_display||'--'}}</span>
+                  <span>{{ row.current_status_display || '--' }}</span>
                 </div>
+              </template>
+            </bk-table-column>
+            <bk-table-column label="操作" fixed="right">
+              <template slot-scope="{ row }">
+                <bk-button
+                  theme="primary"
+                  text
+                  @click="handleUnsubscribe(row)">取消关注
+                </bk-button>
               </template>
             </bk-table-column>
             <bk-table-column type="setting">
@@ -74,51 +88,10 @@
 <script>
 import PageWrapper from '@/components/pageWrapper.vue';
 import ColumnSn from './components/columnSn.vue';
-import { errorHandler } from '../../utils/errorHandler';
-import { getQuery } from '../../utils/util';
-import  status  from './mixin/status.js';
+import {errorHandler} from '../../utils/errorHandler';
+import {getQuery} from '../../utils/util';
+import status from './mixin/status.js';
 
-const COLUMN_LIST = [
-  {
-    id: 'sn',
-    label: '流程编号',
-    prop: 'sn',
-    width: '140',
-    disabled: true,
-  },
-  {
-    id: 'service_name',
-    label: '流程名称',
-    prop: 'service_name',
-    width: '140',
-    disabled: true,
-  },
-  {
-    id: 'current_steps',
-    label: '当前节点',
-    prop: 'current_steps[0].name',
-    width: '140',
-  },
-  {
-    id: 'creator',
-    label: '发起人',
-    prop: 'creator',
-    width: '140',
-    disabled: true,
-  },
-  {
-    id: 'create_at',
-    label: '创建时间',
-    minWidth: '140',
-    prop: 'create_at',
-  },
-  {
-    id: 'operate',
-    label: '操作',
-    minWidth: '80',
-    disabled: true,
-  },
-];
 export default {
   name: 'Attention',
   components: {
@@ -129,7 +102,6 @@ export default {
   data() {
     return {
       keyword: '',
-      columnList: COLUMN_LIST,
       tableList: [],
       tableLoading: false,
       pagination: {
@@ -138,7 +110,6 @@ export default {
         limit: 10,
       },
       defaultTableHeight: '',
-      settingList: COLUMN_LIST,
       size: 'small',
     };
   },
@@ -189,7 +160,7 @@ export default {
         ...searchParams,
       };
       this.tableLoading = true;
-      const res = await this.$store.dispatch('workbench/getList', { params });
+      const res = await this.$store.dispatch('workbench/getList', {params});
       if (res.result) {
         this.tableList = res.data.items;
         this.pagination.current = res.data.page;
@@ -199,16 +170,16 @@ export default {
       }
       this.tableLoading = false;
     },
-    handleSettingChange({ fields, size }) {
+    handleSettingChange({fields, size}) {
       this.size = size;
       this.columnList = fields;
     },
     handleUnsubscribe(row) {
-      const { id } = row;
+      const {id} = row;
       const params = {
         attention: false,
       };
-      this.$store.dispatch('workbench/setAttention', { params, id }).then(() => {
+      this.$store.dispatch('workbench/setAttention', {params, id}).then(() => {
         this.$bkMessage({
           message: '取消关注成功~',
           theme: 'success',
@@ -236,7 +207,7 @@ export default {
   }
 
   .custom-table {
-    /deep/ .bk-table-body-wrapper{
+    /deep/ .bk-table-body-wrapper {
       @mixin scroller;
     }
   }
@@ -259,22 +230,26 @@ export default {
       width: 240px;
     }
   }
-  .status{
+
+  .status {
     width: 8px;
     height: 8px;
     border-radius: 50%;
     display: inline-block;
     margin-right: 8px;
   }
-  .wait-status{
+
+  .wait-status {
     background: #FFE8C3;
     border: 1px solid #FF9C01;
   }
-  .finish-status{
+
+  .finish-status {
     background: #E5F6EA;
     border: 1px solid #3FC06D;
   }
-  .fail-status{
+
+  .fail-status {
     background: #FFE6E6;
     border: 1px solid #EA3636;
   }

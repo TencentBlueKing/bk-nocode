@@ -6,6 +6,13 @@
   "description": "nocode项目图标资源",
   "glyphs": [
     {
+      "icon_id": "20049577",
+      "name": "icon-arrow",
+      "font_class": "icon-arrow",
+      "unicode": "e6bd",
+      "unicode_decimal": 59069
+    },
+    {
       "icon_id": "26887327",
       "name": "icon-api",
       "font_class": "icon-api",

@@ -22,7 +22,7 @@
               :disable-type="nodeDetail.type === 'SIGN'">
             </processors>
           </bk-form-item>
-          <template v-if="['APPROVAL','SIGN','NORMAL'].includes(nodeDetail.type)">
+          <template v-if="['APPROVAL','SIGN','NORMAL'].includes(nodeDetail.type)&&!nodeDetail.is_builtin">
             <bk-form-item label="是否支持转派" error-display-type="normal" :required="true">
               <bk-radio-group v-model="formData.isTrans">
                 <bk-radio :value="true">

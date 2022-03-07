@@ -27,11 +27,15 @@
             :max-height="defaultTableHeight"
             @page-change="handlePageChange"
             @page-limit-change="handlePageLimitChange">
-            <bk-table-column type="index" label="No." width="60"></bk-table-column>
+            <bk-table-column type="index" label="No." width="60" fixed="left"></bk-table-column>
+            <bk-table-column label="流程编号" fixed="left" width="150">
+              <template slot-scope="{ row }" >
+                <column-sn :row="row"></column-sn>
+              </template>
+            </bk-table-column>
             <bk-table-column v-for="field in columnList" :key="field.id" :label="field.label">
               <template slot-scope="{ row }">
-                <column-sn v-if="field.id === 'sn'" :row="row"></column-sn>
-                <span v-else-if="field.id==='current_steps'">
+                <span v-if="field.id==='current_steps'">
                   {{ row.current_steps[0]&&row.current_steps[0].name|| '--' }}
                 </span>
                 <span v-else>{{ row[field.id] || '--' }}</span>
@@ -71,46 +75,7 @@ import ColumnSn from './components/columnSn.vue';
 import { errorHandler } from '../../utils/errorHandler';
 import { getQuery } from '../../utils/util';
 import  status  from './mixin/status.js';
-const COLUMN_LIST = [
-  {
-    id: 'sn',
-    label: '流程编号',
-    prop: 'sn',
-    width: '140',
-    disabled: true,
-  },
-  {
-    id: 'service_name',
-    label: '流程名称',
-    prop: 'service_name',
-    width: '140',
-    disabled: true,
-  },
-  {
-    id: 'current_steps',
-    label: '当前节点',
-    prop: 'current_steps[0].name',
-    width: '140',
-  },
-  {
-    id: 'creator',
-    label: '发起人',
-    prop: 'creator',
-    width: '140',
-  },
-  {
-    id: 'create_at',
-    label: '创建时间',
-    minWidth: '140',
-    prop: 'create_at',
-  },
-  // {
-  //   id: 'current_status_display',
-  //   label: '节点状态',
-  //   minWidth: '140',
-  //   prop: 'current_status_display',
-  // },
-];
+
 
 export default {
   name: 'Todo',
@@ -122,7 +87,6 @@ export default {
   data() {
     return {
       keyword: '',
-      columnList: COLUMN_LIST,
       tableList: [],
       tableLoading: false,
       pagination: {
@@ -130,7 +94,6 @@ export default {
         count: 10,
         limit: 10,
       },
-      settingList: COLUMN_LIST,
       defaultTableHeight: '',
       size: 'small',
     };
