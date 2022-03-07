@@ -9,7 +9,7 @@
     @toggle="navFolded = !$event"
     @toggle-click="handleToggleClick">
     <template slot="side-icon">
-      <img :src="imgUrl" @click="handleClik"></img>
+      <img :src="imgUrl" @click="handleClik">
     </template>
     <template slot="header">
       <ul class="top-entry-list">
@@ -19,6 +19,23 @@
           </router-link>
         </li>
       </ul>
+      <bk-popover
+        theme="navigation-popover"
+        :arrow="false"
+        offset="0, 7"
+        :tippy-options="{ animateFill: false, hideOnClick: false }">
+        <div class="user-name">
+          <span>{{ userName }}</span>
+          <i class="custom-icon-font icon-arrow"></i>
+        </div>
+        <template slot="content">
+          <ul class="nav-operate-list">
+            <li class="operate-item">
+              <span data-test-id="navigation-span-logout" @click="onLogOut">退出登录</span>
+            </li>
+          </ul>
+        </template>
+      </bk-popover>
     </template>
     <template v-if="sideMenuList.length > 0" slot="menu">
       <bk-navigation-menu
@@ -82,6 +99,7 @@ export default {
       appListLoading: false,
       navFolded: this.$store.state.navFolded,
       imgUrl: require('@/assets/images/logo-smarker.svg'),
+      userName: window.username || '--',
     };
   },
   computed: {
@@ -186,6 +204,9 @@ export default {
     handleClik() {
       this.$router.push({ name: 'applicationList' });
     },
+    onLogOut () {
+      location.href = window.login_url + '?c_url=' + window.location.href
+    },
   },
 };
 </script>
@@ -217,6 +238,45 @@ export default {
   }
 }
 
+.user-name {
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  i{
+    font-size: 20px;
+    color: rgba(255, 255, 255, 0.5);
+  }
+  &:hover {
+    color: #ffffff;
+  }
+}
+
+.nav-operate-list {
+  padding: 4px 0;
+  width: 120px;
+  height: 44px;
+  box-shadow: 0px 4px 8px 0px rgba(32, 41, 53, 0.1);
+  border: 1px solid #EAEBF0;
+  .operate-item {
+    width: 118px;
+    height: 34px;
+    padding: 0 7px;
+    color: #313238;
+    line-height: 34px;
+    cursor: pointer;
+    font-size: 14px;
+    > a {
+      color: #63656e;
+    }
+    &:hover {
+      background-color: #eaf3ff;
+      color: #3a84ff;
+      > a {
+        color: #3a84ff;
+      }
+    }
+  }
+}
 .bk-navigation {
   min-width: 1366px;
 
@@ -225,13 +285,26 @@ export default {
       max-width: none !important;
     }
 
+
     .container-content {
       padding: 0;
     }
+  }
+  /deep/ .header-right{
+    justify-content: space-between;
   }
 }
 
 .bk-navigation.with-app-selector /deep/ .nav-slider-list {
   padding-top: 0px;
+}
+</style>
+<style>
+.tippy-popper .tippy-tooltip.navigation-popover-theme {
+  padding: 0;
+  background: #ffffff;
+  box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.1);
+  border-radius: 0;
+  margin-right: 16px;
 }
 </style>

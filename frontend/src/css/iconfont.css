@@ -12,6 +12,9 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+.icon-arrow:before{
+  content:'\e6bd' ;
+}
 .icon-api:before{
   content:'\e612' ;
 }
