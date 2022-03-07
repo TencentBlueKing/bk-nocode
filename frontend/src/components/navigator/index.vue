@@ -278,7 +278,7 @@ export default {
   }
 }
 .bk-navigation {
-  min-width: 1366px;
+  //min-width: 1366px;
 
   /deep/ .bk-navigation-wrapper {
     .navigation-container {

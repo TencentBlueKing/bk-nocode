@@ -78,7 +78,7 @@
             </bk-date-picker>
           </bk-form-item>
           <bk-form-item label="结果精确度" desc-type="icon" desc="精确度将同步作为结果格式，若选择「工作日」，则只计算工作日时。">
-            <bk-select v-model="fieldData.meta.config.accuracy" placeholder="选择结果精确度">
+            <bk-select v-model="fieldData.meta.config.accuracy" placeholder="选择结果精确度"  @selected="change">
               <bk-option v-for="item in accurcyTimeList" :key="item.key" :id="item.key" :name="item.name">
               </bk-option>
             </bk-select>

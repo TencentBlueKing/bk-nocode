@@ -960,7 +960,7 @@ export default {
       }
       if (field.type === 'FORMULA' && field.meta.config && field.meta.config.calculate_type === 'date') {
         const {accuracy, can_format, can_affix, default_time} = field.meta.config;
-        const timeStampArr = row[field.key].split(' - ').map(item => new Date(item || '2022-03-03 23:11:29.818567').getTime());
+        const timeStampArr = row[field.key].split(' - ').map(item => new Date(item).getTime());
         const timeStamp = timeStampArr[0] - timeStampArr[1];
         //	时间精确度
         if (accuracy) {
@@ -990,6 +990,9 @@ export default {
           showValue = timeStamp > 0 ? `已经${this.formatDay(timeStamp)}` : `还有${this.formatDay(Math.abs(timeStamp))}`;
         }
         // console.log(timeStamp, field);
+      }
+      if (field.type === 'FORMULA' && field.meta.config && field.meta.config.calculate_type === 'number') {
+          showValue = row[field.key]
       }
       return showValue || '--';
     },
