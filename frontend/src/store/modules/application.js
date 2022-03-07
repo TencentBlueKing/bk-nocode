@@ -1,5 +1,4 @@
 import ajax from '@/api/index.js';
-
 export default {
   namespaced: true,
   state: {},
@@ -69,6 +68,12 @@ export default {
     // 导出列表组件的数据
     exportData({}, params) {
       return ajax.post('/engine/data/export_list_component_data/', params, { responseType: 'arraybuffer' }).then(respond => respond.data);
+    },
+    uploadFile({}, params) {
+      return ajax.post('/engine/data/import_data/', params).then(response => response.data);
+    },
+    validateData({}, parmas) {
+      return ajax.post('/engine/data/validate_data/', parmas).then(response => response.data);
     },
   },
 };
