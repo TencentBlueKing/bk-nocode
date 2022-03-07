@@ -40,25 +40,28 @@ class WorkSheetFieldModelHandler(WorkSheetFieldModelHandler):
         """
         if not fields:
             raise WorkSheetFieldDoesNotExist("没有工作表字段")
-        date_struct = {}
+        data_struct = {}
         for item in fields:
             # 同一表单下，不同字段增加
-            if item.worksheet_id in date_struct.keys():
-                date_struct[item.worksheet_id]["items"].append(item.tag_data())
+            if item.worksheet_id in data_struct.keys():
+                data_struct[item.worksheet_id]["items"].append(item.tag_data())
             else:
                 # 不同表单下，字段段增加
-                date_struct[item.worksheet_id] = {}
+                data_struct[item.worksheet_id] = {}
                 item_data = item.tag_data()
-                date_struct[item.worksheet_id]["items"] = []
-                date_struct[item.worksheet_id]["items"].append(item_data)
-                date_struct[item.worksheet_id]["key"] = WorkSheetModelHandler(
+                data_struct[item.worksheet_id]["items"] = []
+                data_struct[item.worksheet_id]["items"].append(item_data)
+
+                worksheet = WorkSheetModelHandler(
                     worksheet_id=item.worksheet_id
-                ).instance.key
+                ).instance
+                data_struct[item.worksheet_id]["key"] = worksheet.key
+                data_struct[item.worksheet_id]["name"] = worksheet.name
 
         field_ids = []
         failed_fields = []
         logger.info("创建新增字段id列表：{field_ids}".format(field_ids=field_ids))
-        for data in date_struct.values():
+        for data in data_struct.values():
             for item in data["items"]:
                 item.pop("id")
                 item.pop("unique")
@@ -68,6 +71,7 @@ class WorkSheetFieldModelHandler(WorkSheetFieldModelHandler):
                     continue
                 worksheet_id = item.pop("worksheet_id")
                 worksheet_key = data["key"]
+                worksheet_name = data["name"]
                 field_key = item.pop("key")
                 item["key"] = uuid.uuid3(uuid.uuid1(), uuid.uuid4().hex).hex
                 item["state_id"] = state.id
@@ -80,6 +84,7 @@ class WorkSheetFieldModelHandler(WorkSheetFieldModelHandler):
                         "worksheet": {
                             "id": worksheet_id,
                             "key": worksheet_key,
+                            "name": worksheet_name,
                             "field_key": field_key,
                         },
                     }
@@ -98,6 +103,10 @@ class WorkSheetFieldModelHandler(WorkSheetFieldModelHandler):
                 if exist_flag:
                     continue
                 else:
+                    # 默认值联动规则中有不可修改选项
+                    if item["meta"].get("data_config"):
+                        if not item["meta"]["data_config"]["changeFields"]:
+                            item["is_readonly"] = True
                     field = Field.objects.create(**item)
                     logger.info("新增流程字段id：{field}".format(field=field.id))
                     field_ids.append(field.id)

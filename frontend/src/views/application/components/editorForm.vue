@@ -24,8 +24,8 @@ export default {
     },
   },
   methods: {
-    handleSetValue($event, index) {
-      this.$emit('change', $event, index);
+    handleSetValue(key, $event) {
+      this.$emit('change', $event);
     },
   },
 };

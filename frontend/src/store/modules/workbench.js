@@ -54,5 +54,21 @@ export default {
     executeHandleTriggers({ }, id) {
       return ajax.post(`trigger/actions/${id}/run/`).then(response => response.data);
     },
+    getUser({}, params) {
+      return ajax.get('role/types/', { params }).then(response => response.data);
+    },
+    getSecondUser({ }, params) {
+      return ajax.get('role/users/', { params }).then(response => response.data);
+    },
+    // 获取组织架构内容
+    getTreeInfo({}) {
+      return ajax.get('gateway/usermanage/get_departments/').then(response => response.data);
+    },
+    getPreStates({}, { id }) {
+      return ajax.get(`workflow/states/${id}/pre_states/`).then(response => response.data);
+    },
+    newAssignDeliver({ }, { params, id }) {
+      return ajax.post(`ticket/receipts/${id}/operate/`, params).then(response => response.data);
+    },
   },
 };

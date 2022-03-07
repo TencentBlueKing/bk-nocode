@@ -24,6 +24,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 from rest_framework import serializers
+from django.utils.translation import ugettext as _
+
 
 from itsm.project.handler.project_handler import ProjectHandler
 from nocode.project_manager.models import ProjectWhite
@@ -31,8 +33,17 @@ from nocode.worksheet.handlers.worksheet_handler import WorkSheetModelHandler
 
 
 class ProjectWhiteSerializer(serializers.ModelSerializer):
+    value = serializers.IntegerField(
+        required=True, error_messages={"invalid": "请选择表单"}, help_text="表单"
+    )
+    project_key = serializers.CharField(
+        required=True, error_messages={"blank": _("请选择应用")}
+    )
     projects = serializers.ListField(
-        required=True, help_text="授权应用唯一标识列表", write_only=True
+        required=True,
+        help_text="授权应用唯一标识列表",
+        write_only=True,
+        error_messages={"blank": _("请选择开放应用")},
     )
     granted_project = serializers.JSONField(required=False)
 

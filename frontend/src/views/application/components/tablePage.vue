@@ -115,13 +115,14 @@
                 点击跳转
               </bk-button>
               <span v-else-if=" ['create_at','update_at'].includes(field.id)">{{ row[field.key] | formatTimer }}</span>
-              <span v-else-if="['SELECT', 'RADIO','CHECKBOX', 'INPUTSELECT', 'MULTISELECT'].includes(field.type)">
+              <span
+                v-else-if="['SELECT', 'RADIO','CHECKBOX', 'INPUTSELECT', 'MULTISELECT','FORMULA'].includes(field.type)">
                 {{ transformFields(field, row) }}</span
               >
               <span v-else>{{ row[field.key] | formatData }}</span>
             </template>
           </bk-table-column>
-          <bk-table-column label="操作" width="200" fixed="right">
+          <bk-table-column label="操作" width="200" fixed="right" v-if="config.optionList.length>0">
             <template slot-scope="{ row }">
               <bk-button
                 v-for="(btn, index) in config.optionList.slice(0, 3)"
@@ -255,7 +256,7 @@ import editorForm from './editorForm.vue';
 import showSearchInfo from './showSearchInfo.vue';
 import permission from '@/components/permission/mixins.js';
 import { SYS_FIELD } from '@/constants/sysField.js';
-import {  formatTimer } from '../../../utils/util';
+import { formatTimer } from '../../../utils/util';
 import CreateTicketSuccess from './createTicketSuccess.vue';
 import customTable from '@/components/form/formFields/fields/table.vue';
 import SearchTag from './searchTag.vue';
@@ -346,6 +347,8 @@ export default {
       selectionFields: [],
       fields: [],
       fieldList: [],
+      // 编辑和详情需要的全部字段
+      editFiledsList: [],
       fieldListLoading: false,
       isDropdownShow: false,
       btnValue: '',
@@ -379,7 +382,8 @@ export default {
               } else if (Array.isArray(this.searchFormData[key])) {
                 if (!this.searchFormData[key].length > 0) {
                   return;
-                };
+                }
+                ;
                 const tempName = this.searchFormData[key].map(it => el.choice.find(ele => it === ele.key).name);
                 searchArr.push({
                   name: el.name,
@@ -396,7 +400,8 @@ export default {
               } else {
                 if (!this.searchFormData[key]) {
                   return;
-                };
+                }
+                ;
                 searchArr.push({ name: el.name, value: this.searchFormData[key], key });
               }
             }
@@ -464,12 +469,12 @@ export default {
                 : tempArr.push({ key, value: formatTimer(el), type: 'const', condition: '<=' });
             }
           });
-        //  多选下拉框以及checkbox
+          //  多选下拉框以及checkbox
         } else if (Array.isArray(item[key])) {
           if (item[key].length > 0) {
             tempArr.push({ key, value: item[key].toString(), type: 'const', condition: '==' });
           }
-        //  数字类型
+          //  数字类型
         } else if (tempIntType.includes(key)) {
           if (item[key].length > 0) {
             tempArr.push({ key, value: Number(item[key]), type: 'const', condition: '==' });
@@ -539,6 +544,7 @@ export default {
         const result = await this.$store.dispatch('application/getWorksheetFiledConfig', params);
         this.fieldList = result.data.filter(item => fields.indexOf(item.id) !== -1);
         this.fieldList.push(...tempSysfiledList);
+        this.editFiledsList = [...result.data, ...tempSysfiledList];
         this.fields = this.transFiledByOrder(result.data);
         this.selectionFields = cloneDeep(this.fieldList);
       } catch (e) {
@@ -626,7 +632,7 @@ export default {
         const res = await this.$store.dispatch('application/getDetail', params);
         const resData = res.data[0];
         const showFiled = [];
-        this.fieldList.forEach((item) => {
+        this.editFiledsList.forEach((item) => {
           if (typeof (resData[item.key]) !== 'undefined') {
             if (['IMAGE'].includes(item.type)) {
               const arr = (new Function(`return( ${resData[item.key]} );`))();
@@ -644,6 +650,20 @@ export default {
         console.log(e);
       } finally {
         this.editorLoading = false;
+      }
+    },
+    // 获取当前某行数据的全部值
+    async getTotalValue(value, row) {
+      const params = {
+        pk: row.id,
+        service_id: value,
+        worksheet_id: this.formId,
+      };
+      try {
+        const res = await this.$store.dispatch('application/getDetail', params);
+        return res.data[0];
+      } catch (e) {
+        console.warn(e);
       }
     },
     handleClick(btn, row = {}, actionType) {
@@ -759,19 +779,20 @@ export default {
       this.sidesliderIsShow = true;
       this.editorLoading = true;
       const value = {};
+      const editorValue = await this.getTotalValue(id, row);
       const editorData = await this.getSheetPage(id);
-      const  tempEditData = [];
-      const  tempKeyList = this.fieldList.map(item => item.key);
+      const tempEditData = [];
+      const tempKeyList = this.editFiledsList.map(item => item.key);
       editorData.forEach((item) => {
         if (item.meta.worksheet) {
-          for (const i in row) {
+          for (const i in editorValue) {
             if (item.meta.worksheet.field_key === i) {
-              item.value = row[i];
+              item.value = editorValue[i];
               if (['MULTISELECT', 'CHECKBOX', 'MEMBER', 'MEMBERS'].includes(item.type)) {
                 // 以上接受一个数组 给的是字符串
-                value[item.key] = (row[i] && row[i].split(',')) || [];
+                value[item.key] = (editorValue[i] && editorValue[i].split(',')) || [];
               } else {
-                value[item.key] = row[i] || '';
+                value[item.key] = editorValue[i] || '';
               }
             }
           }
@@ -850,7 +871,9 @@ export default {
     transformFields(field, row) {
       let showValue = '';
       if (['SELECT', 'RADIO', 'CHECKBOX', 'INPUTSELECT', 'MULTISELECT'].includes(field.type)) {
-        if (['CHECKBOX', 'MULTISELECT'].includes(field.type)) {
+        if (['API', 'WORKSHEET'].includes(field.source_type)) {
+          showValue = row[field.key];
+        } else if (['CHECKBOX', 'MULTISELECT'].includes(field.type)) {
           const tempArr = [];
           field.choice.forEach((item) => {
             if (row[field.key] && Array.isArray(row[field.key].split(','))) {
@@ -870,7 +893,52 @@ export default {
           });
         }
       }
+      if (field.type === 'FORMULA' && field.meta.config && field.meta.config.calculate_type === 'date') {
+        const { accuracy, can_format, can_affix, default_time } = field.meta.config;
+        const timeStampArr = row[field.key].split(' - ').map(item => new Date(item || '2022-03-03 23:11:29.818567').getTime());
+        const timeStamp = timeStampArr[0] - timeStampArr[1] ;
+        //	时间精确度
+        if (accuracy) {
+          if (timeStamp < 0) {
+            showValue = '当前时间为负数，请检查是否设置前缀自适应';
+          } else if (accuracy === 'hour') {
+            showValue = this.$dayjs(timeStamp).format('DD天 HH');
+          } else if (accuracy === 'minute') {
+            showValue = this.$dayjs(timeStamp).format('DD天 HH:mm');
+          } else if (accuracy === 'day') {
+            showValue = this.$dayjs(timeStamp).format('DD天');
+          }
+        } else {
+          showValue = default_time;
+        }
+        // 是否前缀自适应
+        if (can_affix && accuracy) {
+          if (timeStamp < 0) {
+            const abSoluteValue = Math.abs(timeStamp);
+            showValue = this.formatDay(abSoluteValue);
+          } else {
+            showValue = this.formatDay(timeStamp);
+          }
+        }
+        //	是否格式自适应
+        if (can_format && accuracy) {
+          showValue = timeStamp > 0 ? `已经${this.formatDay(timeStamp)}` : `还有${this.formatDay(Math.abs(timeStamp))}`;
+        }
+        // console.log(timeStamp, field);
+      }
       return showValue || '--';
+    },
+
+    formatDay(abSoluteValue) {
+      let totalYear;
+      let totalDay;
+      let totalMonth;
+      const day = Math.floor(abSoluteValue / 1000 /  60 / 60 / 24) ;
+      console.log(day);
+      totalYear =  Math.floor(day / 365);
+      totalMonth =  Math.floor((day % 365) / 30);
+      totalDay = day - (365 * totalYear) - (30 * totalMonth);
+      return `${totalYear > 0 ? `${totalYear}年` : ''}${totalMonth > 0 ? `${totalMonth}月` : ''}${totalDay > 0 ? `${totalDay}天` : ''}`;
     },
     handleSelect(selection) {
       this.selection = selection;
@@ -1176,10 +1244,15 @@ export default {
 }
 
 .custom-form {
+  @mixin scroller;
+  height: 500px;
+  overflow: auto;
+
   /deep/ .bk-form-content {
+    @mixin scroller;
     font-size: 14px;
     color: #63656e;
-    overflow: hidden;
+    overflow: auto;
   }
 }
 

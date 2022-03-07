@@ -118,6 +118,17 @@ BUILTIN_TICKET_STATUS = [
         "is_suspend": False,
         "color_hex": "#FF5656",
     },
+    {
+        "key": PROCESS_FAILED,
+        "name": _("失败"),
+        "flow_status": PROCESS_FAILED,
+        "order": 7,
+        "is_builtin": True,
+        "is_start": False,
+        "is_over": True,
+        "is_suspend": False,
+        "color_hex": "#FF5656",
+    },
 ]
 TICKET_END_STATUS = ["FINISHED", "TERMINATED", "REVOKED"]
 
