@@ -51,6 +51,7 @@ class WorkSheetFieldSerializer(serializers.ModelSerializer):
     api_info = JSONField(required=False)
     choice = JSONField(required=False, initial=[])
     kv_relation = JSONField(required=False, initial={})
+    num_range = JSONField(required=False)
 
     def validate_worksheet_id(self, worksheet_id):
         try:
@@ -261,13 +262,14 @@ class WorkSheetFieldItemSerializer(serializers.ModelSerializer):
             self.validated_formula_config(attrs)
 
         if attrs.get("type") in ["CHECKBOX", "MULTISELECT", "TREESELECT"]:
-            num_range = attrs.get("num_range")
-            if num_range:
-                # 如果传了num_range 但是数量等于不是两个
-                if num_range and len(num_range) != 2:
-                    raise serializers.ValidationError(_("字段范围格式不正确"))
-                if num_range[0] == num_range[1]:
-                    raise serializers.ValidationError(_("最小范围和最大范围不能相同"))
+            num_range = attrs.get("num_range", None)
+            if num_range is None:
+                return attrs
+            # 如果传了num_range 但是数量等于不是两个
+            if not num_range or len(num_range) != 2:
+                raise serializers.ValidationError(_("字段范围格式不正确"))
+            if num_range[0] == num_range[1]:
+                raise serializers.ValidationError(_("最小范围和最大范围不能相同"))
 
         return attrs
 
