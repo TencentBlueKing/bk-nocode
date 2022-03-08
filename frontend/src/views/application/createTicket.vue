@@ -11,7 +11,11 @@
       <div class="form-fields-content">
         <template v-if="!fieldListLoading">
           <template v-if="fieldList.length > 0">
-            <form-fields style="width: 760px" :fields="fieldList" :value="formValue" @change="formValue = $event">
+            <form-fields
+              style="width: 760px"
+              :fields="fieldList"
+              :value="formValue"
+              @change="(key,$event) => formValue = $event">
             </form-fields>
             <div class="btn-actions">
               <bk-button
@@ -174,6 +178,7 @@ export default {
     }
   }
 }
+
 .btn-actions {
   margin-top: 40px;
 
@@ -181,6 +186,7 @@ export default {
     margin-right: 4px;
   }
 }
+
 .create-ticket-success {
   height: calc(100vh - 52px);
   display: flex;
