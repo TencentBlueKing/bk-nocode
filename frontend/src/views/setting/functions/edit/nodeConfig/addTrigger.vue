@@ -653,6 +653,9 @@ export default {
           if (this.originInfoToTrigger.id) {
             params.source_type = this.originInfoToTrigger.source;
             params.source_id = params.sender = this.originInfoToTrigger.id;
+            if (this.originInfoToTrigger.filter === 'STATE') {
+              params.sender = this.originInfoToTrigger.sender;
+            }
           }
           if (this.projectId) {
             params.project_key = this.projectId;
