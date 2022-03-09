@@ -26,7 +26,7 @@
         :tippy-options="{ animateFill: false, hideOnClick: false }">
         <div class="user-name">
           <span>{{ userName }}</span>
-          <i class="custom-icon-font icon-arrow"></i>
+          <i class="bk-icon icon-angle-down"></i>
         </div>
         <template slot="content">
           <ul class="nav-operate-list">
@@ -204,8 +204,8 @@ export default {
     handleClik() {
       this.$router.push({ name: 'applicationList' });
     },
-    onLogOut () {
-      location.href = window.login_url + '?c_url=' + window.location.href
+    onLogOut() {
+      location.href = `${window.login_url}?c_url=${window.location.href}`;
     },
   },
 };
@@ -278,7 +278,7 @@ export default {
   }
 }
 .bk-navigation {
-  //min-width: 1366px;
+  min-width: 1366px;
 
   /deep/ .bk-navigation-wrapper {
     .navigation-container {

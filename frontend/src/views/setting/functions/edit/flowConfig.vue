@@ -165,9 +165,11 @@ export default {
 }
 
 .tip-box {
+  display: flex;
   position: absolute;
-  height: 32px;
-  margin-bottom: 16px;
+  margin-bottom: 24px;
+  width: 800px;
+  padding: 4px 10px;
   border: 1px solid #C5DAFF;
   border-radius: 2px;
   background: #F0F8FF;
@@ -187,9 +189,8 @@ export default {
   }
   .icon-close{
     display: inline-block;
-    margin-left: 24px;
     font-size: 16px;
-    margin-right: 12px;
+    margin-top: 8px;
   }
 }
 </style>

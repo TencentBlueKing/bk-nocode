@@ -2,7 +2,7 @@
   <section class="basic-config">
     <div class="basic-config-form">
       <bk-form ref="basicForm" class="form-container" form-type="vertical" :model="formData" :rules="rules">
-        <bk-form-item label="功能属性" property="type" :required="true">
+        <bk-form-item label="功能属性" property="type" :required="true" :error-display-type="'normal'">
           <bk-select
             v-model="formData.type"
             :clearable="false"
@@ -12,10 +12,10 @@
             <bk-option v-for="item in typeList" :key="item.id" :id="item.id" :name="item.name"></bk-option>
           </bk-select>
         </bk-form-item>
-        <bk-form-item label="功能名称" property="name" :required="true">
+        <bk-form-item label="功能名称" property="name" :required="true" :error-display-type="'normal'">
           <bk-input v-model="formData.name" :disabled="formData.is_builtin"></bk-input>
         </bk-form-item>
-        <bk-form-item label="关联表单" property="worksheet_ids" :required="true">
+        <bk-form-item label="关联表单" property="worksheet_ids" :required="true" :error-display-type="'normal'">
           <bk-select
             :value="formData.worksheet_ids"
             :loading="formListLoading"
@@ -70,21 +70,21 @@ export default {
         type: [
           {
             required: true,
-            message: '必填项',
+            message: '功能属性为必填项',
             trigger: 'blur',
           },
         ],
         name: [
           {
             required: true,
-            message: '必填项',
+            message: '功能属性为必填项',
             trigger: 'blur',
           },
         ],
         worksheet_ids: [
           {
             required: true,
-            message: '必填项',
+            message: '关联表单为必填项',
             trigger: 'blur',
           },
         ],
@@ -132,7 +132,7 @@ export default {
       });
     },
     handleNextStep() {
-      this.$refs.basicForm.validate(async result => {
+      this.$refs.basicForm.validate(async (result) => {
         if (!result) {
           return;
         }

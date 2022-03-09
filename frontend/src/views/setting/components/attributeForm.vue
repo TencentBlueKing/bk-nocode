@@ -4,6 +4,7 @@
       ref="cardForm"
       :label-width="200"
       form-type="vertical"
+      :rules="rules"
       :model="configData">
       <bk-form-item label="功能绑定" :property="'functionBind'" v-show="configData.option!=='TABLE'">
         <bk-select v-model="configData.value" @change="change">
@@ -15,7 +16,12 @@
           </bk-option>
         </bk-select>
       </bk-form-item>
-      <bk-form-item label="工作表绑定" v-show="configData.option==='TABLE'">
+      <bk-form-item
+        label="工作表绑定"
+        v-show="configData.option==='TABLE'"
+        property="workSheetId"
+        :required="true"
+        :error-display-type="'normal'">
         <bk-select v-model="configData.workSheetId" @change="change">
           <bk-option
             v-for="list in workSheetList"
@@ -160,6 +166,13 @@ export default {
       }, {
         id: 1, name: '仅本人创建的',
       }],
+      rules: {
+        workSheetId: [{
+          required: true,
+          message: '工作表绑定为必填项',
+          trigger: 'blur',
+        }],
+      },
       buttonDetail: {},
       dialog: {
         visible: false,

@@ -74,10 +74,10 @@
       @cancel="onCreateFormCancel">
       <div class="form-basic-info">
         <bk-form ref="basicInfo" form-type="vertical" :rules="basicRules" :model="formBasic">
-          <bk-form-item label="表单名称" property="name" :required="true">
+          <bk-form-item label="表单名称" property="name" :required="true" :error-display-type="'normal'">
             <bk-input v-model.trim="formBasic.name"></bk-input>
           </bk-form-item>
-          <bk-form-item label="表单描述" property="desc">
+          <bk-form-item label="表单描述" property="desc" :error-display-type="'normal'">
             <bk-input type="textarea" :rows="7" v-model.trim="formBasic.desc"></bk-input>
           </bk-form-item>
         </bk-form>
@@ -113,7 +113,7 @@ export default {
         name: [
           {
             required: true,
-            message: '必填项',
+            message: '表单名称为必填项',
             trigger: 'blur',
           },
         ],

@@ -15,10 +15,15 @@
       </bk-form-item>
       <bk-form-item label="分组">
         <bk-select v-model="formData.group" @clear="formData.group = undefined">
-          <bk-option v-for="option in groupList" :key="option.id" :id="option.id" :name="option.name"> </bk-option>
+          <bk-option v-for="option in groupList" :key="option.id" :id="option.id" :name="option.name"></bk-option>
         </bk-select>
       </bk-form-item>
-      <bk-form-item label="页面类型" :required="true" :property="'type'" ext-cls="custom-from" :error-display-type="'normal'">
+      <bk-form-item
+        label="页面类型"
+        :required="true"
+        :property="'type'"
+        ext-cls="custom-from"
+        :error-display-type="'normal'">
         <div class="page-type-container">
           <div
             v-for="item in typeList"
@@ -69,7 +74,14 @@ export default {
         name: [
           {
             required: true,
-            message: '必填项',
+            message: '页面名称为必填项',
+            trigger: 'blur',
+          },
+        ],
+        type: [
+          {
+            required: true,
+            message: '页面类型为必填项',
             trigger: 'blur',
           },
         ],
@@ -111,13 +123,13 @@ export default {
   },
   methods: {
     createPageConfirm() {
-      if (this.formData.type === '') {
-        this.$bkMessage({
-          theme: 'error',
-          message: '请选择页面类型',
-        });
-        return;
-      }
+      // if (this.formData.type === '') {
+      //   this.$bkMessage({
+      //     theme: 'error',
+      //     message: '请选择页面类型',
+      //   });
+      //   return;
+      // }
       this.savePending = true;
       this.$refs.pageForm
         .validate()
@@ -169,6 +181,7 @@ export default {
 .page-type-container {
   display: flex;
   justify-content: space-between;
+
   .type-card-item {
     padding: 19px 10px;
     width: 186px;
@@ -177,9 +190,11 @@ export default {
     border: 1px solid transparent;
     border-radius: 4px;
     cursor: pointer;
+
     &:not(.selected) {
       border-color: transparent !important;
     }
+
     & > h4 {
       margin: 0;
       line-height: 22px;
@@ -187,19 +202,22 @@ export default {
       font-weight: normal;
       color: #313238;
     }
+
     & > p {
       margin: 0;
       font-size: 12px;
       color: #63656e;
     }
   }
+
   .icon-wrapper {
     margin: 0 auto 8px;
     width: 32px;
     height: 32px;
     color: #ffffff;
     border-radius: 4px;
-    i{
+
+    i {
       font-size: 26px;
     }
   }

@@ -88,7 +88,7 @@
           </span>
         </template>
       </bk-table-column>
-      <bk-table-column :label="'接口路径'" show-overflow-tooltip width="250" :fixed="true">
+      <bk-table-column :label="'接口路径'" show-overflow-tooltip width="250">
         <template slot-scope="props">
           <span class="bk-table-type">{{ props.row.method }}</span>
           <span :title="props.row.path">{{ props.row.path || '--' }}</span>

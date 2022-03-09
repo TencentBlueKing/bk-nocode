@@ -2,7 +2,6 @@
   <div class="search-info">
     <div class="bk-filter">
       <bk-form
-        :label-width="200"
         form-type="vertical"
         ext-cls="dynamic-form"
         v-model="formData"
@@ -50,7 +49,7 @@
         <bk-button :theme="'primary'" type="submit" :title="'查询'" @click="handleSearch">
           查询
         </bk-button>
-        <bk-button :theme="'default'" :title="'取消'" @click="handleCancel">
+        <bk-button :theme="'default'" :title="'取消'" @click="handleCancel" style="margin-left: 8px">
           取消
         </bk-button>
       </div>
@@ -121,7 +120,7 @@ export default {
 
     .dynamic-form {
       display: flex;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       align-items: flex-end;
     }
 
@@ -134,5 +133,6 @@ export default {
 }
 .form-item {
   margin-left: 16px;
+  width: calc((100% - 80px )/ 4);
 }
 </style>

@@ -5,20 +5,38 @@
       <span>字段预览</span>
     </div>
     <div v-if="node.type !== 'APPROVAL'" class="btns-area">
-      <bk-button :disabled="!editable" @click="showSelectFieldPanel = true"> 选取已有字段 </bk-button>
-      <bk-button :disabled="!editable || disableCreateField" @click="onAddFieldClick"> 新增字段 </bk-button>
+      <bk-button :disabled="!editable" @click="showSelectFieldPanel = true"> 选取已有字段</bk-button>
+      <bk-button
+        :disabled="!editable || disableCreateField"
+        @click="onAddFieldClick"
+        style="margin-left: 8px"> 新增字段
+      </bk-button>
     </div>
     <table class="field-table">
       <thead>
-        <tr>
-          <th class="name"><div class="cell">名称</div></th>
-          <th class="key"><div class="cell">唯一标识</div></th>
-          <th class="type"><div class="cell">类型</div></th>
-          <th class="source"><div class="cell">字段来源</div></th>
-          <th class="required"><div class="cell">必填</div></th>
-          <th class="editable"><div class="cell">可编辑</div></th>
-          <th class="operation"><div class="cell">操作</div></th>
-        </tr>
+      <tr>
+        <th class="name">
+          <div class="cell">名称</div>
+        </th>
+        <th class="key">
+          <div class="cell">唯一标识</div>
+        </th>
+        <th class="type">
+          <div class="cell">类型</div>
+        </th>
+        <th class="source">
+          <div class="cell">字段来源</div>
+        </th>
+        <th class="required">
+          <div class="cell">必填</div>
+        </th>
+        <th class="editable">
+          <div class="cell">可编辑</div>
+        </th>
+        <th class="operation">
+          <div class="cell">操作</div>
+        </th>
+      </tr>
       </thead>
       <draggable tag="tbody" handle=".drag-icon" :list="fieldsList" @end="$emit('change', fieldsList)">
         <tr v-for="field in fieldsList" :key="field.id">
@@ -60,6 +78,13 @@
             </div>
           </td>
         </tr>
+        <bk-exception
+          v-if="fieldsList.length===0"
+          class="exception-part"
+          type="empty"
+          scene="part">
+          暂无表单字段数据
+        </bk-exception>
       </draggable>
     </table>
     <bk-dialog
@@ -294,15 +319,18 @@ export default {
   color: #3a84ff;
   cursor: pointer;
   z-index: 1;
+
   i {
     margin-right: 4px;
   }
 }
+
 .btns-area {
   position: relative;
   margin-bottom: 8px;
   height: 32px;
 }
+
 .fields-preview-container {
   padding: 3px 24px 26px;
   min-height: 300px;
@@ -310,22 +338,27 @@ export default {
   overflow: auto;
   @mixin scroller;
 }
+
 .field-slider-container {
   height: calc(100vh - 60px);
 }
+
 .field-table {
   width: 100%;
   border: 1px solid #dfe0e5;
   border-collapse: collapse;
   table-layout: fixed;
+
   tr {
     background: #ffffff;
+
     &:hover {
       .drag-icon {
         display: inline-block;
       }
     }
   }
+
   th,
   td {
     position: relative;
@@ -338,6 +371,7 @@ export default {
     text-overflow: ellipsis;
     box-sizing: border-box;
   }
+
   .cell {
     padding: 0 15px;
     text-align: left;
@@ -348,21 +382,26 @@ export default {
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
+
     /deep/ .bk-button-text {
       font-size: 12px;
     }
   }
+
   th {
     color: #313238;
     background: #fafbfd;
     font-weight: normal;
   }
+
   td {
     color: #63656e;
   }
+
   .name {
     padding-left: 10px;
   }
+
   .drag-icon {
     display: none;
     position: absolute;
@@ -372,22 +411,31 @@ export default {
     color: #979ba5;
     cursor: move;
     z-index: 1;
+
     &:hover {
       color: #3a84ff;
     }
   }
+
   .key {
     width: 110px;
   }
+
   .operation {
     width: 100px;
   }
+
   .editable {
     width: 70px;
   }
+
   .required {
     width: 60px;
   }
+}
+
+.exception-part {
+  width: 600px;
 }
 </style>
 <style lang="postcss">

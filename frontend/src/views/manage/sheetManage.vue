@@ -12,7 +12,7 @@
             @clear="() => initData()"
             searchable
             clearable
-           >
+          >
             <bk-option v-for="option in appList" :key="option.key" :id="option.key" :name="option.name"></bk-option>
           </bk-select>
         </div>
@@ -30,23 +30,25 @@
             @page-limit-change="handlePageLimitChange">
             <bk-table-column v-for="field in columnList" :key="field.id" :label="field.label" show-overflow-tooltip>
               <template slot-scope="{ row }">
+                <span v-if="field.id==='granted_project_name'">
+                  {{ row[field.id] && row[field.id].toString() || '--' }}
+                </span>
+                <span v-else>{{ row[field.id] || '--' }}</span>
+              </template>
+            </bk-table-column>
+            <bk-table-column label="操作" fixed="right">
+              <template slot-scope="{ row }">
                 <bk-button
-                  v-if="field.id==='operate'"
                   theme="primary"
                   text
                   @click="handleEditor(row)">编辑
                 </bk-button>
                 <bk-button
-                  v-if="field.id==='operate'"
                   theme="primary"
                   text
                   style="margin-left: 8px"
                   @click="handleDelete(row)">删除
                 </bk-button>
-                <span v-else-if="field.id==='granted_project_name'">
-                  {{ row[field.id] && row[field.id].toString() || '--' }}
-                </span>
-                <span v-else>{{ row[field.id] || '--' }}</span>
               </template>
             </bk-table-column>
           </bk-table>
@@ -61,7 +63,13 @@
       header-position="left"
       :title="formStatus==='ADD'?'新增开放表单':'编辑'">
       <bk-form :label-width="200" :model="addSheetFormData" form-type="vertical" :rules="rules">
-        <bk-form-item label="选择应用" :property="'name'" :required="true" v-if="formStatus==='ADD'">
+        <bk-form-item
+          label="选择应用"
+          property="openApplication"
+          :required="true"
+          v-if="formStatus==='ADD'"
+          :error-display-type="'normal'"
+        >
           <bk-select
             v-model="addSheetFormData.checkApp"
             searchable
@@ -72,15 +80,24 @@
         </bk-form-item>
         <bk-form-item
           label="选择表单"
-          :property="'name'"
+          property="checkSheet"
           :required="true"
           :loading="sheetLoading"
+          :error-display-type="'normal'"
           v-if="formStatus==='ADD'">
-          <bk-select v-model="addSheetFormData.checkSheet" :disabled="!addSheetFormData.checkApp" searchable>
+          <bk-select
+            v-model="addSheetFormData.checkSheet"
+            :disabled="!addSheetFormData.checkApp"
+            searchable>
             <bk-option v-for="option in sheetList" :key="option.id" :id="option.id" :name="option.name"></bk-option>
           </bk-select>
         </bk-form-item>
-        <bk-form-item label="开放应用" :property="'name'" :required="true">
+        <bk-form-item
+          label="开放应用"
+          desc-type="icon"
+          desc-icon="icon-info-circle"
+          desc="在开放应用中可以引用被开放表单数据"
+        >
           <bk-tag-input
             v-model="addSheetFormData.openApplication"
             :disabled="formStatus==='ADD'&&!addSheetFormData.checkApp"
@@ -123,12 +140,6 @@ const COLUMN_LIST = [
     prop: 'granted_project_name',
     width: '140',
   },
-  {
-    id: 'operate',
-    label: '操作',
-    minWidth: '80',
-    disabled: true,
-  },
 ];
 export default {
   name: 'SheetManage',
@@ -162,21 +173,14 @@ export default {
         openApplication: [
           {
             required: true,
-            message: '必填项',
+            message: '选择应用为必填项',
             trigger: 'blur',
           },
         ],
         checkSheet: [
           {
             required: true,
-            message: '必填项',
-            trigger: 'blur',
-          },
-        ],
-        checkApp: [
-          {
-            required: true,
-            message: '必填项',
+            message: '选择表单为必填项',
             trigger: 'blur',
           },
         ],
@@ -296,7 +300,7 @@ export default {
     },
     async updateOpenSheet() {
       const { openApplication, id } = this.addSheetFormData;
-      const params = { id,  projects: openApplication };
+      const params = { id, projects: openApplication };
       try {
         this.submitPending = true;
         const res = await this.$store.dispatch('manage/updateOpenSheetList', params);
@@ -320,7 +324,7 @@ export default {
       this.AddSheetDialogVisible = true;
     },
     handleSearch(val) {
-      this.pagination.current =1
+      this.pagination.current = 1;
       this.initData(val);
     },
     handlePageChange(page) {
@@ -344,7 +348,7 @@ export default {
     },
     handleDelete(row) {
       this.$bkInfo({
-        title: `此操作将删除访问${row.project_name}对外开发,是否确认？`,
+        subTitle: `此操作将删除访问${row.project_name}对外开放,是否确认？`,
         type: 'warning',
         width: 500,
         confirmFn: async () => {
@@ -374,6 +378,8 @@ export default {
   margin: 24px;
   padding: 24px;
   background: #ffffff;
+  box-shadow: 0 2px 4px 0 rgba(25,25,41,0.05);
+  border-radius: 2px;
 
   .sheet-manage-table {
     margin-top: 24px;
