@@ -12,9 +12,16 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-.icon-arrow:before{
+.icon-programmer:before{
+  content:'\e727' ;
+}
+.icon-copy:before{
+  content:'\e683' ;
+}
+.icon-arrow-down:before{
   content:'\e6bd' ;
 }
+
 .icon-api:before{
   content:'\e612' ;
 }

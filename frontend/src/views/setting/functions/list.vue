@@ -81,7 +81,7 @@
               </bk-button
               >
             </template>
-          </bk-table-column></bk-table></div></page-wrapper></section></span></template></bk-table-column>
+          </bk-table-column>
         </bk-table>
       </div>
     </page-wrapper>
@@ -333,13 +333,16 @@ export default {
 
 .operate-area {
   position: relative;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 .search-item-container {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
+  /deep/ .bk-tag{
+    margin: 4px 8px 2px 0;
+  }
 }
 
 .bk-status-color {

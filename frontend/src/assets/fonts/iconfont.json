@@ -6,9 +6,23 @@
   "description": "nocode项目图标资源",
   "glyphs": [
     {
+      "icon_id": "20047575",
+      "name": "icon-copy",
+      "font_class": "xianxingtubiao-fuzhi",
+      "unicode": "e683",
+      "unicode_decimal": 59011
+    },
+    {
+      "icon_id": "21815505",
+      "name": "icon-programmer",
+      "font_class": "mianxingtubiao-chengxubao",
+      "unicode": "e727",
+      "unicode_decimal": 59175
+    },
+    {
       "icon_id": "20049577",
-      "name": "icon-arrow",
-      "font_class": "icon-arrow",
+      "name": "icon-arrow-down",
+      "font_class": "changyongtubiao-jiantou",
       "unicode": "e6bd",
       "unicode_decimal": 59069
     },

@@ -113,7 +113,7 @@ export const MANAGE = {
     {
       id: 'sheetManage',
       name: '表单开放管理',
-      icon: 'custom-icon-font icon-admin-setting',
+      icon: 'custom-icon-font icon-programmer',
       path: '/manage/sheetManage/',
       children: [],
     },

@@ -1,9 +1,9 @@
 <template>
   <div class="trigger-container">
     <div @click="showMoreConfig = !showMoreConfig" class="more-configuration" v-if="origin!=='workflow'">
-      <i v-if="!showMoreConfig" class="bk-icon icon-right-shape"></i>
-      <i v-else class="bk-icon icon-down-shape"></i>
       <span>高级配置</span>
+      <i v-if="!showMoreConfig" class="bk-icon icon-angle-double-up"></i>
+      <i v-else class="bk-icon  icon-angle-double-down"></i>
     </div>
     <div v-if="showMoreConfig"
          :class="origin!=='workflow'?
@@ -23,25 +23,19 @@
                       :class="{ 'li-transition': origin === 'transition' }">
                                         <span class="bk-trigger-icon">
                                             <i class="custom-icon-font icon-info-circle" :class="[item.iconKey]"
-                                               style="font-size: 24px"></i>
+                                               style="font-size: 16px"></i>
                                         </span>
-                    <span class="bk-trigger-name" :title="item.name">{{ item.name || '--' }}
+                    <span class="bk-trigger-name" :title="item.name" v-bk-overflow-tips="{ content: item.name }">{{ item.name || '--' }}
                                             <span v-if="item.is_draft"
                                                   style="color: #3A84FF;">草稿</span>
-                                        </span>
+                                             </span>
                     <span class="bk-trigger-delete">
                                             <i class="bk-icon icon-delete" @click.stop="delTrigger(item)"></i>
                                         </span>
                   </li>
-                  <bk-dropdown-menu trigger="click" style="float: left;">
-                    <div class="bk-trigger-add" slot="dropdown-trigger" title="添加触发器">
+                    <div class="bk-trigger-add" slot="dropdown-trigger" title="添加触发器" @click="openNew('add')">
                       <i class="bk-icon icon-plus"></i>
                     </div>
-                    <ul class="bk-dropdown-list" slot="dropdown-content">
-                      <li><a href="javascript:;" @click="openNew('add')">新建</a></li>
-                      <!--                      <li><a href="javascript:;" @click="openNew('cite')">引用公共触发器</a></li>-->
-                    </ul>
-                  </bk-dropdown-menu>
                 </ul>
               </div>
             </div>
@@ -330,33 +324,29 @@ export default {
   font-size: 14px;
   color: #3a84ff;
   cursor: pointer;
+  span {
+    font-size: 14px;
+  }
 
   .bk-icon {
     padding: 0 5px;
     margin-right: 6px;
+    display: inline-block;
+    font-size: 18px;
+
   }
 }
 common-section-card-node-block {
   background: #ffffff;
 }
 .common-section-card-block {
-  margin: 24px 0;
-  padding: 20px;
-  display: flex;
-  background: #ffffff;
-  border: 1px solid #c4c6cc;
-  border-radius: 2px;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+  margin-top: 16px;
 
   .common-section-card-label {
-    width: 138px;
+    height: 22px;
     font-size: 14px;
-    font-weight: 700;
-    text-align: left;
-    color: #63656e;
-    line-height: 19px;
-    flex-shrink: 0;
-
+    color: #63656E;
+    line-height: 22px;
     .common-section-card-desc {
       margin-top: 4px;
       width: 120px;
@@ -376,16 +366,19 @@ common-section-card-node-block {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
   line-height: 48px;
   color: #979ba5;
-  border: 1px solid #dcdee5;
-  border-radius: 2px;
   font-size: 32px;
   text-align: center;
   cursor: pointer;
-
+  width: 32px;
+  height: 32px;
+  background: #FFFFFF;
+  border: 1px solid #C4C6CC;
+  border-radius: 2px;
+  i{
+    font-size: 20px;
+  }
   &.large {
     width: 60px;
     height: 60px;
@@ -401,9 +394,8 @@ common-section-card-node-block {
 .bk-trigger-content {
   margin-top: 10px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   flex-wrap: wrap;
-  width: 280px;
   @mixin clearfix;
 
   .li-transition {
@@ -411,23 +403,30 @@ common-section-card-node-block {
   }
 
   & > li {
+    display: flex;
+    align-items: center;
     float: left;
-    width: 100%;
     margin-right: 10px;
     margin-bottom: 20px;
-    border: 1px solid #DCDEE5;
-    border-radius: 2px;
-    height: 50px;
     line-height: 50px;
-    background-color: #fff;
+    width: 111px;
+    height: 32px;
+    background: #FFFFFF;
+    border: 1px solid #C4C6CC;
+    border-radius: 2px 0 0 2px;
+    border-left: none;
     @mixin clearfix;
 
     &:hover {
       border-color: #3A84FF;
-
+      cursor: pointer;
       .bk-trigger-icon {
         color: #fff;
+        width: 31px;
+        height: 32px;
+        line-height: 31px;
         background-color: #3A84FF;
+        text-align: center;
       }
 
       .bk-trigger-delete {
@@ -439,27 +438,29 @@ common-section-card-node-block {
 
   .bk-trigger-icon {
     float: left;
-    width: 50px;
-    height: 48px;
-    line-height: 48px;
-    font-size: 16px;
     color: #979BA5;
     text-align: center;
-    background-color: #F0F1F5;
-    border-right: 1px solid #DCDEE5;
+    width: 31px;
+    height: 32px;
+    line-height: 31px;
+    background: #FFFFFF;
+    border: 1px solid #C4C6CC;
+    border-radius: 2px 0 0 2px;
   }
 
   .bk-trigger-name {
-    float: left;
-    line-height: 48px;
-    font-size: 14px;
-    width: calc(100% - 100px);
-    padding-left: 14px;
-    color: #63656E;
-    overflow: hidden;
-    white-space: nowrap;
+    padding-left: 4px;
     text-overflow: ellipsis;
-    cursor: pointer;
+    overflow: hidden;
+    width: 60px;
+    height: 20px;
+    font-size: 12px;
+    color: #63656E;
+    letter-spacing: 0;
+    line-height: 20px;
+    text-align: center;
+    white-space: nowrap;
+    display: inline-block;
   }
 
   .bk-trigger-delete {
@@ -467,7 +468,7 @@ common-section-card-node-block {
     float: left;
     cursor: pointer;
     margin-left: 15px;
-    font-size: 18px;
+    font-size: 16px;
   }
 }
 </style>

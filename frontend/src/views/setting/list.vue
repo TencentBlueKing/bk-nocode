@@ -53,7 +53,7 @@
       @cancel="onEditAppCancel">
       <div v-if="editingApp" class="app-edit-content">
         <bk-form ref="appForm" form-type="vertical" :model="editingApp" :rules="appFormRules">
-          <bk-form-item label="应用名称" property="name" :required="true">
+          <bk-form-item label="应用名称" property="name" :required="true" :error-display-type="'normal'">
             <bk-input placeholer="请输入应用名称" v-model.trim="editingApp.name"></bk-input>
           </bk-form-item>
           <bk-form-item label="应用颜色">
@@ -69,7 +69,7 @@
                 @click="onSelectBgColor(item)"></li>
             </ul>
           </bk-form-item>
-          <bk-form-item label="应用标识" property="key" :required="true">
+          <bk-form-item label="应用标识" property="key" :required="true" :error-display-type="'normal'">
             <bk-input v-model.trim="editingApp.key" :disabled="!editingApp.isCreate"></bk-input>
             <p class="prefix-tips">应用唯一key值，只支持英文和下划线</p>
           </bk-form-item>
@@ -118,14 +118,14 @@ export default {
         name: [
           {
             required: true,
-            message: '必填项',
+            message: '应用名称为必填项',
             trigger: 'blur',
           },
         ],
         key: [
           {
             required: true,
-            message: '必填项',
+            message: '应用标识为必填项',
             trigger: 'blur',
           },
         ],
@@ -143,7 +143,7 @@ export default {
     this.getAppList();
   },
   beforeDestroy() {
-    Object.keys(this.appReleasingTimer).forEach(key => {
+    Object.keys(this.appReleasingTimer).forEach((key) => {
       if (this.appReleasingTimer[key] > 0) {
         clearTimeout(this.appReleasingTimer[key]);
       }
@@ -174,7 +174,7 @@ export default {
         }
         const res = await this.$store.dispatch('setting/getAllApp', params);
         this.listData = res.data;
-        res.data.forEach(item => {
+        res.data.forEach((item) => {
           if (item.publish_status === 'RELEASING') {
             this.getAppStatus(item.key);
           }

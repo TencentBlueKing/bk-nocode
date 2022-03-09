@@ -34,33 +34,16 @@
               </bk-radio-group>
             </bk-form-item>
             <bk-form-item label="转派范围" error-display-type="normal" :required="true" v-if="formData.isTrans">
-              <div class="trans-method">
-                <bk-select
-                  v-model="formData.transMethod"
-                  style="width: 160px;"
-                  :clearable="false"
-                  searchable>
-                  <bk-option
-                    v-for="option in transList"
-                    :key="option.id"
-                    :id="option.id"
-                    :name="option.name">
-                  </bk-option>
-                </bk-select>
-                <div class="trans-process">
-                  <processors
-                    v-if="formData.transMethod===2"
-                    ref="processorForm"
-                    v-model="formData.processorData"
-                    :editable="editable"
-                    :app-id="appId"
-                    :flow-id="flowId"
-                    :node-id="nodeId"
-                    :exclude-list="nodeDetail.type === 'APPROVAL' ? ['OPEN'] : []"
-                    :disable-type="nodeDetail.type === 'SIGN'">
-                  </processors>
-                </div>
-              </div>
+              <processors
+                ref="processorForm"
+                v-model="formData.processorData"
+                :editable="editable"
+                :app-id="appId"
+                :flow-id="flowId"
+                :node-id="nodeId"
+                :exclude-list="nodeDetail.type === 'APPROVAL' ? ['OPEN'] : []"
+                :disable-type="nodeDetail.type === 'SIGN'">
+              </processors>
             </bk-form-item>
           </template>
         </bk-form>
@@ -96,7 +79,7 @@
             @click="handleSaveClick">
             保存
           </bk-button>
-          <bk-button @click="handleClose">取消</bk-button>
+          <bk-button @click="handleClose" style="margin-left: 8px">取消</bk-button>
         </div>
       </div>
     </div>
@@ -177,7 +160,7 @@ export default {
         name: [
           {
             required: true,
-            message: '必填项',
+            message: '节点名称为必填项',
             trigger: 'blur',
           },
         ],
@@ -380,8 +363,5 @@ export default {
   align-items: flex-start
 }
 
-.trans-process {
-  margin-left: 16px;
-  width: 424px;
-}
+
 </style>

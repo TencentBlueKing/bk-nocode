@@ -17,7 +17,7 @@
         </template>
         <template v-else>
           <div class="no-data">
-            <bk-exception type="empty"> </bk-exception>
+            <bk-exception type="empty"></bk-exception>
           </div>
         </template>
       </div>
@@ -33,11 +33,15 @@
       @confirm="onCreateTemplateConfirm"
       @cancel="onCreateTemplateCancel">
       <div class="form-basic-info">
-        <bk-form form-type="vertical" :rules="basicRules" ref="roleForm" :model="formBasic">
-          <bk-form-item label="用户组名称" property="name" :required="true">
+        <bk-form
+          form-type="vertical"
+          :rules="basicRules"
+          ref="roleForm"
+          :model="formBasic">
+          <bk-form-item label="用户组名称" property="name" :required="true" :error-display-type="'normal'">
             <bk-input v-model.trim="formBasic.name"></bk-input>
           </bk-form-item>
-          <bk-form-item label="用户组描述" property="desc" :required="true">
+          <bk-form-item label="用户组描述" property="desc" :required="true" :error-display-type="'normal'">
             <bk-input type="textarea" :rows="7" v-model.trim="formBasic.desc"></bk-input>
           </bk-form-item>
         </bk-form>
@@ -52,8 +56,8 @@
       <div slot="content" v-bkloading="{ isLoading: sidesliderLoading }">
         <template v-if="sidesliderType === 'settingPermission'">
           <bk-tab :active.sync="active" style="margin-top: 20px" ext-cls="setting-tab" type="unborder-card">
-            <bk-tab-panel name="menuPermission" label="菜单权限"> </bk-tab-panel>
-            <bk-tab-panel name="functionPermission" label="功能权限"> </bk-tab-panel>
+            <bk-tab-panel name="menuPermission" label="菜单权限"></bk-tab-panel>
+            <bk-tab-panel name="functionPermission" label="功能权限"></bk-tab-panel>
             <menu-permission
               v-if="active === 'menuPermission'"
               @checkNode="handleCheckNode"
@@ -123,14 +127,14 @@ export default {
         name: [
           {
             required: true,
-            message: '必填项',
+            message: '用户组名称为必填项',
             trigger: 'blur',
           },
         ],
         desc: [
           {
             required: true,
-            message: '必填项',
+            message: '用户组描述为必填项',
             trigger: 'blur',
           },
         ],
@@ -196,12 +200,13 @@ export default {
     },
     onCreateTemplateConfirm() {
       this.$refs.roleForm.validate().then(
-        async validator => {
+        async (validator) => {
           await this.addUserGroup();
           await this.getUserGroup();
           this.formBasic = { name: '', desc: '' };
         },
-        validator => {}
+        (validator) => {
+        }
       );
     },
     onCreateTemplateCancel() {
@@ -283,7 +288,7 @@ export default {
       const pageViewId = cloneDeep(page_view).map(el => el.id);
       const pageView = cloneDeep(page_view);
       if (type === 'GROUP') {
-        node.children.forEach(item => {
+        node.children.forEach((item) => {
           if (!pageViewId.includes(item.id)) {
             pageViewId.push(item.id);
             pageView.push({ id: item.id, name: item.name });
@@ -448,7 +453,7 @@ export default {
     // 获取该节点所有的子节点
     getOrganizationId(department, id, list = []) {
       if (department.children) {
-        department.children.forEach(item => {
+        department.children.forEach((item) => {
           // item.parent
           if (item.parent && item.parent === id) {
             list.push(item.id);
@@ -462,7 +467,7 @@ export default {
     },
     getSelectedIds(tree, list = []) {
       if (tree.children) {
-        tree.children.forEach(item => {
+        tree.children.forEach((item) => {
           if (!item.async && item.checked) {
             if ((this.currentUserGroup.users.members || []).includes(item.id)) {
               list.push(...item.departments.map(el => el.id));
@@ -477,7 +482,7 @@ export default {
     // 设置子节点可选
     setChildCanSelect(node) {
       if (node.children) {
-        node.children.forEach(item => {
+        node.children.forEach((item) => {
           item.checked = false;
           item.disabled = false;
           if (item.children) {
@@ -488,7 +493,7 @@ export default {
     },
     // 给组织架构树加上async异步请求  checked ,disabled
     getNewTree(arr) {
-      return arr.map(v => {
+      return arr.map((v) => {
         const item = {
           async: true,
           checked: false,

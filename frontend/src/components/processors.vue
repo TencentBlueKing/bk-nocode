@@ -279,7 +279,7 @@ export default {
     // 获取组织架构完整路径
     getOrganizationsPath(id, list) {
       let pathStr = '';
-      list.some(item => {
+      list.some((item) => {
         if (item.id === id) {
           pathStr = item.name;
           return true;
@@ -324,7 +324,7 @@ export default {
     justify-content: space-between;
     .type-form-item {
       flex: 1;
-      margin-right: 16px;
+      margin-right: 8px;
     }
     .role-form-item {
       flex: 1;

@@ -104,7 +104,7 @@
             <template v-if="isShowDealBtns">
               <template v-for="(btn, btnIndex) in nodeInfo.operations">
                 <bk-button
-                  class="mr10"
+                  style="margin-right: 8px"
                   v-if="ignoreOperations.indexOf(btn.key) === -1"
                   :key="btn.key"
                   :theme="btnIndex === 0 ? 'primary' : 'default'"
@@ -120,6 +120,14 @@
                   </template>
                 </bk-button>
               </template>
+              <bk-button
+                style="margin-right: 8px"
+                v-if="ignoreOperations.indexOf('TRANSITION') === -1"
+                :theme="'default'"
+                :disabled="!nodeInfo.is_schedule_ready"
+                @click="clickBtn('RESET')">
+                重置
+              </bk-button>
             </template>
             <!-- 节点触发器 -->
             <bk-dropdown-menu
@@ -164,6 +172,7 @@ import ticketTriggerDialog from './ticketTriggerDialog.vue';
 import { errorHandler } from '@/utils/errorHandler.js';
 import { convertTimeArrToMS, convertTimeArrToString, convertMStoString } from '@/utils/util.js';
 import nodeDealDialog from './nodeDealDialog.vue';
+import cloneDeep from 'lodash.clonedeep';
 
 export default {
   name: 'NodeDetailItem',
@@ -366,6 +375,14 @@ export default {
 
     // 按钮操作
     clickBtn(btn) {
+      if (btn === 'RESET') {
+        const fields = cloneDeep(this.nodeInfo.fields).map((item) => {
+          const  resetVal = item.meta.code === 'APPROVE_RESULT' ? 'true' : '';
+          return { ...item, val: '', value: resetVal  };
+        });
+        this.$set(this.nodeInfo, 'fields', fields);
+        return;
+      }
       // 字段校验
       if (btn.key === 'TRANSITION' && this.$refs.fieldInfo && !this.$refs.fieldInfo.checkValue()) {
         return;

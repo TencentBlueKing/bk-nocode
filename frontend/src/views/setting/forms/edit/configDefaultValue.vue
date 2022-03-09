@@ -80,7 +80,12 @@
             </bk-col>
           </bk-row>
         </bk-container>
-        <bk-form-item label="关联条件" :property="'name'">
+        <bk-form-item
+          label="关联条件"
+          :property="'name'"
+          desc-type="icon"
+          desc-icon="icon-info-circle"
+          :desc="{ content: '若设置的条件无法检索到单条数据，则默认值将无法正常带出',width: 192 }">
           <div class="condition-area">
             <div class="condition-item" v-for="(item,index) in formData.condition" :key="item.key">
               <bk-select
@@ -102,6 +107,7 @@
               <bk-select
                 ext-cls="type-select"
                 v-model="item.type"
+                :disabled="!item.id"
                 @selected="((val) => handleSelectVariable(item,val))"
               >
                 <bk-option
@@ -111,7 +117,7 @@
                 v-if="item.type!=='const'"
                 ext-cls="condition-select"
                 v-model="item.relationCurrentValue"
-                :disabled="item.type!=='variable'"
+                :disabled="item.type!=='variable'&&(!item.id||!item.type)"
                 :searchable="true"
                 :loading="SheetFieldsLoading">
                 <bk-option
@@ -130,8 +136,7 @@
               </div>
               <div class="icon-group">
                 <i class="custom-icon-font icon-add-circle" @click="handleAddCondition" />
-                <i class="custom-icon-font icon-reduce-circle"
-                   v-if="formData.condition.length > 1"
+                <i :class="['custom-icon-font' ,'icon-reduce-circle', formData.condition.length===1?'disabled':'']"
                    @click="handleDeleteCondition(index)" />
               </div>
             </div>
@@ -159,7 +164,7 @@
             <span>的值</span>
           </div>
         </bk-form-item>
-        <bk-form-item label="支持用户修改字段值" :required="true" :property="'name'">
+        <bk-form-item label="支持用户修改字段值" :property="'name'">
           <bk-radio-group v-model="formData.changeFields">
             <bk-radio :value="true">
               是
@@ -393,13 +398,6 @@ export default {
       this.getSheetListFromApp(val);
     },
     handleSelectVariable(item, val) {
-      if (!item.id) {
-        this.$bkMessage({
-          message: '请选择本表单字段',
-          theme: 'warning',
-        });
-        return;
-      }
       const { type } = this.currentSheetFields.find(el => el.key === item.id);
       if (val === 'variable') {
         item.relationCurrentSheet = this.currentSheetFields
@@ -430,6 +428,7 @@ export default {
       });
     },
     handleDeleteCondition(index) {
+      if (this.formData.condition.length === 1) return;
       this.formData.condition.splice(index, 1);
     },
     handleChangeContainer(val) {
@@ -532,11 +531,14 @@ export default {
 .linkage-rules {
   margin-top: 8px;
   height: 21px;
+  line-height: 22px;
+  font-size: 14px;
 
   span {
     display: inline-block;
     font-size: 14px;
     color: #3A84FF;
+    text-align: center;
 
     &:hover {
       cursor: pointer;
@@ -574,13 +576,15 @@ export default {
 
   .icon-group {
     margin-left: 8px;
+    display: inline-flex;
 
     i {
       margin-left: 8px;
-      color: #63656E;
+      color: #C4C6CC;
 
       &:hover {
         cursor: pointer;
+        color: #979BA5;
       }
     }
   }
@@ -591,7 +595,7 @@ export default {
   font-size: 14px;
   color: #63656E;
   display: flex;
-
+  margin-bottom: 16px;
   span {
     display: inline-block;
   }
@@ -608,5 +612,13 @@ export default {
 
 /deep/ .bk-grid-container {
   padding: 0 !important;
+}
+
+/deep/ .bk-dialog-wrapper .bk-dialog-body {
+  padding: 3px 40px 26px;
+}
+
+.disabled {
+  color: #DCDEE5 !important;
 }
 </style>
