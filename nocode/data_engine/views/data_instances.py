@@ -62,10 +62,11 @@ class DataInstanceViewSet(BaseApiViewSet):
     def list_component_data(self, request, *args, **kwargs):
         conditions = self.validated_data.get("conditions", {})
         version_number = self.validated_data.get("version_number", None)
+        tab_id = self.validated_data.get("tab_id", None)
         page_id = self.validated_data["page_id"]
         return ListComponentDataHandler(
             page_id, request, version_number
-        ).get_list_components_data(conditions)
+        ).get_list_components_data(conditions, tab_id=tab_id)
 
     @swagger_auto_schema(
         operation_summary="导出某个列表组件的数据",

@@ -262,9 +262,9 @@ class WorkSheetFieldItemSerializer(serializers.ModelSerializer):
             self.validated_formula_config(attrs)
 
         if attrs.get("type") in ["CHECKBOX", "MULTISELECT", "TREESELECT"]:
-            num_range = attrs.get("num_range", None)
-            if num_range is None:
-                return attrs
+            num_range = attrs.get("num_range")
+            if not isinstance(num_range, list):
+                raise serializers.ValidationError(_("字段范围格式不正确"))
             # 如果传了num_range 但是数量等于不是两个
             if not num_range or len(num_range) != 2:
                 raise serializers.ValidationError(_("字段范围格式不正确"))
