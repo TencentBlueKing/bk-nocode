@@ -405,8 +405,7 @@ class PermitInitManagerOpen(BasePermitInitManager):
             if username_set:
                 self.recreate_data_user_group(username_set)
         else:
-            if username_set:
-                self.synchronize_data_user_group(username_set)
+            self.synchronize_data_user_group(username_set)
 
     def init_data_user_group(self):
         return self.create_data_user_group(self.instance.rating_manager_id)
@@ -666,8 +665,7 @@ class PermitInitManagerIeod(BasePermitInitManager):
             if username_set:
                 self.recreate_data_user_group(username_set)
         else:
-            if username_set:
-                self.synchronize_data_user_group(username_set)
+            self.synchronize_data_user_group(username_set)
 
     def init_data_user_group(self):
         return self.create_data_user_group(self.instance.rating_manager_id)

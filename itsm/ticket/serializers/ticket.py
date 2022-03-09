@@ -303,6 +303,8 @@ class StatusSerializer(serializers.ModelSerializer):
             data["tasks"] = tasks
             # Format sign state processors
             processors = inst.get_sign_display_processors(username)
+            if not processors:
+                processors = ",".join(user_list)
             processors = _("%s (共%d人, 已处理%d人)") % (
                 processors,
                 len(user_list),
