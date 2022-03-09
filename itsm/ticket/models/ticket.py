@@ -560,9 +560,17 @@ class Status(Model):
         return log_message, detail_message
 
     def log_detail(self, processors_type, processors):
-        if processors_type == PERSON:
-            detail_message = transform_username(processors)
-        elif processors_type == ORGANIZATION:
+        detail_map = {
+            PERSON: transform_username(processors),
+            STARTER_LEADER: "{} -> {}".format(_("提单人上级"), processors),
+            ASSIGN_LEADER: "{} -> {}".format(_("指定节点处理人上级"), processors),
+            VARIABLE: "{} -> {}".format(_("引用变量"), processors),
+        }
+
+        if processors_type in detail_map:
+            return detail_map[processors_type]
+
+        if processors_type == ORGANIZATION:
             organization = get_department_info(processors).get("name", "")
             detail_message = "{} -> {}".format(_("组织架构"), organization)
         else:
@@ -821,6 +829,13 @@ class Status(Model):
         )
 
     def get_delivers(self):
+        if self.delivers_type == "VARIABLE":
+            fields_key = self.delivers.split(",")
+            user = self.ticket.fields.filter(key__in=fields_key).values_list(
+                "_value", flat=True
+            )
+            return ",".join(list(user))
+
         return UserRole.get_users_by_type(
             self.ticket.bk_biz_id, self.delivers_type, self.delivers, self.ticket
         )
