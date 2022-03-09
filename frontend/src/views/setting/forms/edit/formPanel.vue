@@ -100,6 +100,7 @@ export default {
         choice: this.getDefaultChoice(type), // 选项
         worksheet_id: this.formId, // 表单id
         meta, // 复杂描述信息
+        num_range: [], // 多值类型表单设置值的数目，如多选下拉框、多选人员选择器、复选框
       };
       const index = this.fields.length === 0 ? 0 : e.newIndex;
       this.$emit('add', config, index);

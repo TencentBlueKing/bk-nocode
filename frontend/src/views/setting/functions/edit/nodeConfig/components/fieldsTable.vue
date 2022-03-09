@@ -214,6 +214,7 @@ export default {
         show_conditions: {}, // 设置隐藏条件
         state: this.node.id,
         workflow: this.flowId, // 表单id
+        num_range: [],
       };
       this.showFieldEditPanel = true;
     },
