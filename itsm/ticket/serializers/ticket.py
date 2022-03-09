@@ -253,7 +253,7 @@ class StatusSerializer(serializers.ModelSerializer):
                 "error_message": inst.error_message,
             }
             data["api_info"] = remote_info
-        elif inst.state["type"] in [SIGN_STATE, APPROVAL_STATE]:
+        elif inst.state["type"] in [SIGN_STATE]:
             # Get sign task progress
             sign_tasks = SignTask.objects.filter(status_id=inst.id)
             sign_tasks_list = list(
