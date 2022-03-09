@@ -253,7 +253,7 @@ class StatusSerializer(serializers.ModelSerializer):
                 "error_message": inst.error_message,
             }
             data["api_info"] = remote_info
-        elif inst.state["type"] in [SIGN_STATE, APPROVAL_STATE]:
+        elif inst.state["type"] in [SIGN_STATE]:
             # Get sign task progress
             sign_tasks = SignTask.objects.filter(status_id=inst.id)
             sign_tasks_list = list(
@@ -303,6 +303,8 @@ class StatusSerializer(serializers.ModelSerializer):
             data["tasks"] = tasks
             # Format sign state processors
             processors = inst.get_sign_display_processors(username)
+            if not processors:
+                processors = ",".join(user_list)
             processors = _("%s (共%d人, 已处理%d人)") % (
                 processors,
                 len(user_list),

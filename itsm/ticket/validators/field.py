@@ -72,6 +72,12 @@ def field_validate(field, state_fields, key_value, **kwargs):
     if field_obj.key == "title" and len(key_value["params_title"]) > LEN_MIDDLE:
         raise serializers.ValidationError(_("标题不能超过120个字符"))
 
+    if field_obj.type == "INT":
+        try:
+            int(field["value"])
+        except Exception as err:
+            raise serializers.ValidationError(_(f"请输入标准整数 {err}"))
+
     choice_validate(field, field_obj, key_value, **kwargs)
     regex_validate(field, field_obj)
 

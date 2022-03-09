@@ -139,6 +139,38 @@
         </bk-select>
         <div class="source-type-btn" @click="openDataSourceConfig">配置数据源</div>
       </bk-form-item>
+      <bk-form-item
+        v-if="['MULTISELECT', 'CHECKBOX', 'MEMBERS'].includes(fieldData.type)"
+        label="值数目范围"
+        desc-type="icon"
+        desc="字段的值为多个时，配置值数目的范围，默认最少0个、最多不限制">
+        <div class="value-num-config">
+          最少选择
+          <bk-input
+            style="width: 100px; margin: 0 4px;"
+            type="number"
+            :value="fieldData.num_range[0]"
+            :min="0"
+            :max="9999"
+            :precision="0"
+            @change="handleValNumMinChange">
+          </bk-input>
+          个
+        </div>
+        <div class="value-num-config">
+          最多选择
+          <bk-input
+            :value="fieldData.num_range[1]"
+            style="width: 100px; margin: 0 4px;"
+            type="number"
+            :min="0"
+            :max="9999"
+            :precision="0"
+            @change="handleValNumMaxChange">
+          </bk-input>
+          个
+        </div>
+      </bk-form-item>
       <bk-form-item label="校验方式" v-if="fieldData.type!=='FORMULA'">
         <bk-select
           v-model="fieldData.regex"
@@ -584,6 +616,28 @@ export default {
     handleSelectType() {
       this.fieldData.meta = {};
     },
+    // 值数目可选范围最小个数变更
+    handleValNumMinChange(val) {
+      let numVal;
+      if (val === '') {
+        numVal = undefined;
+      } else {
+        numVal = Number(val);
+      }
+      this.fieldData.num_range.splice(0, 1, numVal);
+      this.change();
+    },
+    // 值数目可选范围最大个数变更
+    handleValNumMaxChange(val) {
+      let numVal;
+      if (val === '') {
+        numVal = undefined;
+      } else {
+        numVal = Number(val);
+      }
+      this.fieldData.num_range.splice(1, 1, numVal);
+      this.change();
+    },
   },
 };
 </script>
@@ -599,6 +653,17 @@ export default {
   border: 1px solid #3a84ff;
   border-radius: 4px;
   cursor: pointer;
+}
+
+.value-num-config {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  font-size: 12px;
+  color: #63656e;
+  &:first-of-type {
+    margin-bottom: 10px;
+  }
 }
 
 .auto-number-preview {

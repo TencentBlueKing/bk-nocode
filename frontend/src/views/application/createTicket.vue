@@ -113,6 +113,32 @@ export default {
       return value;
     },
     async submit() {
+      // 校验多值类型的表单配置值的数目范围后，用户填写的值数目是否范围内
+      let formValNumRangeValid = true;
+      this.fieldList.some(field => {
+        const fieldVal = this.formValue[field.key];
+        if ('num_range' in field) {
+          let msg = '';
+          if (typeof field.num_range[0] === 'number' && fieldVal.length < field.num_range[0]) {
+            msg = `${field.name}表单的值数目不能小于${field.num_range[0]}`;
+          }
+          if (typeof field.num_range[1] === 'number' && fieldVal.length > field.num_range[1]) {
+            msg = `${field.name}表单的值数目不能大于${field.num_range[1]}`;
+          }
+          if (msg) {
+            formValNumRangeValid = false;
+            this.$bkMessage({
+              theme: 'error',
+              message: msg,
+            });
+            return true;
+          }
+        }
+      });
+      if (!formValNumRangeValid) {
+        return;
+      }
+
       try {
         this.submitPending = true;
         const fieldsRequest = this.getApiFields();
@@ -120,7 +146,6 @@ export default {
           fields: fieldsRequest,
           token: this.token,
         };
-        //
         const res = await this.$store.dispatch('application/createOpenApiTicket', params);
         if (res.result) {
           this.formValue = this.getFormValue();

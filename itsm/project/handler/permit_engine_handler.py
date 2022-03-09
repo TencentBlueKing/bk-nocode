@@ -373,8 +373,11 @@ class PermitInitManagerOpen(BasePermitInitManager):
             )
             self.instance.save()
             return
+        logger.info("当前数据管理员， username_list = {}".format(current_username_set))
         remove_user = current_username_set - username_set
+        logger.info("删除数据管理员， remove_user = {}".format(remove_user))
         add_user = username_set - current_username_set
+        logger.info("添加数据管理员， add_user = {}".format(add_user))
         # 删除用户组成员
         if remove_user:
             logger.info("数据管理员用户组移除管理员， username_list = {}".format(remove_user))
@@ -402,8 +405,7 @@ class PermitInitManagerOpen(BasePermitInitManager):
             if username_set:
                 self.recreate_data_user_group(username_set)
         else:
-            if username_set:
-                self.synchronize_data_user_group(username_set)
+            self.synchronize_data_user_group(username_set)
 
     def init_data_user_group(self):
         return self.create_data_user_group(self.instance.rating_manager_id)
@@ -552,9 +554,9 @@ class PermitInitManagerIeod(BasePermitInitManager):
         )
         exit_flag = None
         if not data["result"]:
-            logger.info("用户组获取失败, message={}".format(data["message"]))
+            logger.info("数据管理员用户组获取失败, message={}".format(data["message"]))
             raise GetUserGroupError(
-                "获取用户组失败，调用权限中心报错： message={}".format(data["message"])
+                "获取数据管理员用户组失败，调用权限中心报错： message={}".format(data["message"])
             )
         for item in data["data"].get("results", []):
             if item["id"] == self.instance.user_group_id:
@@ -629,8 +631,12 @@ class PermitInitManagerIeod(BasePermitInitManager):
             self.instance.save()
             logger.info("数据管理员用户组添加管理员成功， username_list = {}".format(username_set))
             return
+
         remove_user = current_username_set - username_set
+        logger.info("删除管理员， username_list = {}".format(remove_user))
         add_user = username_set - current_username_set
+        logger.info("添加管理员， username_list = {}".format(add_user))
+
         # 删除用户组成员
         if remove_user:
             logger.info("数据管理员用户组移除管理员， username_list = {}".format(remove_user))
@@ -659,8 +665,7 @@ class PermitInitManagerIeod(BasePermitInitManager):
             if username_set:
                 self.recreate_data_user_group(username_set)
         else:
-            if username_set:
-                self.synchronize_data_user_group(username_set)
+            self.synchronize_data_user_group(username_set)
 
     def init_data_user_group(self):
         return self.create_data_user_group(self.instance.rating_manager_id)

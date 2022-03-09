@@ -57,6 +57,18 @@ class IntGenerator(BaseGenerator):
         return params
 
 
+class FloatGenerator(BaseGenerator):
+    serializer_field_class = serializers.FloatField
+
+    def _build_serializer_params(self):
+        params = {"help_text": self.filed["name"]}
+        if self.filed["validate_type"] == "OPTION":
+            params["required"] = False
+            params["allow_null"] = True
+            params["default"] = self.filed["default"]
+        return params
+
+
 class CharGenerator(BaseGenerator):
     serializer_field_class = serializers.CharField
 
@@ -133,6 +145,7 @@ class SerializerDispatcher:
 
     _GENERATOR_MAP = {
         "INT": IntGenerator,
+        "FLOAT": FloatGenerator,
         "DATE": DataGenerator,
         "SELECT": ChoiceGenerator,
         "RADIO": ChoiceGenerator,
