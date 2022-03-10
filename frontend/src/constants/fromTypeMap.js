@@ -1,7 +1,7 @@
 // 表单字段类型映射
 export const FIELDS_TYPES_MAPS = {
   STRING: '单行文本',
-  TEXT: 'Textarea',
+  TEXT: '多行文本',
   INT: '数字',
   DATE: '日期',
   DATETIME: '时间',
