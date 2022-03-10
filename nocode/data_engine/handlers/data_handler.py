@@ -449,12 +449,20 @@ class ExportDataHandler:
 
     def get_keys(self, headers):
         keys = []
+        version_fields = self.manager.fields
+        version_field_key = [item["key"] for item in version_fields]
         for item in headers:
             item = str(item)
             key = self.pattern.findall(item)
             if len(key) != 1:
                 raise ImportDataError(
                     "[ExportDataHandler][get_keys]数据导入失败，表头{}不符合规范".format(item)
+                )
+            if key[0] not in version_field_key:
+                raise ImportDataError(
+                    "[ExportDataHandler][get_keys]数据导入失败，表头{}不符合规范，表单已变更，请重新生成模板文件".format(
+                        item
+                    )
                 )
             keys.append(key[0])
         return keys
@@ -486,6 +494,8 @@ class ExportDataHandler:
                 except Exception as e:
                     results[index] = str(e)
                     logger.info("数据校验失败，第{}行,错误原因 error={}".format(index, e))
+            if results:
+                raise DataValidateError("数据校验失败, 错误原因 error={}".format(results))
             return results
         except Exception as e:
             raise DataValidateError("数据校验失败, 错误原因 error={}".format(e))

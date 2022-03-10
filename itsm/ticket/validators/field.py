@@ -75,8 +75,8 @@ def field_validate(field, state_fields, key_value, **kwargs):
     if field_obj.type == "INT":
         try:
             int(field["value"])
-        except Exception as err:
-            raise serializers.ValidationError(_(f"请输入标准整数 {err}"))
+        except ValueError:
+            raise serializers.ValidationError(_(f" {field_obj.name}: 请输入标准整数"))
 
     choice_validate(field, field_obj, key_value, **kwargs)
     regex_validate(field, field_obj)

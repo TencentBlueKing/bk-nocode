@@ -40,6 +40,7 @@ from nocode.project_manager.handlers.module_handler import (
     WorkSheetFieldModuleHandler,
     WorkSheetModuleHandler,
 )
+from nocode.project_manager.handlers.project_white_handler import white_token_generate
 from nocode.project_manager.models import ProjectVersion
 
 
@@ -121,7 +122,12 @@ class ProjectVersionModelHandler(APIModel):
         return self.instance.worksheet
 
     def get_worksheet_fields(self, worksheet_id):
-        return self.instance.worksheet_field.get(worksheet_id)
+        worksheet_fields = self.instance.worksheet_field.get(worksheet_id)
+        for field in worksheet_fields:
+            # 关联数据员的生成白名单token
+            if field["source_type"] == "WORKSHEET":
+                white_token_generate(field)
+        return worksheet_fields
 
 
 class WorksheetIndexHandler:
