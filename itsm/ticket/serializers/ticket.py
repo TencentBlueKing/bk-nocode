@@ -110,6 +110,7 @@ from itsm.ticket.validators import (
     StateOperateValidator,
 )
 from itsm.ticket_status.models import TicketStatus
+from nocode.project_manager.handlers.project_white_handler import white_token_generate
 
 BkUser = get_user_model()
 
@@ -315,6 +316,11 @@ class StatusSerializer(serializers.ModelSerializer):
             status = RUNNING if status == QUEUEING else status
             if inst.state["type"] == APPROVAL_STATE:
                 data["is_multi"] = inst.state["is_multi"]
+
+        if status == RUNNING:
+            # 节点处理中如果可配置数据源类型的关联其他应用的表单，生成token，数据依据查询token
+            for field in data["fields"]:
+                white_token_generate(field)
 
         data.update(
             operations=operations,

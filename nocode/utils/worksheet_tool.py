@@ -375,7 +375,7 @@ class ServiceMigrate(object):
                 # 默认规则
                 is_readonly = False
                 if meta.get("data_config"):
-                    if not meta.get("data_config")["changeFields"]:
+                    if not meta.get("data_config").get("changeFields", True):
                         is_readonly = True
                 fields.append(
                     Field(
@@ -425,7 +425,7 @@ class ServiceMigrate(object):
                         continue
                     is_readonly = False
                     if meta.get("data_config"):
-                        if not meta.get("data_config")["changeFields"]:
+                        if not meta.get("data_config").get("changeFields", True):
                             is_readonly = True
                     workflow_filed.type = field.type
                     workflow_filed.name = field.name
@@ -570,6 +570,7 @@ class ServiceManager:
             DELETE_STATE,
             DETAIL_STATE,
             EXPORT_STATE,
+            IMPORT_STATE,
         ):
             action_map = {
                 "ADD": "新增",
@@ -577,6 +578,7 @@ class ServiceManager:
                 "DELETE": "删除",
                 "DETAIL": "详情",
                 "EXPORT": "导出",
+                "IMPORT": "导入",
             }
             service_name = "{}_{}".format(self.worksheet.name, action_map.get(action))
             try:

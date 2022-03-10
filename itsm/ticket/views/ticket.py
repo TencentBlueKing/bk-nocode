@@ -30,7 +30,6 @@ import datetime
 import io
 import json
 import base64
-import uuid
 
 import xlwt
 from django.conf import settings
@@ -49,7 +48,7 @@ from rest_framework_extensions.cache.decorators import cache_response
 
 from common.log import logger
 from common.redis import Cache
-from config.default import OUT_LINK, TOKEN_EXPIRE_TIME
+from config.default import OUT_LINK
 from itsm.component.cache_keys import ticket_cache_key
 from itsm.component.constants import (
     CACHE_5MIN,
@@ -169,6 +168,7 @@ from itsm.ticket_status.models import TicketStatus
 from itsm.sla_engine.serializers import SlaTaskSerializer
 from itsm.sla_engine.models import SlaTask
 from nocode.page.models import PageOpenRecord
+from nocode.project_manager.handlers.project_white_handler import white_token_generate
 
 
 class ModelViewSet(component_viewsets.ModelViewSet):
@@ -478,16 +478,8 @@ class TicketModelViewSet(ModelViewSet):
                 version_id=service.workflow.id,
                 value=default if old_value is None else old_value,
             )
-            # 如果可配置数据源类型的关联其他应用的表单，生成token，数据依据查询token
-            if field["meta"].get("data_config"):
-                # 生成uuid:data_config
-                key = uuid.uuid4().hex
-                value = json.dumps(field["meta"].get("data_config"))
-                # token会过期，每次刷新都会刷新token
-                settings.REDIS_INST.setex(key, TOKEN_EXPIRE_TIME, value)
-                field.setdefault("token", key)
-            else:
-                field.setdefault("token", "")
+            # 如果可配置数据源类型的关联其他应用的表单，生成token，
+            white_token_generate(field)
             fields.append(field)
 
         return Response(fields)
