@@ -56,8 +56,12 @@
       </show-search-info>
       <div class="search-item-container">
         <template v-if="!isShowSearchInfo && searchInfo.length!==0">
-          <search-tag v-for="item in searchInfo" :search-item="item" :key="item.key"
-                      @delete="handleRemoveSearch"></search-tag>
+          <search-tag
+            v-for="item in searchInfo"
+            :search-item="item"
+            :key="item.key"
+            @delete="handleRemoveSearch">
+          </search-tag>
         </template>
       </div>
       <div class="custom-table">
@@ -270,9 +274,9 @@
           <p>导入成功</p>
         </div>
         <div class="icon-wrapper" v-if="uploadStatus === 'FAILED'">
-        <i class="bk-icon icon-close-circle error-icon"></i>
+          <i class="bk-icon icon-close-circle error-icon"></i>
           <p>导入失败</p>
-          <p class="fail-reason">失败原因:{{importFailMessge}}</p>
+          <p class="fail-reason">失败原因:{{ importFailMessge }}</p>
         </div>
       </div>
     </bk-dialog>
@@ -291,7 +295,7 @@ import { formatTimer, getQuery } from '../../../utils/util';
 import CreateTicketSuccess from './createTicketSuccess.vue';
 import customTable from '@/components/form/formFields/fields/table.vue';
 import SearchTag from './searchTag.vue';
-
+import { SHOW_SELECT_TYPE_LIST } from '@/constants/fromTypeMap.js';
 export default {
   name: 'TablePage',
   components: {
@@ -408,6 +412,8 @@ export default {
         for (const key in this.searchFormData) {
           this.fieldList.forEach((el) => {
             if (el.key === key) {
+              // 排除其他数据源
+              const IsSourceType = !['API', 'WORKSHEET'].includes(el.source_type);
               if (Array.isArray(this.searchFormData[key]) && !['CHECKBOX', 'MULTISELECT'].includes(el.type)) {
                 if (this.searchFormData[key].every(it => it)) {
                   searchArr.push({
@@ -416,7 +422,7 @@ export default {
                     key,
                   });
                 }
-              } else if (Array.isArray(this.searchFormData[key])) {
+              } else if (Array.isArray(this.searchFormData[key]) && IsSourceType) {
                 if (!this.searchFormData[key].length > 0) {
                   return;
                 }
@@ -427,7 +433,7 @@ export default {
                   value: tempName.toString(),
                   key,
                 });
-              } else if (['SELECT', 'RADIO', 'INPUTSELECT'].includes(el.type)) {
+              } else if (['SELECT', 'RADIO', 'INPUTSELECT'].includes(el.type) && IsSourceType) {
                 const tempName = el.choice.find(ele => this.searchFormData[key] === ele.key).name;
                 searchArr.push({
                   name: el.name,
@@ -438,7 +444,6 @@ export default {
                 if (!this.searchFormData[key]) {
                   return;
                 }
-                ;
                 searchArr.push({ name: el.name, value: this.searchFormData[key], key });
               }
             }
@@ -494,8 +499,10 @@ export default {
       const tempIntType = this.fieldList.filter(item => item.type === 'INT').map(item => item.key);
       const tempMutiSelecet = this.fieldList.filter(item => ['CHECKBOX', 'MULTISELECT'].includes(item.type)).map(item => item.key);
       const tempText = this.fieldList.filter(item => ['STRING', 'TEXT'].includes(item.type)).map(item => item.key);
+      // 下拉框数据源为api和表单 来源
+      const  tempSourceType = this.fieldList.filter(item => SHOW_SELECT_TYPE_LIST.includes(item.type)
+        && ['API', 'WORKSHEET'].includes(item.source_type)).map(item => item.key);
       const tempArr = [];
-
       for (const key in item) {
         // 时间类型
         if (Array.isArray(item[key]) && !tempMutiSelecet.includes(key)) {
@@ -516,9 +523,9 @@ export default {
           if (item[key].length > 0) {
             tempArr.push({ key, value: Number(item[key]), type: 'const', condition: '==' });
           }
-        } else if (tempText.includes(key)) {
+        } else if (tempText.includes(key) || tempSourceType.includes(key)) {
           if (item[key].length > 0) {
-            tempArr.push({ key, value: Number(item[key]), type: 'const', condition: 'icontains' });
+            tempArr.push({ key, value: item[key], type: 'const', condition: 'icontains' });
           }
         } else {
           tempArr.push({ key, value: item[key], type: 'const', condition: '==' });
@@ -1004,7 +1011,6 @@ export default {
       let totalDay;
       let totalMonth;
       const day = Math.floor(abSoluteValue / 1000 / 60 / 60 / 24);
-      console.log(day);
       totalYear = Math.floor(day / 365);
       totalMonth = Math.floor((day % 365) / 30);
       totalDay = day - (365 * totalYear) - (30 * totalMonth);
@@ -1296,7 +1302,8 @@ export default {
     font-size: 16px;
     line-height: 1;
   }
-  .fail-reason{
+
+  .fail-reason {
     @mixin scroller;
     color: red;
     overflow: auto;

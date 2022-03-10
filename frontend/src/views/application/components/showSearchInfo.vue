@@ -23,7 +23,7 @@
           </bk-form-item>
           <bk-form-item
             :label="item.name"
-            v-else-if="['SELECT','RADIO','CHECKBOX','MULTISELECT','INPUTSELECT'].includes(item.type)"
+            v-else-if="showSelectionTypeList.includes(item.type)&&!['API','WORKSHEET'].includes(item.source_type)"
             ext-cls="form-item">
             <bk-select
               searchable
@@ -73,7 +73,7 @@
 <script>
 import Bus from '@/utils/bus.js';
 import cloneDeep from 'lodash.clonedeep';
-
+import { SHOW_SELECT_TYPE_LIST } from '@/constants/fromTypeMap.js';
 export default {
   name: 'ShowSearchInfo',
   props: {
@@ -92,6 +92,7 @@ export default {
       formData: {},
       selectList: cloneDeep(this.filedList),
       isDropdownShow: false,
+      showSelectionTypeList: SHOW_SELECT_TYPE_LIST,
     };
   },
   watch: {
