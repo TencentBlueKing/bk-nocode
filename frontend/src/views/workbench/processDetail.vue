@@ -203,6 +203,7 @@ export default {
         }
       });
       this.nodeList = copyList;
+      this.$store.commit('setting/setNodeList', copyList);
     },
     handleGoBack() {
       if (window.history.length <= 1) {

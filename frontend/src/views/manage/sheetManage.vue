@@ -62,7 +62,7 @@
       width="640"
       header-position="left"
       :title="formStatus==='ADD'?'新增开放表单':'编辑'">
-      <bk-form :label-width="200" :model="addSheetFormData" form-type="vertical" :rules="rules">
+      <bk-form :label-width="200" :model="addSheetFormData" form-type="vertical" :rules="rules" ref="addAppForm">
         <bk-form-item
           label="选择应用"
           property="openApplication"
@@ -223,7 +223,7 @@ export default {
           show_type: 'manager_center',
         };
         const res = await this.$store.dispatch('setting/getAllApp', params);
-        this.appList = res.data;
+        this.appList = res.data.filter(item => item.publish_status !== 'UNRELEASED');
       } catch (e) {
         console.error(e);
       } finally {
@@ -270,7 +270,11 @@ export default {
             message: '新增成功',
             theme: 'success',
           });
-          this.addSheetFormData = {};
+          this.addSheetFormData = {
+            openApplication: [],
+            checkSheet: '',
+            checkApp: '',
+          };
           this.AddSheetDialogVisible = false;
           this.initData();
         }
@@ -361,7 +365,11 @@ export default {
       this.applicationList = this.applicationList.filter(item => item.key !== val);
     },
     async onSubmit() {
-      this.formStatus === 'ADD' ? this.addOpenSheetList() : this.updateOpenSheet();
+      this.$refs.addAppForm.validate((validator) => {
+        this.formStatus === 'ADD' ? this.addOpenSheetList() : this.updateOpenSheet();
+      }, (e) => {
+        console.warn(e);
+      });
     },
     onCancel() {
       this.addSheetFormData = {};

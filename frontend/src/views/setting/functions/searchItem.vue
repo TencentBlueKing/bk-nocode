@@ -70,7 +70,7 @@ export default {
         name: '',
       },
       functionTypeList: [{
-        key: 2,
+        key: 0,
         name: '自定义功能',
       },
       {

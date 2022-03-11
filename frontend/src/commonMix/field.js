@@ -22,26 +22,36 @@
 /* eslint-disable */
 // import ajax from '@/utils/ajax'
 import { errorHandler } from '@/utils/errorHandler';
-
+import cloneDeep from 'lodash.clonedeep'
 export default {
+  computed:{
+    currentNodeList(){
+      return this.$store.state.setting.nodeList
+    }
+  },
   methods: {
     // 自定义表单数据处理
     async getFieldOptions(item) {
       let data = [];
+      console.log(item.source_type)
       switch (item.source_type) {
         case 'CUSTOM':
           data = item.choice;
           break;
+        case 'WORKSHEET':
+          data = this.setWorksheetData();
+          break;
         case 'API':
-          data = [];
-          item.choice.forEach((node) => {
-            data.push({
-              key: String(node.id || node.key),
-              name: node.name,
-              can_delete: Boolean(node.can_delete),
-            });
-            // data.push(formula)
-          });
+          // data = [];
+          // item.choice.forEach((node) => {
+          //   data.push({
+          //     key: String(node.id || node.key),
+          //     name: node.name,
+          //     can_delete: Boolean(node.can_delete),
+          //   });
+          //   // data.push(formula)
+          // });
+          data = this.setApiData();
           break;
         case 'DATADICT':
           data = [];
@@ -218,6 +228,59 @@ export default {
       const timeInfo = timeValue.replace(/-/g, '/');
       const timeStampValue = new Date(timeInfo).getTime();
       return timeStampValue;
+    },
+    async setWorksheetData() {
+      try {
+        const { field, conditions } = this.item.meta.data_config;
+        // 将节点之前得数据全部取出
+        const fieldList = cloneDeep(this.currentNodeList).map(item=>item.fields).flat()
+        //将condition中的 引用变量的查询构造条件进行转化
+        const tempConditions=conditions.expressions.map(item=>{
+          if (item.type==='field'){
+            return{
+              ...item,
+              type:'const',
+              value:fieldList.find(el=>el.key===item.value).value||''
+            }
+          }
+          return  item
+        })
+        conditions.expressions = tempConditions
+        const params = {
+          token: this.item.token,
+          fields: [field],
+          conditions
+        };
+        const resp = await this.$store.dispatch('setting/getWorksheetData', params);
+        return  resp.data.map((item) => {
+          const val = item[field];
+          return { key: val, name: val||'--' };
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    },
+    async setApiData() {
+      console.log(this.item)
+      try {
+        const { id, api_info, api_instance_id, kv_relation } = this.item;
+        const params = {
+          id,
+          api_instance_id,
+          kv_relation,
+          api_info: {
+            api_instance_info: api_info,
+            remote_api_info: api_info.remote_api_info,
+          },
+        };
+        const resp = await this.$store.dispatch('setting/getSourceData', params);
+        return  resp.data.map((item) => {
+          const { key, name } = item;
+          return { key, name };
+        });
+      } catch (e) {
+        console.error(e);
+      }
     },
   },
 };

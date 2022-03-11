@@ -56,8 +56,12 @@
       </show-search-info>
       <div class="search-item-container">
         <template v-if="!isShowSearchInfo && searchInfo.length!==0">
-          <search-tag v-for="item in searchInfo" :search-item="item" :key="item.key"
-                      @delete="handleRemoveSearch"></search-tag>
+          <search-tag
+            v-for="item in searchInfo"
+            :search-item="item"
+            :key="item.key"
+            @delete="handleRemoveSearch">
+          </search-tag>
         </template>
       </div>
       <div class="custom-table">
@@ -177,7 +181,7 @@
       ext-cls="custom-sidelider">
       <div slot="header">{{ slideTitle }}</div>
       <div slot="content" v-bkloading="{ isLoading: editorLoading }">
-        <item-from :field-list="showFiled" v-if="!isEditor &&showFiled.length!==0"/>
+        <item-from :field-list="showFiled" v-if="!isEditor &&showFiled.length!==0" />
         <editor-form
           :fields="editorList"
           @change="handleChange"
@@ -270,9 +274,9 @@
           <p>导入成功</p>
         </div>
         <div class="icon-wrapper" v-if="uploadStatus === 'FAILED'">
-        <i class="bk-icon icon-close-circle error-icon"></i>
+          <i class="bk-icon icon-close-circle error-icon"></i>
           <p>导入失败</p>
-          <p class="fail-reason">失败原因:{{importFailMessge}}</p>
+          <p class="fail-reason">失败原因:{{ importFailMessge }}</p>
         </div>
       </div>
     </bk-dialog>
@@ -286,12 +290,12 @@ import Bus from '@/utils/bus.js';
 import editorForm from './editorForm.vue';
 import showSearchInfo from './showSearchInfo.vue';
 import permission from '@/components/permission/mixins.js';
-import {SYS_FIELD} from '@/constants/sysField.js';
-import {formatTimer, getQuery} from '../../../utils/util';
+import { SYS_FIELD } from '@/constants/sysField.js';
+import { formatTimer, getQuery } from '../../../utils/util';
 import CreateTicketSuccess from './createTicketSuccess.vue';
 import customTable from '@/components/form/formFields/fields/table.vue';
 import SearchTag from './searchTag.vue';
-
+import { SHOW_SELECT_TYPE_LIST } from '@/constants/fromTypeMap.js';
 export default {
   name: 'TablePage',
   components: {
@@ -370,12 +374,12 @@ export default {
         type: '',
       },
       importConfig: {
-        visible: false
+        visible: false,
       },
-      uploadStatus:'UPLOAD',
+      uploadStatus: 'UPLOAD',
       url: `${window.SITE_URL}api/engine/data/import_data/`,
       sidesliderIsShow: false,
-      importFailMessge:'',
+      importFailMessge: '',
       slideTitle: '',
       isEditor: '',
       tableData: [],
@@ -408,6 +412,8 @@ export default {
         for (const key in this.searchFormData) {
           this.fieldList.forEach((el) => {
             if (el.key === key) {
+              // 排除其他数据源
+              const IsSourceType = !['API', 'WORKSHEET'].includes(el.source_type);
               if (Array.isArray(this.searchFormData[key]) && !['CHECKBOX', 'MULTISELECT'].includes(el.type)) {
                 if (this.searchFormData[key].every(it => it)) {
                   searchArr.push({
@@ -416,7 +422,7 @@ export default {
                     key,
                   });
                 }
-              } else if (Array.isArray(this.searchFormData[key])) {
+              } else if (Array.isArray(this.searchFormData[key]) && IsSourceType) {
                 if (!this.searchFormData[key].length > 0) {
                   return;
                 }
@@ -427,7 +433,7 @@ export default {
                   value: tempName.toString(),
                   key,
                 });
-              } else if (['SELECT', 'RADIO', 'INPUTSELECT'].includes(el.type)) {
+              } else if (['SELECT', 'RADIO', 'INPUTSELECT'].includes(el.type) && IsSourceType) {
                 const tempName = el.choice.find(ele => this.searchFormData[key] === ele.key).name;
                 searchArr.push({
                   name: el.name,
@@ -438,8 +444,7 @@ export default {
                 if (!this.searchFormData[key]) {
                   return;
                 }
-                ;
-                searchArr.push({name: el.name, value: this.searchFormData[key], key});
+                searchArr.push({ name: el.name, value: this.searchFormData[key], key });
               }
             }
           });
@@ -494,34 +499,36 @@ export default {
       const tempIntType = this.fieldList.filter(item => item.type === 'INT').map(item => item.key);
       const tempMutiSelecet = this.fieldList.filter(item => ['CHECKBOX', 'MULTISELECT'].includes(item.type)).map(item => item.key);
       const tempText = this.fieldList.filter(item => ['STRING', 'TEXT'].includes(item.type)).map(item => item.key);
+      // 下拉框数据源为api和表单 来源
+      const  tempSourceType = this.fieldList.filter(item => SHOW_SELECT_TYPE_LIST.includes(item.type)
+        && ['API', 'WORKSHEET'].includes(item.source_type)).map(item => item.key);
       const tempArr = [];
-
       for (const key in item) {
         // 时间类型
         if (Array.isArray(item[key]) && !tempMutiSelecet.includes(key)) {
           item[key].forEach((el, index) => {
             if (el) {
               index === 0
-                ? tempArr.push({key, value: formatTimer(el), type: 'const', condition: '>='})
-                : tempArr.push({key, value: formatTimer(el), type: 'const', condition: '<='});
+                ? tempArr.push({ key, value: formatTimer(el), type: 'const', condition: '>=' })
+                : tempArr.push({ key, value: formatTimer(el), type: 'const', condition: '<=' });
             }
           });
           //  多选下拉框以及checkbox
         } else if (Array.isArray(item[key])) {
           if (item[key].length > 0) {
-            tempArr.push({key, value: item[key].toString(), type: 'const', condition: '=='});
+            tempArr.push({ key, value: item[key].toString(), type: 'const', condition: '==' });
           }
           //  数字类型
         } else if (tempIntType.includes(key)) {
           if (item[key].length > 0) {
-            tempArr.push({key, value: Number(item[key]), type: 'const', condition: '=='});
+            tempArr.push({ key, value: Number(item[key]), type: 'const', condition: '==' });
           }
-        } else if (tempText.includes(key)) {
+        } else if (tempText.includes(key) || tempSourceType.includes(key)) {
           if (item[key].length > 0) {
-            tempArr.push({key, value: Number(item[key]), type: 'const', condition: 'icontains'});
+            tempArr.push({ key, value: item[key], type: 'const', condition: 'icontains' });
           }
         } else {
-          tempArr.push({key, value: item[key], type: 'const', condition: '=='});
+          tempArr.push({ key, value: item[key], type: 'const', condition: '==' });
         }
       }
       return tempArr;
@@ -574,7 +581,7 @@ export default {
         version_number: this.version,
         worksheet_id: this.formId,
       };
-      const {fields} = this.config;
+      const { fields } = this.config;
       const tempSysfiledList = SYS_FIELD.filter(filed => this.config.fields && this.config.fields.includes(filed.key));
       try {
         this.fieldListLoading = true;
@@ -610,7 +617,7 @@ export default {
       this.pagination.current = 1;
       this.getTableList();
     },
-    handleSettingChange({fields}) {
+    handleSettingChange({ fields }) {
       this.fields = fields;
     },
     dropdownShow() {
@@ -644,7 +651,7 @@ export default {
       const res = await this.$store.dispatch('application/exportData', params);
       const href = window.URL.createObjectURL(new Blob(
         [res],
-        {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}
+        { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }
       ));
       const downloadElement = document.createElement('a');
       downloadElement.href = href;
@@ -710,14 +717,14 @@ export default {
       }
       if (this.actionsPermMap[btn.id] === false) {
         const resource = {
-          action: [{id: btn.id, name: btn.name}],
-          page: [{id: this.page.id, name: this.page.name}],
-          project: [{id: this.appId, name: this.appName}],
+          action: [{ id: btn.id, name: btn.name }],
+          page: [{ id: this.page.id, name: this.page.name }],
+          project: [{ id: this.appId, name: this.appName }],
         };
         this.applyForPermission(['action_execute'], [], resource);
         return;
       }
-      const {type, value, id} = btn;
+      const { type, value, id } = btn;
       this.btnId = id || '';
       switch (type) {
         case 'DELETE':
@@ -749,8 +756,10 @@ export default {
           break;
         case 'DETAIL':
           this.handleviewDetail(btn, row);
+          break;
         case 'IMPORT':
-          this.handleImportFields(btn, row)
+          this.handleImportFields(btn, row);
+          break;
         default:
       }
     },
@@ -766,9 +775,9 @@ export default {
           try {
             const res = await this.getSheetPage(id);
             const fields = res.map((item) => {
-              const {choice, id, key, type} = item;
+              const { choice, id, key, type } = item;
               if (key === 'id') {
-                return {choice, id, key, type, value: row.id || 0};
+                return { choice, id, key, type, value: row.id || 0 };
               }
               if (key === 'ids') {
                 return {
@@ -779,7 +788,7 @@ export default {
                   value: JSON.stringify(row) === '{}' ? this.selection.map(i => i.id) : [],
                 };
               }
-              return {choice, id, key, type, value: '系统内置标题'};
+              return { choice, id, key, type, value: '系统内置标题' };
             });
             const params = {
               fields,
@@ -795,7 +804,7 @@ export default {
               // this.getTableList();
               if (this.isBuiltIn) {
                 this.visible = true;
-                this.polling('workbench/getOrderStatus', {id: this.ticketId});
+                this.polling('workbench/getOrderStatus', { id: this.ticketId });
               }
               await this.getTableList();
             } else if (!ticketRes.result) {
@@ -848,30 +857,31 @@ export default {
       this.btnValue = id;
     },
     handleImportFields() {
-      this.uploadStatus='UPLOAD'
-      this.importConfig.visible = true
+      this.uploadStatus = 'UPLOAD';
+      this.importConfig.visible = true;
     },
     customRequest(fileData) {
       const data = new FormData();
       data.append('file', fileData.fileObj.origin);
-      data.append('worksheet_id', this.formId)
-      this.importFailMessge=''
-      return this.$store.dispatch('application/validateData', data).then(res => {
-        this.$store.dispatch('application/uploadFile', data).then(result => {
-          this.uploadStatus='SUCCESS'
-        })
-      }).catch((e) => {
-        this.uploadStatus = "FAILED"
-        const {message} = e.data
-        this.importFailMessge = message
-        console.warn(e)
+      data.append('worksheet_id', this.formId);
+      this.importFailMessge = '';
+      return this.$store.dispatch('application/validateData', data).then((res) => {
+        this.$store.dispatch('application/uploadFile', data).then((result) => {
+          this.uploadStatus = 'SUCCESS';
+        });
       })
+        .catch((e) => {
+          this.uploadStatus = 'FAILED';
+          const { message } = e.data;
+          this.importFailMessge = message;
+          console.warn(e);
+        });
     },
     handleDownloadTemplate() {
-      const params = {page_id: this.page.id, version_number: this.version}
+      const params = { page_id: this.page.id, version_number: this.version };
       const paramsStr = getQuery(params);
       const BASE_URL = `${window.SITE_URL}api/engine/data/generate_export_template/${paramsStr}`;
-      window.open(BASE_URL)
+      window.open(BASE_URL);
     },
     async getSheetPage(id) {
       const params = {
@@ -891,14 +901,14 @@ export default {
     },
     getApiFields() {
       return this.editorList.map((item) => {
-        const {choice, id, key, type} = item;
+        const { choice, id, key, type } = item;
         let value = this.editorValue[key];
         if (type === 'IMAGE') {
           value = this.editorValue[key].map(item => (item.path ? item.path : item));
         } else if (['MULTISELECT', 'CHECKBOX', 'MEMBER', 'MEMBERS'].includes(type)) {
           value = Array.isArray(this.editorValue[key]) ? this.editorValue[key].join(',') : this.editorValue[key];
         }
-        return {choice, id, key, type, value};
+        return { choice, id, key, type, value };
       });
     },
     async submit() {
@@ -919,7 +929,7 @@ export default {
           this.showSuccess = true;
           if (this.isBuiltIn) {
             this.visible = true;
-            this.polling('workbench/getOrderStatus', {id: this.ticketId});
+            this.polling('workbench/getOrderStatus', { id: this.ticketId });
           }
         }
       } catch (e) {
@@ -959,7 +969,7 @@ export default {
         }
       }
       if (field.type === 'FORMULA' && field.meta.config && field.meta.config.calculate_type === 'date') {
-        const {accuracy, can_format, can_affix, default_time} = field.meta.config;
+        const { accuracy, can_format, can_affix, default_time } = field.meta.config;
         const timeStampArr = row[field.key].split(' - ').map(item => new Date(item).getTime());
         const timeStamp = timeStampArr[0] - timeStampArr[1];
         //	时间精确度
@@ -992,7 +1002,7 @@ export default {
         // console.log(timeStamp, field);
       }
       if (field.type === 'FORMULA' && field.meta.config && field.meta.config.calculate_type === 'number') {
-          showValue = row[field.key]
+        showValue = row[field.key];
       }
       return showValue || '--';
     },
@@ -1001,7 +1011,6 @@ export default {
       let totalDay;
       let totalMonth;
       const day = Math.floor(abSoluteValue / 1000 / 60 / 60 / 24);
-      console.log(day);
       totalYear = Math.floor(day / 365);
       totalMonth = Math.floor((day % 365) / 30);
       totalDay = day - (365 * totalYear) - (30 * totalMonth);
@@ -1043,7 +1052,7 @@ export default {
       }
     },
     handleView(row, column, fields) {
-      const {type} = fields;
+      const { type } = fields;
       this.imageConfig.type = type;
       if (type === 'TABLE') {
         this.imageConfig.imgList = {};
@@ -1051,7 +1060,7 @@ export default {
         this.imageConfig.imgList.val = row[column.property];
       } else {
         this.imageConfig.imgList = type === 'IMAGE'
-          ? row[column.property].map(item => ({path: `${window.location.origin}${window.SITE_URL}${item}`})) : row[column.property];
+          ? row[column.property].map(item => ({ path: `${window.location.origin}${window.SITE_URL}${item}` })) : row[column.property];
       }
       this.imageConfig.label = column.label;
       this.imageConfig.imageVisible = true;
@@ -1068,7 +1077,7 @@ export default {
       this.handleSearch();
     },
     goToDetail() {
-      this.$router.push({name: 'processDetail', params: {id: this.ticketId}});
+      this.$router.push({ name: 'processDetail', params: { id: this.ticketId } });
     },
     goToLink(row, column) {
       let url = row[column.property];
@@ -1293,7 +1302,8 @@ export default {
     font-size: 16px;
     line-height: 1;
   }
-  .fail-reason{
+
+  .fail-reason {
     @mixin scroller;
     color: red;
     overflow: auto;

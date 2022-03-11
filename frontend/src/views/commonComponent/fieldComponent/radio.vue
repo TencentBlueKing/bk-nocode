@@ -1,10 +1,11 @@
 <template>
   <div v-if="item.showFeild">
-    <bk-form-item :label="item.name"
-                  :required="item.validate_type === 'REQUIRE'"
-                  :desc="item.tips"
-                  :ext-cls="'bk-line-height'"
-                  desc-type="icon">
+    <bk-form-item
+      :label="item.name"
+      :required="item.validate_type === 'REQUIRE'"
+      :desc="item.tips"
+      :ext-cls="'bk-line-height'"
+      desc-type="icon">
       <bk-radio-group v-model="item.val" @change="item.checkValue = false">
         <template v-for="radio in item.choice">
           <bk-radio :disabled="disabled" :value="radio.key" :key="radio.key" :ext-cls="'mr20'">{{ radio.name }}

@@ -210,12 +210,20 @@ export default {
     },
     handlePageChange(val) {
       this.pagination.current = val;
-      this.getFunctionList();
+      this.getFunctionListAtPageChange();
     },
     handlePageLimitChange(val) {
       this.pagination.current = 1;
       this.pagination.limit = val;
-      this.getFunctionList();
+      this.getFunctionListAtPageChange();
+    },
+    getFunctionListAtPageChange() {
+      const  { is_builtin, type, relate_worksheet, name } = this.searchForm;
+      this.getFunctionList({
+        is_builtin,
+        type,
+        worksheet_name__icontains: relate_worksheet,
+        name__icontains: name });
     },
     handleCreateFunction() {
       this.$router.push({ name: 'functionBasic', params: { appId: this.appId } });
@@ -249,7 +257,7 @@ export default {
       this.pagination.current = 1;
       const  { is_builtin, type, relate_worksheet, name } = item;
       this.getFunctionList({
-        is_builtin: is_builtin === 2 ? 0 : is_builtin,
+        is_builtin,
         type,
         worksheet_name__icontains: relate_worksheet,
         name__icontains: name });
@@ -265,7 +273,7 @@ export default {
       const  { is_builtin, type, relate_worksheet, name } = this.searchForm;
       Bus.$emit('clearSearchItem', this.searchForm);
       this.getFunctionList({
-        is_builtin: is_builtin === 2 ? 0 : is_builtin,
+        is_builtin,
         type,
         worksheet_name__icontains: relate_worksheet,
         name__icontains: name });

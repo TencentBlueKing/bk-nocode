@@ -1,7 +1,7 @@
 // 表单字段类型映射
 export const FIELDS_TYPES_MAPS = {
   STRING: '单行文本',
-  TEXT: 'Textarea',
+  TEXT: '多行文本',
   INT: '数字',
   DATE: '日期',
   DATETIME: '时间',
@@ -21,3 +21,5 @@ export const FIELDS_TYPES_MAPS = {
   DESC: '描述文本',
   FORMULA: '计算控件',
 };
+// 下拉框组件
+export  const SHOW_SELECT_TYPE_LIST = ['SELECT', 'RADIO', 'CHECKBOX', 'MULTISELECT', 'INPUTSELECT'];
