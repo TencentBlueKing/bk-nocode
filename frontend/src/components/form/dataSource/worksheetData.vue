@@ -253,9 +253,9 @@ export default {
           state: this.nodeId,
         };
         const res = await this.$store.dispatch('setting/getNodeVars', params);
-        this.relationList = res.data.map(item => {
+        this.relationList = res.data.map((item) => {
           const { key, name } = item;
-          return { key: `\${params_${key}}`, name };
+          return { key, name };
         });
       } catch (e) {
         console.error(e);
@@ -363,7 +363,7 @@ export default {
     validate() {
       this.$refs.sourceForm.validate();
       const sourceFormValid = this.localVal.target.worksheet_id && this.localVal.field;
-      const filterRuleValid = this.localVal.conditions.expressions.every(exp => {
+      const filterRuleValid = this.localVal.conditions.expressions.every((exp) => {
         const { key, condition, type, value } = exp;
         return key !== '' && condition !== '' && type !== '' && value !== '';
       });

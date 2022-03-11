@@ -10,6 +10,8 @@ export default {
     triggerVariables: [],
     // 配置字段
     configurInfo: {},
+    //  流程节点数据
+    nodeList: [],
   },
   mutations: {
     setComponent(state, playload) {
@@ -23,6 +25,9 @@ export default {
     },
     changeConfigur(state, value) {
       state.configurInfo = value;
+    },
+    setNodeList(state, value) {
+      state.nodeList = value;
     },
   },
   actions: {
