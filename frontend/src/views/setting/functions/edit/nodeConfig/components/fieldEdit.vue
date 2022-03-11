@@ -232,7 +232,7 @@ import pinyin from 'pinyin';
 import {
   FIELDS_TYPES,
   FIELDS_SOURCE_TYPE,
-  FIELDS_SHOW_DEFAULT_VALUE,
+  FIELDS_SHOW_DEFAULT_VALUE_IN_WORKFLOW,
   FIELDS_SHOW_DATA_SOURCE,
   FIELDS_FULL_LAYOUT,
   CALCULATION_FORMULA,
@@ -263,7 +263,7 @@ export default {
       calculationFormula: CALCULATION_FORMULA,
       fieldProps: {
         fieldTypeList: FIELDS_TYPES.filter(item => item.type !== 'AUTO-NUMBER'),
-        fieldsShowDefaultValue: FIELDS_SHOW_DEFAULT_VALUE,
+        fieldsShowDefaultValue: FIELDS_SHOW_DEFAULT_VALUE_IN_WORKFLOW,
         fieldsShowDataSource: FIELDS_SHOW_DATA_SOURCE,
         fieldsFullLayout: FIELDS_FULL_LAYOUT,
       },

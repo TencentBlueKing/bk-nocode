@@ -257,6 +257,7 @@ export default {
         key: '',
         condition: '',
         value: '',
+        type: 'const',
       });
     },
     // 删除筛选条件
