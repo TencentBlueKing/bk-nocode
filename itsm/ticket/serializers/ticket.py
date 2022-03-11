@@ -79,7 +79,8 @@ from itsm.component.utils.basic import (
 from itsm.component.utils.client_backend_query import get_biz_names, get_template_list
 from itsm.component.utils.misc import transform_single_username, transform_username
 from common.utils import html_escape
-from itsm.postman.serializers import TaskStateApiInfoSerializer
+from itsm.postman.models import RemoteApiInstance
+from itsm.postman.serializers import TaskStateApiInfoSerializer, ApiInstanceSerializer
 from itsm.project.handler.project_handler import ProjectConfigHandler
 from itsm.service.handler.service_handler import ServiceHandler
 from itsm.service.validators import service_validate
@@ -321,6 +322,11 @@ class StatusSerializer(serializers.ModelSerializer):
             # 节点处理中如果可配置数据源类型的关联其他应用的表单，生成token，数据依据查询token
             for field in data["fields"]:
                 white_token_generate(field)
+                if field["source_type"] == "API" and field["api_instance_id"]:
+                    api_instance = RemoteApiInstance.objects.get(
+                        id=field["api_instance_id"]
+                    )
+                    field["api_info"] = ApiInstanceSerializer(api_instance).data
 
         data.update(
             operations=operations,
