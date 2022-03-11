@@ -14,7 +14,8 @@
         <bk-form-item
           :label="'触发器名称'"
           :required="true"
-          :property="'name'">
+          :property="'name'"
+          error-display-type="normal">
           <bk-input v-model="formData.name" placeholder="请输入触发器名称"></bk-input>
         </bk-form-item>
         <bk-form-item label="是否启用">
@@ -80,7 +81,8 @@
           label="触发事件"
           :required="true"
           :property="'signal'"
-          style="width: 300px;">
+          style="width: 300px;"
+          error-display-type="normal">
           <bk-select v-model="formData.signal" placeholder="请选择触发事件">
             <bk-option-group
               v-for="(group, index) in triggerEventList"
@@ -492,7 +494,6 @@ export default {
         });
         backStatus = item.triggerRules.checkStatus || item.responseList.some(responseItem => (responseItem.contentStatus || responseItem.wayStatus));
       });
-      console.log(backStatus);
       return backStatus;
     },
     // 获取触发条件
@@ -769,11 +770,16 @@ export default {
                 if (response.wayInfo.key === 'modify_field' && field.key === 'field_value' && field.referenceType === 'custom') {
                   field.value = field.itemInfo[0].value;
                 }
+                // 修复 修改字段值 引用变量导致传参丢失的问题
+                if (response.wayInfo.key === 'modify_field' && field.key === 'field_value' && field.referenceType === 'reference') {
+                  field.value = field.itemInfo[0].value;
+                }
                 const paramsContent = {
                   key: field.key,
                   value: this.formattingValue(field),
                   ref_type: field.referenceType,
                 };
+                console.log(paramsContent);
                 paramsItem.params.push(paramsContent);
               }
             });

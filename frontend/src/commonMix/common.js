@@ -42,7 +42,7 @@ export default {
         select: [
           {
             required: true,
-            message: "字段必填",
+            message: "触发事件为必填项",
             trigger: 'blur',
           },
         ],

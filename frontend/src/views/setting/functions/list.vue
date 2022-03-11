@@ -63,7 +63,7 @@
                     :class="{ 'bk-status-primary': !props.row.is_valid }">
               </span>
               <span style="margin-left: 5px">
-                    {{props.row.is_valid ? '启用': '未启用'}}
+                    {{ props.row.is_valid ? '启用' : '未启用' }}
              </span>
             </template>
           </bk-table-column>
@@ -138,7 +138,7 @@ export default {
     searchInfo() {
       const temparr = [];
       for (const key in this.searchForm) {
-        if (this.searchForm[key]  && this.showFiledMap[key]) {
+        if (this.searchForm[key] && this.showFiledMap[key]) {
           temparr.push({ name: this.showFiledMap[key], value: this.searchForm[key], key });
         }
       }
@@ -201,6 +201,14 @@ export default {
             globalInfo[key] = value[key];
           }
         }
+        /* 触发器隐藏部分触发事件
+        * 节点触发器隐藏  分派单据 认领单据
+        * 流程触发器隐藏  终止 挂起 恢复单据
+        * 处理人隐藏 cmdb业务公用角色 通用角色表
+        * */
+        globalInfo.processor_type.splice(0, 2);
+        globalInfo.trigger_signals.STATE = { DELIVER_STATE: '转单', ENTER_STATE: '进入节点', LEAVE_STATE: '离开节点' };
+        globalInfo.trigger_signals.FLOW = { CLOSE_TICKET: '关闭单据', CREATE_TICKET: '创建单据', DELETE_TICKET: '撤销单据' };
         this.$store.commit('setting/changeConfigur', globalInfo);
         sessionStorage.setItem('globalInfo', JSON.stringify(globalInfo));
       })
@@ -218,12 +226,13 @@ export default {
       this.getFunctionListAtPageChange();
     },
     getFunctionListAtPageChange() {
-      const  { is_builtin, type, relate_worksheet, name } = this.searchForm;
+      const { is_builtin, type, relate_worksheet, name } = this.searchForm;
       this.getFunctionList({
         is_builtin,
         type,
         worksheet_name__icontains: relate_worksheet,
-        name__icontains: name });
+        name__icontains: name,
+      });
     },
     handleCreateFunction() {
       this.$router.push({ name: 'functionBasic', params: { appId: this.appId } });
@@ -255,12 +264,13 @@ export default {
       this.searchForm = item;
       this.isShowSearchInfo = false;
       this.pagination.current = 1;
-      const  { is_builtin, type, relate_worksheet, name } = item;
+      const { is_builtin, type, relate_worksheet, name } = item;
       this.getFunctionList({
         is_builtin,
         type,
         worksheet_name__icontains: relate_worksheet,
-        name__icontains: name });
+        name__icontains: name,
+      });
     },
     handleRemoveSearch(tag) {
       if (tag.key === 'attr') {
@@ -270,13 +280,14 @@ export default {
         this.searchForm.is_builtin = '';
       }
       this.searchForm[tag.key] = '';
-      const  { is_builtin, type, relate_worksheet, name } = this.searchForm;
+      const { is_builtin, type, relate_worksheet, name } = this.searchForm;
       Bus.$emit('clearSearchItem', this.searchForm);
       this.getFunctionList({
         is_builtin,
         type,
         worksheet_name__icontains: relate_worksheet,
-        name__icontains: name });
+        name__icontains: name,
+      });
     },
     handleCancel() {
       this.isShowSearchInfo = false;
@@ -348,7 +359,8 @@ export default {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  /deep/ .bk-tag{
+
+  /deep/ .bk-tag {
     margin: 4px 8px 2px 0;
   }
 }
