@@ -59,6 +59,14 @@ export default {
       }
       this.conditionField(this.item, this.fields);
     },
+    'item.value': {
+      handler(val) {
+        if (!val) {
+          this.selectedItems  = val ? val.split(',') : [];
+        }
+      },
+      deep: true,
+    },
     selectedItems: {
       handler(newval, oldval) {
         this.item.val = this.selectedItems.join(',');

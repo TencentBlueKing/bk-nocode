@@ -63,6 +63,14 @@ export default {
     'item.val'(val) {
       this.selectedItems = val ? val.split(',') : [];
     },
+    'item.value': {
+      handler(val) {
+        if (!val) {
+          this.selectedItems  = val ? val.split(',') : [];
+        }
+      },
+      deep: true,
+    },
   },
   async mounted() {
     if (this.item.value && !this.item.val) {
