@@ -85,6 +85,7 @@
             v-model="expression.key"
             placeholder="字段"
             style="width: 160px; margin-right: 8px"
+            @selected="handleSelectField(expression)"
             :clearable="false">
             <bk-option v-for="item in fieldList" :key="item.key" :id="item.key" :name="item.name"></bk-option>
           </bk-select>
@@ -122,6 +123,7 @@ import Bus from '@/utils/bus.js';
 import cloneDeep from 'lodash.clonedeep';
 import { getFieldConditions } from '@/utils/form.js';
 import FieldValue from '@/components/form/fieldValue.vue';
+import { FIELDS_FILTER_CONFIG } from '@/constants/forms.js';
 import { TIME_RANGE } from '@/constants/sysField.js';
 export default {
   name: 'AttributeForm',
@@ -222,7 +224,7 @@ export default {
       try {
         this.fieldListLoading = true;
         const res = await this.$store.dispatch('setting/getFormFields', this.configData.workSheetId);
-        this.fieldList = res.data;
+        this.fieldList = res.data.filter(item => !FIELDS_FILTER_CONFIG.includes(item.type));
       } catch (e) {
         console.error(e);
       } finally {
@@ -298,6 +300,10 @@ export default {
       this.localVal = { connector: '', expressions: [{ condition: '', key: '', value: '', type: 'const' }] };
       Bus.$emit('sendConfigRules', this.localVal);
       this.dialog.visible = false;
+    },
+    handleSelectField(expression) {
+      expression.condition = '';
+      expression.value = '';
     },
   },
 };

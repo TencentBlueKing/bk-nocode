@@ -175,7 +175,8 @@ export const FIELDS_SOURCE_TYPE = [
 export const FIELDS_SHOW_DEFAULT_VALUE = ['CHECKBOX', 'RADIO', 'MEMBER', 'MEMBERS', 'RICHTEXT', 'DESC'];
 // 流程配置需要展示默认值的字段类型
 export const FIELDS_SHOW_DEFAULT_VALUE_IN_WORKFLOW = ['STRING', 'TEXT', 'INT', 'DATE', 'DATETIME', 'SELECT', 'MULTISELECT', 'INPUTSELECT', 'CHECKBOX', 'RADIO', 'MEMBER', 'MEMBERS', 'RICHTEXT', 'DESC'];
-
+// 列表页面配置数据筛选规则需要过滤的字段
+export  const FIELDS_FILTER_CONFIG = ['TABLE', 'LINK', 'IMAGE', 'FILE', 'RICHTEXT'];
 // 默认值可以配置固定值和数据联动的字段类型
 export const FIELDS_SHOW_CONFIG_VALUE = ['STRING', 'TEXT', 'INT', 'DATE', 'DATETIME', 'SELECT', 'MULTISELECT', 'INPUTSELECT'];
 // 需要展示数据源的字段类型
