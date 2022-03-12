@@ -197,6 +197,7 @@ export default {
       copyList.forEach((item) => {
         item.fields.forEach((fields) => {
           this.$set(fields, 'showFeild', !!fields.show_type);
+          this.$set(fields, 'val', '');
         });
         if (item.status === 'AUTO_SUCCESS') {
           item.status = 'FINISHED';

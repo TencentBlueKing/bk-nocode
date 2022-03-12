@@ -33,7 +33,6 @@ export default {
     // 自定义表单数据处理
     async getFieldOptions(item) {
       let data = [];
-      console.log(item.source_type)
       switch (item.source_type) {
         case 'CUSTOM':
           data = item.choice;
