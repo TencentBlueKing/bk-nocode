@@ -314,7 +314,11 @@ export default {
             theme: 'success',
           });
           this.AddSheetDialogVisible = false;
-          this.addSheetFormData = {};
+          this.addSheetFormData = {
+            openApplication: [],
+            checkSheet: '',
+            checkApp: '',
+          };
           this.initData();
         }
       } catch (e) {
@@ -372,7 +376,12 @@ export default {
       });
     },
     onCancel() {
-      this.addSheetFormData = {};
+      this.$refs.addAppForm.clearError();
+      this.addSheetFormData = {
+        openApplication: [],
+        checkSheet: '',
+        checkApp: '',
+      };
       this.AddSheetDialogVisible = false;
     },
   },
