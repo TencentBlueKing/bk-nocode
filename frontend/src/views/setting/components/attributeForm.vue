@@ -121,7 +121,7 @@
 <script>
 import Bus from '@/utils/bus.js';
 import cloneDeep from 'lodash.clonedeep';
-import { getFieldConditions } from '@/utils/form.js';
+import { getFieldConditionsInTablePage } from '@/utils/form.js';
 import FieldValue from '@/components/form/fieldValue.vue';
 import { FIELDS_FILTER_CONFIG } from '@/constants/forms.js';
 import { TIME_RANGE } from '@/constants/sysField.js';
@@ -279,7 +279,7 @@ export default {
     getConditionOptions(key) {
       if (key) {
         const field = this.fieldList.find(i => i.key === key);
-        return field ? getFieldConditions(field.type) : [];
+        return field ? getFieldConditionsInTablePage(field.type) : [];
       }
       return [];
     },
