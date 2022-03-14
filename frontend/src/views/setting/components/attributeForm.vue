@@ -109,7 +109,7 @@
           </field-value>
           <div class="operate-btns" style="margin-left: 8px">
             <i class="custom-icon-font icon-add-circle" @click="handleAddExpression(index)"></i>
-            <i class="custom-icon-font icon-reduce-circle" @click="handleDeleteExpression(index)" v-show="index!==0">
+            <i class="custom-icon-font icon-reduce-circle" @click="handleDeleteExpression(index)">
             </i>
           </div>
         </div>
@@ -264,6 +264,15 @@ export default {
     },
     // 删除筛选条件
     handleDeleteExpression(index) {
+      if (index === 0) {
+        this.localVal.expressions.splice(0, 1, {
+          key: '',
+          condition: '',
+          value: '',
+          type: 'const',
+        });
+        return;
+      }
       this.localVal.expressions.splice(index, 1);
     },
     // 筛选条件字段逻辑选项，不同类型的字段有不同的逻辑关系
