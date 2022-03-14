@@ -129,6 +129,9 @@ class ConditionTransfer(object):
             key = "contents__{}".format(key)
         condition = expression[CONDITION_KEYWORD]
         value = expression[VALUE_KEYWORD]
+        if condition == "in":
+            if isinstance(expression[VALUE_KEYWORD], str):
+                value = value.split(",")
         suffix, positive = TYPE_MAPPING[condition]
         q = Q() if positive else ~Q()
         q.children.append(("{}{}".format(key, suffix), value))
