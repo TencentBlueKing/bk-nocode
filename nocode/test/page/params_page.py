@@ -22,39 +22,33 @@ NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES
 WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
+import json
 
-from django.test import override_settings
+CREATE_PROJECT_DATA = {
+    "key": "test2",
+    "creator": "admin",
+    "name": "test2",
+    "desc": "test2",
+    "color": json.dumps(["#3a84ff", "#6cbaff"]),
+    "logo": "T",
+}
 
-from itsm.project.models import Project
-from nocode.base.base_tests import MyTestCase
-from nocode.test.worksheet.params_other import WORKSHEET_DATA, CREATE_PROJECT_DATA
-from nocode.worksheet.models import WorkSheet
-from nocode.worksheet.views.worksheet import WorkSheetViewSet
+CREATE_PAGE_1 = {
+    "project_key": CREATE_PROJECT_DATA["key"],
+    "name": "page1",
+    "type": "FUNCTION",
+}
+CREATE_PAGE_2 = {
+    "project_key": CREATE_PROJECT_DATA["key"],
+    "name": "page2",
+    "type": "LIST",
+}
+CREATE_PAGE_3 = {
+    "project_key": CREATE_PROJECT_DATA["key"],
+    "name": "page3",
+    "type": "SHEET",
+}
 
+SON_POINT = [CREATE_PAGE_1, CREATE_PAGE_2, CREATE_PAGE_3]
 
-class TestWorkSheetView(MyTestCase):
-    def setUp(self) -> None:
-        Project.objects.all().delete()
-
-        Project.objects.create(**CREATE_PROJECT_DATA)
-        self.worksheet = WorkSheet.objects.create(**WORKSHEET_DATA)
-
-    @override_settings(MIDDLEWARE=("itsm.tests.middlewares.OverrideMiddleware",))
-    def test_get_relate_service_page(self):
-        url = f"/api/worksheet/sheets/{self.worksheet.id}/get_relate_service_page/"
-        res = self.client.get(url)
-        self.assertEqual(type(res["relate_service"]), list)
-        self.assertEqual(type(res["relate_list_page"]), list)
-
-    swagger_test_view = WorkSheetViewSet
-
-    actions_exempt = [
-        "create",
-        "destroy",
-        "list",
-        "retrieve",
-        "update",
-        "partial_update",
-        "get_relate_service_page",
-        "get_fields_from_excel",
-    ]
+NEW_ORDER = []

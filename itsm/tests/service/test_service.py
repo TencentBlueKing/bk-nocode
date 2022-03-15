@@ -64,7 +64,6 @@ class ServiceTest(TestCase):
             "creator": self.operator,
         }
         self.worksheet_data = {
-            "id": 1,
             "creator": "admin",
             "create_at": "2021-09-18 15:51:22",
             "update_at": "2021-09-18 15:51:22",

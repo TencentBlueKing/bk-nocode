@@ -7,14 +7,14 @@ WORKSHEET_DATA = {
     "update_at": "2021-09-18 15:51:22",
     "updated_by": "admin",
     "is_deleted": False,
-    "name": "test",
-    "desc": "test_worksheet",
-    "key": "test",
-    "project_key": "test",
+    "name": "test2",
+    "desc": "test_worksheet2",
+    "key": "test2",
+    "project_key": "test2",
 }
 
 CREATE_PROJECT_DATA = {
-    "key": "test",
+    "key": "test2",
     "creator": "admin",
     "name": "test",
     "desc": "test",

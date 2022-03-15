@@ -30,26 +30,59 @@ from django.test import TestCase, override_settings
 from itsm.project.models import Project, ProjectConfig
 from nocode.page.handlers.page_handler import PageModelHandler
 from nocode.page.views.view import PageComponentViewSet
-from nocode.test.page.params import SON_POINT, CREATE_PROJECT_DATA
+
 from nocode.page.models import Page, PageComponent
+from nocode.project_manager.handlers.module_handler import (
+    ProjectModuleHandler,
+    ServiceModuleHandler,
+)
+from nocode.project_manager.handlers.project_version_handler import (
+    WorksheetIndexHandler,
+    WorkSheetMigrateHandler,
+    ProjectVersionModelHandler,
+)
+from nocode.project_manager.handlers.publish_log_handler import PublishLogModelHandler
+from nocode.test.page.params import CREATE_PROJECT_DATA, SON_POINT
 
 
 class TestPageComponent(TestCase):
     def setUp(self) -> None:
         app.conf.update(CELERY_ALWAYS_EAGER=True)
+        Project.objects.all().delete()
+        ProjectConfig.objects.all().delete()
         Project.objects.create(**CREATE_PROJECT_DATA)
-        project_config = {"workflow_prefix": "test", "project_key": "test"}
+        project_config = {
+            "workflow_prefix": "test2",
+            "project_key": CREATE_PROJECT_DATA["key"],
+        }
         ProjectConfig.objects.create(**project_config)
         PageModelHandler().create_root(project_key=CREATE_PROJECT_DATA["key"])
 
     def project_publish(self):
-        publish_rep = self.client.post(
-            path="/api/project/manager/publish/",
-            data=json.dumps({"project_key": "test"}),
-            content_type="application/json",
+        handler = PublishLogModelHandler(task_id=1)
+        project_module_handler = ProjectModuleHandler(
+            project_key=CREATE_PROJECT_DATA["key"]
         )
-        self.assertEqual(publish_rep.data["code"], "OK")
-        self.assertEqual(publish_rep.data["message"], "success")
+        # 变更应用状态为发布中
+        project_module_handler.updating()
+        # 更新所有字段详情信息
+        WorksheetIndexHandler(
+            CREATE_PROJECT_DATA["key"], handler
+        ).migrate_worksheet_fields()
+        # 删除被删除的工作表:
+        WorkSheetMigrateHandler(
+            project_key=CREATE_PROJECT_DATA["key"], log_handler=handler
+        ).migrate_worksheet()
+        # 生成一个新的版本
+        version = ProjectVersionModelHandler(
+            CREATE_PROJECT_DATA["key"], log_handler=handler
+        ).create_version()
+        # 更新版本号
+        project_module_handler.update_version(version.version_number)
+        # 更新所有服务
+        ServiceModuleHandler(project_key=CREATE_PROJECT_DATA["key"]).update_service()
+
+        return version.version_number
 
     @override_settings(MIDDLEWARE=("itsm.tests.middlewares.OverrideMiddleware",))
     def test_batch_save(self) -> None:
@@ -118,7 +151,7 @@ class TestPageComponent(TestCase):
         link_data = {
             "page_id": page.id,
             "service_id": 29,
-            "project_key": "test",
+            "project_key": CREATE_PROJECT_DATA["key"],
             "end_time": "2099-12-31 23:59:59",
         }
 
@@ -136,7 +169,7 @@ class TestPageComponent(TestCase):
         self.test_generate_open_link()
         page = Page.objects.get(name="page3", type="SHEET")
 
-        clear_data = {"page_id": page.id, "project_key": "test"}
+        clear_data = {"page_id": page.id, "project_key": CREATE_PROJECT_DATA["key"]}
         res = self.client.post(
             path="/api/project/manager/publish/",
             data=clear_data,
@@ -148,13 +181,8 @@ class TestPageComponent(TestCase):
     @override_settings(MIDDLEWARE=("itsm.tests.middlewares.OverrideMiddleware",))
     def test_add_components_collection(self):
         self.test_batch_save()
-        publish_rep = self.client.post(
-            path="/api/project/manager/publish/",
-            data=json.dumps({"project_key": "test"}),
-            content_type="application/json",
-        )
-        self.assertEqual(publish_rep.data["code"], "OK")
-        self.assertEqual(publish_rep.data["message"], "success")
+
+        self.project_publish()
 
         page = Page.objects.get(name="page1", type="FUNCTION")
         component = PageComponent.objects.get(type="FUNCTION", page_id=page.id)
@@ -172,7 +200,7 @@ class TestPageComponent(TestCase):
         self.test_batch_save()
         publish_rep = self.client.post(
             path="/api/project/manager/publish/",
-            data=json.dumps({"project_key": "test"}),
+            data=json.dumps({"project_key": CREATE_PROJECT_DATA["key"]}),
             content_type="application/json",
         )
         self.assertEqual(publish_rep.data["code"], "OK")

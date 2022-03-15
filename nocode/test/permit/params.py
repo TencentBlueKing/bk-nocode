@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 
 ADD_USER_GROUP = {"name": "test_user_group", "desc": "test", "project_key": "test"}
 
@@ -9,4 +10,13 @@ PERMIT_DATA = {
     "action_execute": [
         {"id": 21, "name": "test", "actions": [{"id": 36, "name": "test"}]}
     ],
+}
+
+CREATE_PROJECT_DATA = {
+    "key": "test",
+    "creator": "admin",
+    "name": "test",
+    "desc": "test",
+    "color": json.dumps(["#3a84ff", "#6cbaff"]),
+    "logo": "T",
 }

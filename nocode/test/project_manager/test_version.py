@@ -8,10 +8,13 @@ from itsm.project.handler.permit_engine_handler import PermitInitManagerDispatch
 from itsm.project.models import ServiceCatalog
 
 from itsm.project.models import Project, ProjectConfig
-from itsm.tests.project.params import CREATE_PROJECT_DATA
 from nocode.page.models import Page
-from nocode.test.page.params import SON_POINT
-from nocode.test.worksheet.params import WORKSHEET_DATA, WORKSHEET_FIELD
+from nocode.test.project_manager.params_2 import (
+    CREATE_PROJECT_DATA,
+    WORKSHEET_DATA,
+    SON_POINT,
+)
+
 from nocode.worksheet.handlers.moudule_handler import ServiceHandler, DjangoHandler
 from nocode.worksheet.models import WorkSheet
 
@@ -48,7 +51,7 @@ class TestProjectManager(TestCase):
 
         resp = self.client.post(
             "/api/project/projects/",
-            json.dumps(CREATE_PROJECT_DATA),
+            data=CREATE_PROJECT_DATA,
             content_type="application/json",
         )
 
@@ -100,9 +103,50 @@ class TestProjectManager(TestCase):
 
     def field_batch_save(self):
         worksheet = WorkSheet.objects.create(**WORKSHEET_DATA)
+        worksheet_field = {
+            "worksheet_id": worksheet.id,
+            "fields": [
+                {
+                    "meta": {},
+                    "api_info": {},
+                    "choice": [],
+                    "kv_relation": {},
+                    "key": "shu_zi_1",
+                    "name": "数字1",
+                    "desc": "",
+                    "type": "INT",
+                    "layout": "COL_12",
+                    "validate_type": "OPTION",
+                    "source_type": "CUSTOM",
+                    "api_instance_id": 0,
+                    "default": "0",
+                    "worksheet_id": worksheet.id,
+                    "regex": "EMPTY",
+                },
+                {
+                    "meta": {},
+                    "api_info": {},
+                    "choice": [],
+                    "kv_relation": {},
+                    "create_at": "2022-01-27 15:37:28",
+                    "key": "shu_zi_2",
+                    "name": "数字2",
+                    "desc": "",
+                    "type": "INT",
+                    "layout": "COL_12",
+                    "validate_type": "OPTION",
+                    "source_type": "CUSTOM",
+                    "api_instance_id": 0,
+                    "default": "0",
+                    "worksheet_id": worksheet.id,
+                    "regex": "EMPTY",
+                },
+            ],
+        }
+
         url = "/api/worksheet/fields/batch_save/"
         res = self.client.post(
-            url, data=WORKSHEET_FIELD, content_type="application/json"
+            url, data=worksheet_field, content_type="application/json"
         )
         self.assertEqual(res.data["result"], True)
         self.assertEqual(res.data["message"], "success")
@@ -182,7 +226,7 @@ class TestProjectManager(TestCase):
         )
         self.assertEqual(res.data["result"], True)
         self.assertEqual(res.data["message"], "success")
-        self.assertEqual(len(res.data["data"]), 1)
+        self.assertEqual(len(res.data["data"]), 2)
 
     @override_settings(MIDDLEWARE=("itsm.tests.middlewares.OverrideMiddleware",))
     def test_worksheet_fields_version(self):

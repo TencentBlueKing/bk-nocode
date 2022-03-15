@@ -30,8 +30,8 @@ from itsm.component.constants import OPERATE_CATALOG
 from itsm.project.handler.project_handler import ProjectHandler
 from itsm.project.models import Project
 from nocode.project_manager.models import ProjectWhite
-from nocode.test.page.params import CREATE_PROJECT_DATA
-from nocode.test.worksheet.params import WORKSHEET_DATA
+from nocode.test.project_manager.params import CREATE_PROJECT_DATA, WORKSHEET_DATA
+
 from nocode.worksheet.handlers.moudule_handler import ServiceHandler, DjangoHandler
 
 
@@ -39,6 +39,8 @@ class TestProjectWhiteView(TestCase):
     @override_settings(MIDDLEWARE=("itsm.tests.middlewares.OverrideMiddleware",))
     def setUp(self) -> None:
         app.conf.update(CELERY_ALWAYS_EAGER=True)
+        Project.objects.all().delete()
+
         project = Project.objects.create(**CREATE_PROJECT_DATA)
         ProjectHandler(instance=project).init_operate_catalogs(OPERATE_CATALOG)
         self.worksheet_id = None

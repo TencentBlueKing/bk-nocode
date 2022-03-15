@@ -30,9 +30,9 @@ from itsm.component.constants import OPERATE_CATALOG
 from itsm.project.handler.project_handler import ProjectHandler
 from itsm.project.models import Project
 from nocode.base.base_tests import MyTestCase
-from nocode.test.page.params import CREATE_PROJECT_DATA
 
-from nocode.test.worksheet.params import WORKSHEET_DATA
+
+from nocode.test.worksheet.params import WORKSHEET_DATA, CREATE_PROJECT_DATA
 from nocode.worksheet.handlers.moudule_handler import ServiceHandler, DjangoHandler
 from nocode.worksheet.views.worksheetfield import WorkSheetFieldViewSet
 
@@ -40,6 +40,7 @@ from nocode.worksheet.views.worksheetfield import WorkSheetFieldViewSet
 class TestWorkSheetFieldsView(MyTestCase):
     def setUp(self) -> None:
         app.conf.update(CELERY_ALWAYS_EAGER=True)
+        Project.objects.all().delete()
         project = Project.objects.create(**CREATE_PROJECT_DATA)
         ProjectHandler(instance=project).init_operate_catalogs(OPERATE_CATALOG)
         self.worksheet_id = self.create_worksheet()

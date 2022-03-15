@@ -6,7 +6,7 @@ from django.test import TestCase, override_settings
 from blueapps.core.celery.celery import app
 
 from itsm.project.models import Project, ProjectConfig
-from nocode.test.page.params import CREATE_PROJECT_DATA
+from nocode.test.project_manager.params import CREATE_PROJECT_DATA
 
 
 class TestProjectManager(TestCase):
@@ -43,7 +43,7 @@ class TestProjectManager(TestCase):
         res = self.client.get(url)
         self.assertEqual(res.data["code"], "OK")
         self.assertEqual(res.data["message"], "success")
-        self.assertEqual(len(res.data["data"]), 22)
+        self.assertEqual(len(res.data["data"]), 23)
 
     @override_settings(MIDDLEWARE=("itsm.tests.middlewares.OverrideMiddleware",))
     def test_project_version(self):

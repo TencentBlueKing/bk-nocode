@@ -4,8 +4,12 @@ from django.test import TestCase, override_settings
 from blueapps.core.celery.celery import app
 
 from itsm.project.models import Project, ProjectConfig
-from nocode.test.page.params import CREATE_PROJECT_DATA
-from nocode.test.permit.params import ADD_USER_GROUP, ADD_USER, PERMIT_DATA
+from nocode.test.permit.params import (
+    ADD_USER_GROUP,
+    ADD_USER,
+    PERMIT_DATA,
+    CREATE_PROJECT_DATA,
+)
 
 
 class TestPage(TestCase):
