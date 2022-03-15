@@ -109,8 +109,8 @@
           </field-value>
           <div class="operate-btns" style="margin-left: 8px">
             <i class="custom-icon-font icon-add-circle" @click="handleAddExpression(index)"></i>
-            <i class="custom-icon-font icon-reduce-circle" @click="handleDeleteExpression(index)">
-            </i>
+            <i :class="['custom-icon-font', 'icon-reduce-circle',
+            { disabled: localVal.expressions.length < 2 }]" @click="handleDeleteExpression(index)"></i>
           </div>
         </div>
         <p v-if="errorTips" class="common-error-tips">请检查筛选条件</p>
@@ -264,16 +264,9 @@ export default {
     },
     // 删除筛选条件
     handleDeleteExpression(index) {
-      if (index === 0) {
-        this.localVal.expressions.splice(0, 1, {
-          key: '',
-          condition: '',
-          value: '',
-          type: 'const',
-        });
-        return;
+      if (this.localVal.expressions.length > 1) {
+        this.localVal.expressions.splice(index, 1);
       }
-      this.localVal.expressions.splice(index, 1);
     },
     // 筛选条件字段逻辑选项，不同类型的字段有不同的逻辑关系
     getConditionOptions(key) {
@@ -307,7 +300,7 @@ export default {
     },
     handleCancel() {
       this.localVal = { connector: '', expressions: [{ condition: '', key: '', value: '', type: 'const' }] };
-      Bus.$emit('sendConfigRules', this.localVal);
+      Bus.$emit('sendConfigRules', {});
       this.dialog.visible = false;
     },
     handleSelectField(expression) {
@@ -345,9 +338,16 @@ export default {
     cursor: pointer;
     user-select: none;
 
-    .disabled {
-      color: #dcdee5;
-      cursor: not-allowed;
+    i {
+      color: #c4c6cc;
+      cursor: pointer;
+      &:hover {
+        color: #979ba5;
+      }
+      &.disabled {
+        color: #dcdee5;
+        cursor: not-allowed;
+      }
     }
   }
 }
