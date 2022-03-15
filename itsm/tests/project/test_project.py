@@ -30,6 +30,7 @@ from django.test import TestCase, override_settings
 from itsm.project.handler.permit_engine_handler import PermitInitManagerDispatcher
 from itsm.project.models import ServiceCatalog, ProjectSettings, Project, ProjectConfig
 from itsm.tests.project.params import CREATE_PROJECT_DATA
+from nocode.page.models import Page
 
 
 class TestProject(TestCase):
@@ -38,6 +39,7 @@ class TestProject(TestCase):
         ProjectConfig.objects.all().delete()
         Project.objects.all().delete()
         ServiceCatalog.objects.all().delete()
+        Page.objects.all().delete()
 
     @override_settings(MIDDLEWARE=("itsm.tests.middlewares.OverrideMiddleware",))
     @mock.patch.object(PermitInitManagerDispatcher, "init_permit")
