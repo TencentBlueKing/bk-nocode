@@ -121,7 +121,7 @@
                 :searchable="true"
                 :loading="SheetFieldsLoading">
                 <bk-option
-                  v-for="option in fieldList" :key="option.key" :id="option.key"
+                  v-for="option in currentFieldList" :key="option.key" :id="option.key"
                   :name="option.name">
                 </bk-option>
               </bk-select>
@@ -157,7 +157,7 @@
                 :searchable="true"
                 @selected="handleSelect">
                 <bk-option
-                  v-for="option in currentSheetFields" :key="option.key" :id="option.key" :name="option.name">
+                  v-for="option in defaultFields" :key="option.key" :id="option.key" :name="option.name">
                 </bk-option>
               </bk-select>
             </div>
@@ -183,7 +183,7 @@
 import cloneDeep from 'lodash.clonedeep';
 import DefaultValue from '@/components/form/defaultValue.vue';
 import { uuid } from '@/utils/uuid.js';
-import { FIELDS_TYPES, FIELDS_SHOW_CONFIG_VALUE } from '@/constants/forms.js';
+import { FIELDS_TYPES, FIELDS_CONDITION_VALUE } from '@/constants/forms.js';
 
 // 注册fields文件夹下所有字段类型组件
 function registerField() {
@@ -232,6 +232,7 @@ export default {
         id: 'linkageRules',
         name: '联动规则',
       }],
+      currentFieldList: cloneDeep(this.fieldList).filter(item => FIELDS_CONDITION_VALUE.includes(item.type)),
       formData: {
         container: 1,
         condition: [{
@@ -303,6 +304,7 @@ export default {
           this.formData.sheetId = localValue.target.worksheet_id;
           this.formData.appId = localValue.target.project_key;
           this.currentSheetFields = this.sheetList.find(item => item.id === localValue.target.worksheet_id).fields;
+          this.getDefaultFields(this.currentSheetFields);
         }
       } else {
         this.defaultValue = 'defaultValue';
@@ -315,11 +317,19 @@ export default {
       try {
         this.SheetFieldsLoading = true;
         const result = await this.$store.dispatch('setting/getFormFields', worksheet_id);
-        this.currentSheetFields = result.data.filter(item => FIELDS_SHOW_CONFIG_VALUE.includes(item.type));
+        this.currentSheetFields = result.data.filter(item => FIELDS_CONDITION_VALUE.includes(item.type));
+        this.getDefaultFields(result.data);
       } catch (e) {
         console.log(e);
       } finally {
         this.SheetFieldsLoading = false;
+      }
+    },
+    getDefaultFields(data) {
+      if (['STRING', 'TEXT'].includes(this.field.type)) {
+        this.defaultFields = data.filter(item => FIELDS_CONDITION_VALUE.includes(item.type));
+      } else {
+        this.defaultFields = data.filter(item => FIELDS_CONDITION_VALUE.includes(item.type) && item.type === this.field.type);
       }
     },
     async getSheetList() {
@@ -390,7 +400,8 @@ export default {
         this.getFieldList(val);
       } else {
         this.currentSheetFields = this.sheetList.find(item => item.id === val).fields
-          .filter(it => FIELDS_SHOW_CONFIG_VALUE.includes(it.type));
+          .filter(it => FIELDS_CONDITION_VALUE.includes(it.type));
+        this.getDefaultFields(this.sheetList.find(item => item.id === val).fields);
       }
     },
     async handleSelectApp(val) {
@@ -557,7 +568,6 @@ export default {
     margin-top: 16px;
     display: flex;
     align-items: center;
-    height: 32px;
   }
 
   .condition-select {
