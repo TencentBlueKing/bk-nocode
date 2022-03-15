@@ -77,13 +77,6 @@
           <!-- 禁用遮罩 -->
           <!--          <div class="bk-node-disabled"></div>-->
           <div class="bk-form bk-form-vertical">
-            <!-- 节点任务 -->
-            <!--                        <node-task-list-->
-            <!--                          v-if="(nodeInfo.can_create_task || nodeInfo.can_execute_task)"-->
-            <!--                          :node-info="nodeInfo"-->
-            <!--                          :ticket-info="ticketInfo"-->
-            <!--                          @updateCurrentStep="successFn">-->
-            <!--                        </node-task-list>-->
             <div v-if="nodeInfo.status !== 'RUNNING'" class="bk-area-show-back">
               <!-- 静态展示 -->
               <template v-for="(ite, fIndex) in nodeInfo.fields">
@@ -340,6 +333,10 @@ export default {
   },
   async created() {
     this.initData();
+    // 当前节点默认展开
+    if (this.nodeInfo.id === this.nodeList[0].id) {
+      this.unfold = true;
+    }
     if (this.nodeInfo.type === 'APPROVAL' && this.nodeInfo.processors_type === 'ORGANIZATION') {
       this.nodeDetailLoading = true;
       this.userList = await this.getUserByDepartment(this.nodeInfo.origin_processors);

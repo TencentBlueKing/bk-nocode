@@ -109,7 +109,7 @@
           </field-value>
           <div class="operate-btns" style="margin-left: 8px">
             <i class="custom-icon-font icon-add-circle" @click="handleAddExpression(index)"></i>
-            <i class="custom-icon-font icon-reduce-circle" @click="handleDeleteExpression(index)" v-show="index!==0">
+            <i class="custom-icon-font icon-reduce-circle" @click="handleDeleteExpression(index)">
             </i>
           </div>
         </div>
@@ -121,7 +121,7 @@
 <script>
 import Bus from '@/utils/bus.js';
 import cloneDeep from 'lodash.clonedeep';
-import { getFieldConditions } from '@/utils/form.js';
+import { getFieldConditionsInTablePage } from '@/utils/form.js';
 import FieldValue from '@/components/form/fieldValue.vue';
 import { FIELDS_FILTER_CONFIG } from '@/constants/forms.js';
 import { TIME_RANGE } from '@/constants/sysField.js';
@@ -264,13 +264,22 @@ export default {
     },
     // 删除筛选条件
     handleDeleteExpression(index) {
+      if (index === 0) {
+        this.localVal.expressions.splice(0, 1, {
+          key: '',
+          condition: '',
+          value: '',
+          type: 'const',
+        });
+        return;
+      }
       this.localVal.expressions.splice(index, 1);
     },
     // 筛选条件字段逻辑选项，不同类型的字段有不同的逻辑关系
     getConditionOptions(key) {
       if (key) {
         const field = this.fieldList.find(i => i.key === key);
-        return field ? getFieldConditions(field.type) : [];
+        return field ? getFieldConditionsInTablePage(field.type) : [];
       }
       return [];
     },
