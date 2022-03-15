@@ -83,7 +83,7 @@
           </h4>
           <common-trigger
             :origin="'workflow'"
-            :source-id="funcData.id">
+            :source-id="funcData.workflow_id">
           </common-trigger>
         </div>
       </bk-form>
