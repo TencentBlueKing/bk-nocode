@@ -84,6 +84,7 @@ class ServiceTest(TestCase):
             "updated_by": "test_admin",
             "update_at": "2021-05-30 17:16:40",
         }
+        Project.objects.filter(key=self.create_project_data["key"]).delete()
         project = Project.objects.create(**self.create_project_data)
         ProjectHandler(instance=project).init_operate_catalogs(OPERATE_CATALOG)
 
