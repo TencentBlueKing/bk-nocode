@@ -127,7 +127,7 @@
               </bk-select>
               <div class="condition-select" v-else>
                 <component
-                  :is="item.fieldComp"
+                  :is="item.fieldComp==='AutoNumber'?'Input':item.fieldComp"
                   :field="field"
                   :value="item.relationCurrentValue"
                   :disabled="item.type!=='const'"
@@ -268,6 +268,9 @@ export default {
   },
   computed: {
     defaultValueFieldComp() {
+      if (this.field.type === 'AUTO-NUMBER') {
+        return 'STRING';
+      }
       return FIELDS_TYPES.find(el => el.type === this.field.type).comp;
     },
   },
@@ -409,6 +412,7 @@ export default {
       this.getSheetListFromApp(val);
     },
     handleSelectVariable(item, val) {
+      item.relationCurrentValue = '';
       const { type } = this.currentSheetFields.find(el => el.key === item.id);
       if (val === 'variable') {
         item.relationCurrentSheet = this.currentSheetFields
