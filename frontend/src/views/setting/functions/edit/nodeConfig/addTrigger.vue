@@ -768,7 +768,7 @@ export default {
                 paramsItem.params.push(subContent);
               } else {
                 if (response.wayInfo.key === 'modify_field' && field.key === 'field_value' && field.referenceType === 'custom') {
-                  field.value = field.itemInfo[0].value;
+                  field.value = field.itemInfo[0].val;
                 }
                 // 修复 修改字段值 引用变量导致传参丢失的问题
                 if (response.wayInfo.key === 'modify_field' && field.key === 'field_value' && field.referenceType === 'reference') {
