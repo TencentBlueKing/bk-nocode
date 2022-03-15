@@ -123,7 +123,7 @@ export default {
       this.getFieldList();
       this.getBuiltInService();
     }
-    this.debounceChange = debounce(this.handleChangeFormValue, 600);
+    this.debounceChange = debounce(this.handleChangeFormValue, 300);
   },
   methods: {
     async getFieldList() {
@@ -204,7 +204,7 @@ export default {
 
       // 校验多值类型的表单配置值的数目范围后，用户填写的值数目是否范围内
       let formValNumRangeValid = true;
-      this.fieldList.some(field => {
+      this.fieldList.some((field) => {
         const fieldVal = this.formValue[field.key];
         if ('num_range' in field) {
           let msg = '';
@@ -280,7 +280,6 @@ export default {
     },
     async handleChangeFormValue(key, $event) {
       this.formValue = $event;
-      // this.fieldList.forEach(async  (item) => {
       const item = this.fieldList;
       for (let i = 0 ;i < item.length;i++) {
         if (item[i].meta.data_config) {
@@ -300,39 +299,23 @@ export default {
             isConditonFlag ? this.formValue[item[i].key] = value : this.formValue[item[i].key] = '';
           } else if (type === 2 || type === 3) {
             let res;
-            // let tempOtherkey;
-            // 当前应用其他表单
-            // isConditonFlag = conditions.every(async (condition) => {
-            //   // 来源表单字段
-            //   // tempOtherkey = `${item.meta.worksheet.key}_${condition.id}`;
-            //   const  field = condition.id;
-            //   if (condition.type === 'variable') {
-            //     // 当前表单字段
-            //     const curKey = `${item.meta.worksheet.key}_${condition.relationCurrentValue}`;
-            //     const params = this.getConditionParams({ key: field, value: $event[curKey],
-            //       token: item.token, fields: [item.meta.data_config.value] });
-            //     try {
-            //       res = await this.$store.dispatch('setting/getWorksheetData', params);
-            //       console.log(3);
-            //       return res.data && res.data.length > 0;
-            //     } catch (e) {
-            //       console.error(e);
-            //     }
-            //     console.log(res);
-            //   }
-            // });
             let validateFlag;
             for (let j = 0; j < conditions.length;j++) {
               const field = conditions[j].id;
               // 当前表单字段
-              const curKey = `${item[i].meta.worksheet.key}_${conditions[j].relationCurrentValue}`;
-              console.log(conditions[j].type);
+              let curKey;
+              // 是否含有联动字段
+              const isHaveRelationFields = item
+                .some(it => it.meta.worksheet.field_key === conditions[j].relationCurrentValue);
+              if (isHaveRelationFields) {
+                curKey = item.find(it => it.meta.worksheet.field_key === conditions[j].relationCurrentValue).key;
+              }
+              // const curKey = `${conditions[j].relationCurrentValue}`;
               const params = this.getConditionParams({
                 key: field,
                 value: conditions[j].type === 'variable' ? $event[curKey] : conditions[j].relationCurrentValue,
                 token: item[i].token, fields: [item[i].meta.data_config.value],
               });
-              console.log(params);
               try {
                 res = await this.$store.dispatch('setting/getWorksheetData', params);
                 if (res.data && res.data.length > 0) {
