@@ -36,11 +36,11 @@ from nocode.worksheet.views.worksheet import WorkSheetViewSet
 class TestWorkSheetView(MyTestCase):
     def setUp(self) -> None:
         Project.objects.get_or_create(**CREATE_PROJECT_DATA)
-        WorkSheet.objects.get_or_create(**WORKSHEET_DATA)
+        self.worksheet = WorkSheet.objects.create(**WORKSHEET_DATA)
 
     @override_settings(MIDDLEWARE=("itsm.tests.middlewares.OverrideMiddleware",))
     def test_get_relate_service_page(self):
-        url = f'/api/worksheet/sheets/{WORKSHEET_DATA["id"]}/get_relate_service_page/'
+        url = f"/api/worksheet/sheets/{self.worksheet.id}/get_relate_service_page/"
         res = self.client.get(url)
         self.assertEqual(type(res["relate_service"]), list)
         self.assertEqual(type(res["relate_list_page"]), list)

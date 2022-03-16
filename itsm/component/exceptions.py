@@ -378,3 +378,9 @@ class ProjectWhiteNotFound(ServerError):
     MESSAGE = _("白名单记录未找到")
     ERROR_CODE = "ProjectWhiteList_Not_Found"
     ERROR_CODE_INT = 3900046
+
+
+class FieldValidationError(ServerError):
+    MESSAGE = _("字段校验不通过")
+    ERROR_CODE = "NumRange_Validate_Error"
+    ERROR_CODE_INT = 3900047

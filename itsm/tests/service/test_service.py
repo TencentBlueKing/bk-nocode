@@ -47,9 +47,9 @@ class ServiceTest(TestCase):
     def json(self, data):
         return json.dumps(data)
 
-    def tearDown(self) -> None:
-        Service.objects.filter(name="测试服务").delete()
-        Service.objects.filter(name="测试服务2").delete()
+    # def tearDown(self) -> None:
+    #     Service.objects.filter(name="测试服务").delete()
+    #     Service.objects.filter(name="测试服务2").delete()
 
     def setUp(self):
         """准备数据"""
@@ -64,7 +64,6 @@ class ServiceTest(TestCase):
             "creator": self.operator,
         }
         self.worksheet_data = {
-            "id": 1,
             "creator": "admin",
             "create_at": "2021-09-18 15:51:22",
             "update_at": "2021-09-18 15:51:22",
@@ -73,7 +72,7 @@ class ServiceTest(TestCase):
             "name": "这是一张测试工作表",
             "desc": "test_worksheet",
             "key": "test_worksheet",
-            "project_key": "0",
+            "project_key": "test",
         }
         self.create_project_data = {
             "key": "test",

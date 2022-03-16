@@ -30,6 +30,7 @@ from django.utils.translation import ugettext as _
 from rest_framework import serializers
 from rest_framework.fields import JSONField
 
+from itsm.component.exceptions import FieldValidationError
 from itsm.postman.models import RemoteApi, RemoteApiInstance
 from itsm.postman.serializers import ApiInstanceSerializer
 from itsm.project.handler.project_handler import ProjectHandler
@@ -268,11 +269,11 @@ class WorkSheetFieldItemSerializer(serializers.ModelSerializer):
             # 如果传了num_range 但是数量等于不是两个
             if num_range:
                 if len(num_range) != 2:
-                    raise serializers.ValidationError(_("字段范围格式不正确"))
+                    raise FieldValidationError("字段范围格式不正确")
                 if num_range[0] == num_range[1]:
-                    raise serializers.ValidationError(_("最小范围和最大范围不能相同"))
+                    raise FieldValidationError("最小范围和最大范围不能相同")
                 if num_range[0] >= num_range[1]:
-                    raise serializers.ValidationError(_("最小范围和最大范围设置错误"))
+                    raise FieldValidationError("最小范围和最大范围设置错误")
         return attrs
 
     class Meta:
