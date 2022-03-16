@@ -154,8 +154,7 @@
               <bk-select
                 v-else
                 v-model="formData.value"
-                :searchable="true"
-                @selected="handleSelect">
+                :searchable="true">
                 <bk-option
                   v-for="option in defaultFields" :key="option.key" :id="option.key" :name="option.name">
                 </bk-option>
@@ -232,7 +231,7 @@ export default {
         id: 'linkageRules',
         name: '联动规则',
       }],
-      currentFieldList: cloneDeep(this.fieldList).filter(item => FIELDS_CONDITION_VALUE.includes(item.type)),
+      currentFieldList: cloneDeep(this.fieldList).filter(item => FIELDS_CONDITION_VALUE.includes(item.type) && item.id),
       formData: {
         container: 1,
         condition: [{

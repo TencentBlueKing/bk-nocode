@@ -15,7 +15,7 @@
     </div>
     <transition name="slide-left">
       <div v-show="isHover" class="actions-area">
-        <i class="bk-icon icon-copy" @click.stop="$emit('action', 'copy')"></i>
+        <i class="custom-icon-font icon-copy bk-icon" @click.stop="$emit('action', 'copy')"></i>
         <i class="bk-icon icon-delete" @click.stop="$emit('action', 'delete')"></i>
       </div>
     </transition>

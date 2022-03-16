@@ -22,7 +22,11 @@
                   @click="openFormulaConfig">配置公式</span>
           </bk-form-item>
           <bk-form-item label="计算字段">
-            <bk-select v-model="fieldData.meta.config.fields" multiple  @change="change"  :key="fieldData.meta.config.type">
+            <bk-select
+              v-model="fieldData.meta.config.fields"
+              multiple
+              @change="change"
+              :key="fieldData.meta.config.type">
               <bk-option v-for="item in formulaFieldList" :key="item.key" :id="item.key" :name="item.name">
               </bk-option>
             </bk-select>
@@ -33,7 +37,8 @@
                 class="group-text"
                 @show="dropdownShow"
                 @hide="dropdownHide"
-                ref="dropdown" slot="prepend"
+                ref="dropdown"
+                slot="prepend"
                 :font-size="'medium'">
                 <bk-button type="primary" slot="dropdown-trigger">
                   <span v-if="fieldData.meta.config.affix_type === 0">前缀</span>
@@ -48,12 +53,22 @@
             </bk-input>
           </bk-form-item>
           <bk-form-item label="保留小数位数">
-            <bk-input type="number" :max="1000" :min="0" v-model="fieldData.meta.config.accuracy"></bk-input>
+            <bk-input
+              type="number"
+              :max="1000"
+              :min="0"
+              v-model="fieldData.meta.config.accuracy"
+              @change="change">
+            </bk-input>
           </bk-form-item>
         </template>
         <template v-if="fieldData.meta.config.calculate_type==='date'">
           <bk-form-item label="开始日期">
-            <bk-select v-model="startTime" @change="(val) => handleSelectTime('start',val)" :key="fieldData.meta.config.type"placeholder="选择开始日期">
+            <bk-select
+              v-model="startTime"
+              @selected="(val) => handleSelectTime('start',val)"
+              :key="fieldData.meta.config.type"
+              placeholder="选择开始日期">
               <bk-option v-for="item in formulaFieldList" :key="item.key" :id="item.key" :name="item.name">
               </bk-option>
             </bk-select>
@@ -61,11 +76,17 @@
               v-model="fieldData.meta.config.start_time"
               :placeholder="'选择日期'"
               ext-cls="date-pick"
+              @change="handleChangeStartTime"
+              format="yyyy-MM-dd"
               v-if="datePickerIsShow.startTimeIsshow">
             </bk-date-picker>
           </bk-form-item>
           <bk-form-item label="结束日期">
-            <bk-select v-model="endTime" @change="(val) => handleSelectTime('end',val)" :key="fieldData.meta.config.type" placeholder="选择结束日期">
+            <bk-select
+              v-model="endTime"
+              @selected="(val) => handleSelectTime('end',val)"
+              :key="fieldData.meta.config.type"
+              placeholder="选择结束日期">
               <bk-option v-for="item in formulaFieldList" :key="item.key" :id="item.key" :name="item.name">
               </bk-option>
             </bk-select>
@@ -73,12 +94,17 @@
               v-model="fieldData.meta.config.end_time"
               :placeholder="'选择日期'"
               ext-cls="date-pick"
-              @change="change"
+              @change="handleChangeEndTime"
+              format="yyyy-MM-dd"
               v-if="datePickerIsShow.endTimeIshow">
             </bk-date-picker>
           </bk-form-item>
-          <bk-form-item label="结果精确度" desc-type="icon" desc="精确度将同步作为结果格式，若选择「工作日」，则只计算工作日时。">
-            <bk-select v-model="fieldData.meta.config.accuracy" placeholder="选择结果精确度"  @selected="change">
+          <bk-form-item
+            label="结果精确度"
+            desc-type="icon"
+            desc-icon="icon-info-circle"
+            :desc="{ content: '精确度将同步作为结果格式，若选择「工作日」，则只计算工作日时。',width: 208 }">
+            <bk-select v-model="fieldData.meta.config.accuracy" placeholder="选择结果精确度" @selected="change">
               <bk-option v-for="item in accurcyTimeList" :key="item.key" :id="item.key" :name="item.name">
               </bk-option>
             </bk-select>
@@ -100,7 +126,7 @@
                 :false-value="false">
                 格式自适应
               </bk-checkbox>
-              <i class="bk-icon icon-question-circle" v-bk-tooltips="tipsOne"></i>
+              <i class="bk-icon icon-info-circle" v-bk-tooltips="tipsOne"></i>
             </div>
             <div class="checkbox-item">
               <bk-checkbox
@@ -110,7 +136,7 @@
                 :false-value="false">
                 前缀自适应
               </bk-checkbox>
-              <i class="bk-icon icon-question-circle" v-bk-tooltips="tipsTwo"></i>
+              <i class="bk-icon icon-info-circle" v-bk-tooltips="tipsTwo"></i>
             </div>
           </div>
         </template>
@@ -143,7 +169,8 @@
         v-if="['MULTISELECT', 'CHECKBOX', 'MEMBERS'].includes(fieldData.type)"
         label="值数目范围"
         desc-type="icon"
-        desc="字段的值为多个时，配置值数目的范围，默认最少0个、最多不限制">
+        desc-icon="icon-info-circle"
+        :desc="{ content: '字段的值为多个时，配置值数目的范围，默认最少0个、最多不限制',width: 208 }">
         <div class="value-num-config">
           最少选择
           <bk-input
@@ -240,31 +267,32 @@
         <bk-input v-model.trim="fieldData.tips" type="textarea" :rows="4" @change="change"></bk-input>
       </bk-form-item>
     </bk-form>
-    <div v-if="fieldData.type!=='FORMULA'">
-    <data-source-dialog
-      :show.sync="dataSourceDialogShow"
-      :app-id="appId"
-      :source-type="fieldData.source_type"
-      :field-type="fieldData.type"
-      :value="sourceData"
-      @confirm="handleDataSourceChange">
-    </data-source-dialog>
-    <number-rule-dialog
-      :show.sync="numberRuleDialogShow"
-      :fields="list"
-      :rules="fieldData.meta.config"
-      @confirm="handleRuleConfirm">
-    </number-rule-dialog>
+    <div>
+      <data-source-dialog
+        :show.sync="dataSourceDialogShow"
+        :app-id="appId"
+        :source-type="fieldData.source_type"
+        :field-type="fieldData.type"
+        :value="sourceData"
+        @confirm="handleDataSourceChange">
+      </data-source-dialog>
+      <number-rule-dialog
+        v-if="fieldData.type!=='FORMULA'"
+        :show.sync="numberRuleDialogShow"
+        :fields="list"
+        :rules="fieldData.meta.config"
+        @confirm="handleRuleConfirm">
+      </number-rule-dialog>
+    <!--     配置自定义计算公式-->
+    <div v-else-if="fieldData.type==='FORMULA'">
+      <config-formula-dialog
+        :show.sync="configFormulaDialogShow"
+        :fields="list"
+        :value="fieldData.meta.config.value"
+        :bind-fields="fieldData.meta.config.fields"
+        @confirm="handleFormulaConfirm">
+      </config-formula-dialog>
     </div>
-<!--     配置自定义计算公式-->
-    <div v-if="fieldData.type==='FORMULA'">
-    <config-formula-dialog
-      :show.sync="configFormulaDialogShow"
-      :fields="list"
-      :value="fieldData.meta.config.value"
-      :bind-fields="fieldData.meta.config.fields"
-      @confirm="handleFormulaConfirm">
-    </config-formula-dialog>
     </div>
   </div>
 </template>
@@ -285,6 +313,7 @@ import ConfigDefaultValue from './configDefaultValue.vue';
 import DataSourceDialog from './dataSourceDialog.vue';
 import NumberRuleDialog from './numberRuleDialog.vue';
 import configFormulaDialog from './configFormulaDialog.vue';
+
 export default {
   name: 'FieldEdit',
   components: {
@@ -341,10 +370,12 @@ export default {
       tipsOne: {
         content: '若天数>30天，则结果格式为x月x天;',
         placements: ['top'],
+        width: 188,
       },
       tipsTwo: {
         content: '若开始日期小于等于结束日期，则结果输出为“还有x天“；若开始日期大于结束日期，则结果输出为“已经x天”若天数大于365天，则结果格式为x年x月x天',
         placements: ['top'],
+        width: 188,
       },
       startTime: '',
       endTime: '',
@@ -404,7 +435,7 @@ export default {
     },
     formulaFieldList() {
       if (this.fieldData.meta.config.calculate_type === 'number') {
-        return this.list.filter(item => item.type === 'INT');
+        return this.list.filter(item => item.type === 'INT' && item.id);
       }
       if (this.fieldData.meta.config.calculate_type === 'date') {
         return DEAFAULT_TIME.concat(this.list.filter(item => ['DATETIME', 'DATE'].includes(item.type)));
@@ -416,6 +447,10 @@ export default {
   watch: {
     value(val, oldVal) {
       this.fieldData = cloneDeep(val);
+      // 计算控件为时间计算的时候 需要初始化值 ！val.id 判断为新添加控件也需要重置
+      if (val.type === 'FORMULA' && val.meta.config.calculate_type === 'date' && (val.id !== oldVal.id || !val.id)) {
+        this.setDefaultDate(this.value);
+      }
       this.defaultData = this.getDefaultData();
       if (val.type !== oldVal.type) {
         this.getRegexList();
@@ -498,6 +533,14 @@ export default {
       this.change();
       this.configFormulaDialogShow = false;
     },
+    handleChangeEndTime(val) {
+      this.fieldData.meta.config.end_time = val;
+      this.change();
+    },
+    handleChangeStartTime(val) {
+      this.fieldData.meta.config.start_time = val;
+      this.change();
+    },
     // 数据源类型切换
     handleSourceTypeChange(val) {
       this.fieldData.source_type = val;
@@ -568,22 +611,27 @@ export default {
         this.datePickerIsShow.startTimeIsshow = true;
       } else {
         this.startTime = val.meta.config.start_time;
+        this.datePickerIsShow.startTimeIsshow = false;
       }
       if (this.isDate(val.meta.config.end_time)) {
         this.endTime = 'custom';
         this.datePickerIsShow.endTimeIshow = true;
       } else {
         this.endTime = val.meta.config.end_time;
+        this.datePickerIsShow.endTimeIshow = false;
       }
     },
     isDate(val) {
       return isNaN(val) && (!isNaN(Date.parse(val)) || !isNaN(Date.parse(`${val}`)));
     },
     handleSelectTime(type, val) {
+      console.log('handleSelectTime');
       if (type === 'start' && val === 'custom') {
         this.datePickerIsShow.startTimeIsshow = true;
+        this.fieldData.meta.config.start_time = '';
       } else if (type === 'end' && val === 'custom') {
         this.datePickerIsShow.endTimeIshow = true;
+        this.fieldData.meta.config.end_time = '';
       } else if (type === 'start') {
         this.datePickerIsShow.startTimeIsshow = false;
         this.fieldData.meta.config.start_time = val;
@@ -610,11 +658,11 @@ export default {
       this.change();
     },
     change() {
-      console.log('change')
       this.$emit('change', this.fieldData);
     },
-    handleSelectType() {
-      this.fieldData.meta = {};
+    handleSelectType(val) {
+      val === 'defaultValue' ? this.fieldData.meta = {} : this.fieldData.default = '';
+      this.change();
     },
     // 值数目可选范围最小个数变更
     handleValNumMinChange(val) {
@@ -661,6 +709,7 @@ export default {
   justify-content: flex-start;
   font-size: 12px;
   color: #63656e;
+
   &:first-of-type {
     margin-bottom: 10px;
   }

@@ -388,6 +388,7 @@ export default {
       selectionFields: [],
       fields: [],
       fieldList: [],
+      DAY_TIME_STAMP: 60 * 60 * 24 * 1000,
       // 编辑和详情需要的全部字段
       editFiledsList: [],
       fieldListLoading: false,
@@ -971,6 +972,9 @@ export default {
       if (field.type === 'FORMULA' && field.meta.config && field.meta.config.calculate_type === 'date') {
         const { accuracy, can_format, can_affix, default_time } = field.meta.config;
         const timeStampArr = row[field.key].split(' - ').map(item => new Date(item).getTime());
+        if (!timeStampArr[0] || !timeStampArr[1]) {
+          return showValue = '计算数值有误';
+        }
         const timeStamp = timeStampArr[0] - timeStampArr[1];
         //	时间精确度
         if (accuracy) {
@@ -997,7 +1001,11 @@ export default {
         }
         //	是否格式自适应
         if (can_format && accuracy) {
-          showValue = timeStamp > 0 ? `已经${this.formatDay(timeStamp)}` : `还有${this.formatDay(Math.abs(timeStamp))}`;
+          if (Math.abs(timeStamp) < this.DAY_TIME_STAMP) {
+            showValue = timeStamp > 0 ? '还有0天' : '已经0天';
+          } else {
+            showValue = timeStamp > 0 ? `还有${this.formatDay(timeStamp)}` : `已经${this.formatDay(Math.abs(timeStamp))}`;
+          }
         }
         // console.log(timeStamp, field);
       }
@@ -1010,7 +1018,7 @@ export default {
       let totalYear;
       let totalDay;
       let totalMonth;
-      const day = Math.floor(abSoluteValue / 1000 / 60 / 60 / 24);
+      const day = Math.floor(abSoluteValue / this.DAY_TIME_STAMP);
       totalYear = Math.floor(day / 365);
       totalMonth = Math.floor((day % 365) / 30);
       totalDay = day - (365 * totalYear) - (30 * totalMonth);
