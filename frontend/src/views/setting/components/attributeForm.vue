@@ -44,7 +44,7 @@
       <bk-form-item label="按钮名称" v-show="configData.option!=='TABLE'">
         <bk-input v-model="configData.name" placeholder="请输入按钮名称" @change="change"></bk-input>
       </bk-form-item>
-      <bk-form-item label="时间筛选">
+      <bk-form-item label="时间筛选" v-show="configData.option==='TABLE'">
         <bk-select v-model="localTimeRange" @selected="handleSelectTime">
           <bk-option
             v-for="list in timeRangeList "
@@ -54,7 +54,7 @@
           </bk-option>
         </bk-select>
       </bk-form-item>
-      <bk-form-item label="数据筛选">
+      <bk-form-item label="数据筛选" v-show="configData.option==='TABLE'">
         <div class="rule-config" @click="handleRuleConfig">配置规则</div>
       </bk-form-item>
     </bk-form>

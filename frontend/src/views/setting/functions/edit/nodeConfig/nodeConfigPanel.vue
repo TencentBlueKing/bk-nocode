@@ -41,8 +41,7 @@
                 :app-id="appId"
                 :flow-id="flowId"
                 :node-id="nodeId"
-                :exclude-list="nodeDetail.type === 'APPROVAL' ? ['OPEN'] : []"
-                :disable-type="nodeDetail.type === 'SIGN'">
+                :exclude-list="nodeDetail.type === 'APPROVAL' ? ['OPEN'] : []">
               </processors>
             </bk-form-item>
           </template>

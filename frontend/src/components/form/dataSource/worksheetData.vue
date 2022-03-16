@@ -8,12 +8,12 @@
       <bk-radio :value="false">其他应用表单</bk-radio>
     </bk-radio-group>
     <bk-form ref="sourceForm" class="select-worksheet" form-type="vertical" :model="formModel" :rules="sourceRules">
-      <bk-form-item v-if="changeSource" label="数据源" :required="true">
+      <bk-form-item v-if="changeSource" label="数据源" :required="true" error-display-type="normal">
         <bk-select value="WORKSHEET" :clearable="false" @change="$emit('sourceTypeChange', $event)">
           <bk-option v-for="item in sourceTypeList" :key="item.id" :id="item.id" :name="item.name"></bk-option>
         </bk-select>
       </bk-form-item>
-      <bk-form-item v-if="localVal.target.project_key !== appId" label="应用" property="appId" :required="true">
+      <bk-form-item v-if="localVal.target.project_key !== appId" label="应用" property="appId" :required="true" error-display-type="normal">
         <bk-select
           placeholder="请选择应用"
           :value="localVal.target.project_key"
@@ -24,7 +24,7 @@
           <bk-option v-for="item in appList" :key="item.key" :id="item.key" :name="item.name"></bk-option>
         </bk-select>
       </bk-form-item>
-      <bk-form-item label="表单" property="formId" :required="true">
+      <bk-form-item label="表单" property="formId" :required="true" error-display-type="normal">
         <bk-select
           placeholder="请选择表单"
           :value="localVal.target.worksheet_id"
@@ -36,7 +36,7 @@
           <bk-option v-for="item in formList" :key="item.id" :id="item.id" :name="item.name"></bk-option>
         </bk-select>
       </bk-form-item>
-      <bk-form-item label="字段" property="field" :required="true">
+      <bk-form-item label="字段" property="field" :required="true" error-display-type="normal">
         <bk-select
           v-model="localVal.field"
           placeholder="请选择字段"
@@ -165,14 +165,14 @@ export default {
         appId: [
           {
             required: true,
-            message: '必填项',
+            message: '应用为必填项',
             trigger: 'blur',
           },
         ],
         formId: [
           {
             required: true,
-            message: '必填项',
+            message: '表单为必填项',
             trigger: 'blur',
           },
         ],
@@ -180,7 +180,7 @@ export default {
           {
             required: true,
             trigger: 'blur',
-            message: '必填项',
+            message: '字段为必填项',
           },
         ],
       },
