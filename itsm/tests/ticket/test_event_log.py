@@ -28,7 +28,7 @@ import json
 from django.test import TestCase, override_settings
 from blueapps.core.celery.celery import app
 
-from itsm.project.models import ProjectConfig
+from itsm.project.models import ProjectConfig, Project
 from itsm.tests.ticket.params import CREATE_TICKET_PARAMS
 from itsm.ticket.models import TicketEventLog, Ticket
 
@@ -37,6 +37,17 @@ class TicketEventLogTestCase(TestCase):
     def setUp(self):
         app.conf.update(CELERY_ALWAYS_EAGER=True)
         Ticket.objects.all().delete()
+        self.create_project_data = {
+            "key": "0",
+            "name": "test",
+            "logo": "",
+            "color": [],
+            "creator": "admin",
+            "create_at": "2021-05-30 17:16:40",
+            "updated_by": "test_admin",
+            "update_at": "2021-05-30 17:16:40",
+        }
+        Project.objects.create(**self.create_project_data)
         project_config = {"workflow_prefix": "test", "project_key": "0"}
         ProjectConfig.objects.create(**project_config)
         # CatalogService.objects.create(service_id=1, is_deleted=False, catalog_id=2, creator="admin")

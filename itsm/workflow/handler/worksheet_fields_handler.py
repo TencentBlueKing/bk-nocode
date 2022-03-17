@@ -105,7 +105,7 @@ class WorkSheetFieldModelHandler(WorkSheetFieldModelHandler):
                 else:
                     # 默认值联动规则中有不可修改选项
                     if item["meta"].get("data_config"):
-                        if not item["meta"]["data_config"]["changeFields"]:
+                        if not item["meta"]["data_config"].get("changeFields", True):
                             item["is_readonly"] = True
                     field = Field.objects.create(**item)
                     logger.info("新增流程字段id：{field}".format(field=field.id))

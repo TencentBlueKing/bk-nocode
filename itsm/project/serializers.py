@@ -173,6 +173,10 @@ class ProjectSerializer(ModelSerializer):
             "users": validated_data.get("owner")
             or instance.owner.get("users", [instance.creator])
         }
+        validated_data["data_owner"] = {
+            "users": validated_data.get("data_owner")
+            or instance.data_owner.get("users", [])
+        }
         instance = super(ProjectSerializer, self).update(instance, validated_data)
         change_so_project_change(instance.key)
         return instance
@@ -187,6 +191,10 @@ class ProjectSerializer(ModelSerializer):
         except ProjectConfig.DoesNotExist:
             data["project_config"] = {}
         data["owner"] = data["owner"].get("users", [])
+        if isinstance(data["data_owner"], list):
+            instance.data_owner = {"users": data["data_owner"]}
+            instance.save()
+            data["data_owner"] = instance.data_owner
         data["data_owner"] = data["data_owner"].get("users", [])
         return self.update_auth_actions(instance, data)
 

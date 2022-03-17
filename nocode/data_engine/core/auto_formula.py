@@ -130,7 +130,7 @@ class FormulaGenerator:
         accuracy = f".{self.configs['accuracy']}f"
         accuracy_result = format(result, accuracy)
         # 缀名增加
-        if int(self.configs["affix_type"]) == 1:
+        if int(self.configs["affix_type"]) == 0:
             # 增加前缀
             result = "{affix}{accuracy_result}".format(
                 affix=self.configs["affix"], accuracy_result=accuracy_result

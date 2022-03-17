@@ -22,7 +22,12 @@ NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES
 WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
+import json
+import uuid
 
+from django.conf import settings
+
+from config.default import TOKEN_EXPIRE_TIME
 from itsm.component.exceptions import ProjectWhiteNotFound
 from itsm.project.models import Project
 from nocode.base.constants import WORKSHEET
@@ -96,3 +101,15 @@ class ProjectWhiteHandler:
         white_list = self.instance.granted_project["projects"]
         if source_project_key in white_list:
             return True
+
+
+def white_token_generate(field):
+    if field["meta"].get("data_config"):
+        # 生成uuid:data_config
+        key = uuid.uuid4().hex
+        value = json.dumps(field["meta"].get("data_config"))
+        # token会过期，每次刷新都会刷新token
+        settings.REDIS_INST.setex(key, TOKEN_EXPIRE_TIME, value)
+        field.setdefault("token", key)
+    else:
+        field.setdefault("token", "")

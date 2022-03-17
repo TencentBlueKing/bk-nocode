@@ -33,7 +33,7 @@ from blueapps.core.celery.celery import app
 from django.test import TestCase, override_settings
 from django.core.cache import cache
 
-from itsm.project.models import ProjectConfig
+from itsm.project.models import ProjectConfig, Project
 from itsm.tests.ticket.params import CREATE_TICKET_PARAMS
 from itsm.ticket.models import Ticket, Status, AttentionUsers
 from itsm.component.constants import APPROVAL_STATE
@@ -44,6 +44,17 @@ class TicketTest(TestCase):
         app.conf.update(CELERY_ALWAYS_EAGER=True)
         Ticket.objects.all().delete()
         AttentionUsers.objects.all().delete()
+        self.create_project_data = {
+            "key": "0",
+            "name": "test",
+            "logo": "",
+            "color": [],
+            "creator": "admin",
+            "create_at": "2021-05-30 17:16:40",
+            "updated_by": "test_admin",
+            "update_at": "2021-05-30 17:16:40",
+        }
+        Project.objects.create(**self.create_project_data)
         project_config = {"workflow_prefix": "test", "project_key": "0"}
         ProjectConfig.objects.create(**project_config)
 
