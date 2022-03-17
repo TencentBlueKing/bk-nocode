@@ -147,7 +147,7 @@
         </bk-form-item>
         <bk-form-item label="是否必填" v-if="fieldData.type!=='FORMULA'">
           <bk-checkbox
-            :disabled="fieldData.type === 'DESC' || (isCitedFromWorksheet && field.validate_type === 'REQUIRE')"
+            :disabled="fieldData.type === 'DESC' || isOriginWorksheetRequire"
             :value="fieldData.validate_type === 'REQUIRE'"
             @change="handleRequireChange">
             必填
@@ -275,6 +275,8 @@ export default {
         type: '',
         accuracy: 0,
       },
+      // 原始表单是否必填
+      isOriginWorksheetRequire: false,
       isDropdownShow: false,
       defaultData: this.getDefaultData(this.field),
       regexList: [{ id: 'EMPTY', name: '无' }], // 校验方式列表，根据不同字段类型动态请求接口
@@ -343,6 +345,11 @@ export default {
     }
     this.getFieldList();
   },
+  mounted() {
+    if (this.isCitedFromWorksheet)
+      // 获取原始表单里的是否必填的字段信息
+      this.getWorkSheet(this.field.meta.worksheet);
+  },
   methods: {
     async getRegexList() {
       try {
@@ -378,6 +385,14 @@ export default {
         console.error(e);
       } finally {
         this.fieldListLoading = false;
+      }
+    },
+    async getWorkSheet(worksheet) {
+      try {
+        const res = await this.$store.dispatch('setting/getFormFields', worksheet.id);
+        this.isOriginWorksheetRequire = res.data.filter(item => item.key === worksheet.field_key)[0].validate_type !== 'OPTION';
+      } catch (e) {
+        console.warn(e);
       }
     },
     getDefaultData(field) {
@@ -660,6 +675,7 @@ export default {
     justify-content: flex-start;
     font-size: 12px;
     color: #63656e;
+
     &:first-of-type {
       margin-bottom: 10px;
     }
