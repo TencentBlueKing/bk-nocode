@@ -1,15 +1,11 @@
 <template>
   <section class="flow-config" style="height: 100%">
     <div class="flow-container" v-bkloading="{ isLoading: flowDataLoading }">
-      <div class="tip-box" v-show="tipIsShow&&!funcData.is_builtin">
-        <bk-icon type="info-circle" class="info" />
-        {{tips[funcData.type]}}
-        <i class="bk-icon icon-close" @click="tipIsShow=false"></i>
-      </div>
       <flow-canvas
         v-if="!flowDataLoading"
         :nodes="flowData.nodes"
         :lines="flowData.lines"
+        :type="funcData.type"
         :flow-id="funcData.workflow_id"
         :editable="!funcData.is_builtin"
         :disable-edit-line="funcData.type === 'DETAIL'"
@@ -50,7 +46,6 @@
 <script>
 import FlowCanvas from '@/components/flowCanvas/index.vue';
 import NodeConfigPanel from './nodeConfig/nodeConfigPanel.vue';
-import { TIPS } from '@/constants/tip.js';
 export default {
   name: 'FunctionFlow',
   components: {
@@ -75,8 +70,6 @@ export default {
       createTicketNodeId: '',
       nodeConfigPanelShow: false,
       crtNode: null,
-      tipIsShow: true,
-      tips: TIPS,
     };
   },
   created() {

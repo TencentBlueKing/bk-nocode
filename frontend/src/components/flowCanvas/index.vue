@@ -1,5 +1,12 @@
 <template>
   <div class="process-canvas-wrapper">
+    <div class="tip-box" v-if="tipIsShow&&$route.name==='functionFlow'">
+      <span>
+        <bk-icon type="info-circle" class="info" />
+      {{tips[type]}}
+      </span>
+      <i class="bk-icon icon-close" @click="tipIsShow=false"></i>
+    </div>
     <bk-flow
       ref="flowCanvas"
       selector="entry-item"
@@ -60,6 +67,7 @@ import PalettePanel from './palettePanel.vue';
 import NodeTemplate from './nodeTemplate.vue';
 import ToolPanel from './toolPanel.vue';
 import LineConfig from './lineConfig.vue';
+import { TIPS } from '@/constants/tip.js';
 
 const endpointOptions = {
   endpoint: 'Dot',
@@ -108,6 +116,7 @@ export default {
       type: Boolean,
       default: true,
     },
+    type: { type: String },
     showTool: {
       type: Boolean,
       default: true,
@@ -127,6 +136,8 @@ export default {
       endpointOptions,
       connectorOptions,
       nodeOptions,
+      tips: TIPS,
+      tipIsShow: true,
       canvasData: {
         nodes: [],
         lines: [],
@@ -141,7 +152,7 @@ export default {
     this.transData();
   },
   mounted() {
-    this.lines.forEach(item => {
+    this.lines.forEach((item) => {
       const { id, name, from_state: sId, to_state: tId } = item;
       this.addOverlay({
         id,
@@ -166,7 +177,7 @@ export default {
           nodeInfo: cloneDeep(item),
         });
       });
-      this.lines.forEach(item => {
+      this.lines.forEach((item) => {
         this.canvasData.lines.push({
           source: {
             arrow: item.axis.start || 'Right',
@@ -210,9 +221,7 @@ export default {
     },
     // 计算传入的 x +- delta, y +- delta 坐标上是否有节点
     isNodeIndividual(x, y, delta = 10) {
-      return this.canvasData.nodes.some(
-        item => item.x + delta > x && item.x - delta < x && item.y + delta > y && item.y - delta < y
-      );
+      return this.canvasData.nodes.some(item => item.x + delta > x && item.x - delta < x && item.y + delta > y && item.y - delta < y);
     },
     handleNodeClick(node) {
       this.$emit('onNodeClick', node.nodeInfo);
@@ -522,7 +531,7 @@ export default {
       background-color: #fff;
     }
     .tool-panel-wrap {
-      top: 20px;
+      top: 76px;
       right: 24px;
       left: auto;
       padding: 0 14px;
@@ -602,6 +611,40 @@ export default {
     .canvas-flow-wrap .bk-error-flow .startpoint,
     .canvas-flow-wrap .bk-error-flow .endpoint {
       border: 1.5px dashed #ff5656;
+    }
+  }
+}
+
+.tip-box {
+  position: absolute;
+  top: 20px;
+  left: 83px;
+  display: flex;
+  border: 1px solid #C5DAFF;
+  border-radius: 2px;
+  background: #F0F8FF;
+  font-size: 12px;
+  color: #63656E;
+  width: calc(100% - 108px);
+  line-height: 32px;
+  z-index: 100;
+  justify-content: space-between;
+  .info {
+    top: 24px;
+    margin: 0 8px 0 11px;
+    color: #3A84FF;
+    font-size: 14px;
+    line-height: 32px;
+    text-align: center;
+    height: 32px;
+  }
+
+  .icon-close {
+    display: inline-block;
+    font-size: 16px;
+    margin-top: 8px;
+    &:hover{
+      cursor: pointer;
     }
   }
 }
