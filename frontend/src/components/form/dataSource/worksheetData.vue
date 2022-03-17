@@ -114,7 +114,7 @@
             </i>
           </div>
         </div>
-        <p v-if="errorTips" class="common-error-tips">请检查筛选条件</p>
+<!--        <p v-if="errorTips" class="common-error-tips">请检查筛选条件</p>-->
       </div>
       <div v-else class="data-empty" @click="handleAddExpression(0)">点击添加</div>
     </div>
@@ -363,12 +363,13 @@ export default {
     validate() {
       this.$refs.sourceForm.validate();
       const sourceFormValid = this.localVal.target.worksheet_id && this.localVal.field;
-      const filterRuleValid = this.localVal.conditions.expressions.every((exp) => {
-        const { key, condition, type, value } = exp;
-        return key !== '' && condition !== '' && type !== '' && value !== '';
-      });
-      this.errorTips = !filterRuleValid;
-      return sourceFormValid && filterRuleValid;
+      // const filterRuleValid = this.localVal.conditions.expressions.every((exp) => {
+      //   const { key, condition, type, value } = exp;
+      //   return key !== '' && condition !== '' && type !== '' && value !== '';
+      // });
+      // this.errorTips = !filterRuleValid;
+      // return sourceFormValid && filterRuleValid;
+      return sourceFormValid;
     },
   },
 };
@@ -399,16 +400,6 @@ export default {
       color: #63656e;
       font-size: 14px;
       white-space: nowrap;
-      &:after {
-        content: '*';
-        position: absolute;
-        top: 50%;
-        height: 8px;
-        line-height: 1;
-        color: #ea3636;
-        font-size: 12px;
-        transform: translate(3px, -50%);
-      }
     }
   }
   .condition-item {
