@@ -55,6 +55,7 @@ from itsm.workflow.handler.service_handler import ServiceHandler
 from itsm.workflow.handler.state_handler import StateHandler
 from itsm.workflow.models import Field, Table, TemplateField
 from itsm.workflow.validators import FieldValidator, TemplateFieldValidator
+from nocode.project_manager.handlers.project_white_handler import white_token_generate
 
 
 class FieldVariablesSerializer(serializers.ModelSerializer):
@@ -91,6 +92,11 @@ class FieldVariablesSerializer(serializers.ModelSerializer):
         data["source"] = "field"
         data.update({"name": name})
 
+        white_token_generate(data)
+        if data["source_type"] == "API" and data["api_instance_id"]:
+            api_instance = RemoteApiInstance.objects.get(id=data["api_instance_id"])
+            data["api_info"] = ApiInstanceSerializer(api_instance).data
+
         return data
 
 
@@ -107,6 +113,11 @@ class FieldVariablesGroupSerializer(FieldVariablesSerializer):
         data.setdefault("state", state_name)
         data["source"] = "field"
         data.update({"name": name})
+
+        white_token_generate(data)
+        if data["source_type"] == "API" and data["api_instance_id"]:
+            api_instance = RemoteApiInstance.objects.get(id=data["api_instance_id"])
+            data["api_info"] = ApiInstanceSerializer(api_instance).data
 
         return data
 
