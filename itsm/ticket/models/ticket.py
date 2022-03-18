@@ -1065,12 +1065,20 @@ class Status(Model):
 
     @property
     def processed_user(self):
-        processed = self.ticket.logs.filter(from_state_id=self.state_id).values_list(
-            "operator", flat=True
-        )
-        return ",".join(
-            set(self.processors.strip(",").split(",")) & set(list(processed))
-        )
+        # processed = self.ticket.logs.filter(from_state_id=self.state_id).values_list(
+        #     "operator", flat=True
+        # )
+        processed = []
+        ticket_logs = self.ticket.logs.filter(from_state_id=self.state_id)
+        for item in ticket_logs:
+            user = item.operator
+            processed += user.split(",")
+
+        if self.processors_type == "OPEN":
+            # 处理人类型为open 直接返回操作人
+            return ",".join(processed)
+        # 否则取交集
+        return ",".join(set(self.processors.strip(",").split(",")) & set(processed))
 
     # ======================================= SLA功能接口 =====================================
 
