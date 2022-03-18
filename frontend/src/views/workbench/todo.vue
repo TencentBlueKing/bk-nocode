@@ -29,11 +29,11 @@
             @page-limit-change="handlePageLimitChange">
             <bk-table-column type="index" label="No." width="60" fixed="left"></bk-table-column>
             <bk-table-column label="流程编号" fixed="left" width="150">
-              <template slot-scope="{ row }" >
+              <template slot-scope="{ row }">
                 <column-sn :row="row"></column-sn>
               </template>
             </bk-table-column>
-            <bk-table-column v-for="field in columnList" :key="field.id" :label="field.label">
+            <bk-table-column v-for="field in columnList" :key="field.id" :label="field.label" :show-overflow-tooltip="true">
               <template slot-scope="{ row }">
                 <span v-if="field.id==='current_steps'">
                   {{ row.current_steps[0]&&row.current_steps[0].name|| '--' }}

@@ -29,7 +29,7 @@
             @page-limit-change="handlePageLimitChange">
             <bk-table-column type="index" label="No." width="60" fixed="left"></bk-table-column>
             <bk-table-column label="流程编号" fixed="left" width="150">
-              <template slot-scope="{ row }" >
+              <template slot-scope="{ row }">
                 <column-sn :row="row"></column-sn>
               </template>
             </bk-table-column>
@@ -37,6 +37,7 @@
               v-for="field in columnList"
               :key="field.id"
               :label="field.label"
+              :show-overflow-tooltip="true"
               :width="field.width">
               <template slot-scope="{ row }">
                 <span v-if="field.id==='current_steps'">
@@ -75,8 +76,8 @@
 <script>
 import PageWrapper from '@/components/pageWrapper.vue';
 import ColumnSn from './components/columnSn.vue';
-import {errorHandler} from '../../utils/errorHandler';
-import {getQuery} from '../../utils/util';
+import { errorHandler } from '../../utils/errorHandler';
+import { getQuery } from '../../utils/util';
 import status from './mixin/status.js';
 
 export default {
@@ -147,7 +148,7 @@ export default {
         ...searchParams,
       };
       this.tableLoading = true;
-      const res = await this.$store.dispatch('workbench/getList', {params});
+      const res = await this.$store.dispatch('workbench/getList', { params });
       if (res.result) {
         this.tableList = res.data.items;
         this.pagination.current = res.data.page;
@@ -157,7 +158,7 @@ export default {
       }
       this.tableLoading = false;
     },
-    handleSettingChange({fields, size}) {
+    handleSettingChange({ fields, size }) {
       this.size = size;
       this.columnList = fields;
     },

@@ -49,7 +49,7 @@
         <bk-button :theme="'primary'" type="submit" :title="'查询'" @click="handleSearch">
           查询
         </bk-button>
-        <bk-button :theme="'default'" :title="'取消'" @click="handleCancel" style="margin-left: 8px">
+        <bk-button :theme="'default'" :title="'取消'" @click="handleCancel" style="margin-left: 3px">
           取消
         </bk-button>
       </div>
