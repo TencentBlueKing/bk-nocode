@@ -19,6 +19,7 @@ export default {
   methods: {
     setSourceData() {
       if (this.field.source_type === 'CUSTOM' || this.useFixedDataSource) {
+        console.log(this.field);
         this.sourceData = this.field.choice;
       } else if (this.field.source_type === 'API') {
         this.setApiData();
@@ -54,11 +55,20 @@ export default {
       try {
         this.sourceDataLoading = true;
         const { field, conditions } = this.field.meta.data_config;
-        const params = {
-          token: this.field.token,
-          fields: [field],
-          conditions,
-        };
+        let params;
+        if (!conditions.connector && !conditions.expressions.every(i => i)) {
+          params = {
+            token: this.field.token,
+            fields: [field],
+            conditions: {},
+          };
+        } else {
+          params = {
+            token: this.field.token,
+            fields: [field],
+            conditions,
+          };
+        }
         const resp = await this.$store.dispatch('setting/getWorksheetData', params);
         this.sourceData = resp.data.map((item) => {
           const val = item[field];

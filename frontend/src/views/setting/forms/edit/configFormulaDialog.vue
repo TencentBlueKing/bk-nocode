@@ -21,7 +21,7 @@
             @enter="handleSearchField"
             @clear="handleClearSearch"
             @change="handleChange"
-            placeholder="请输入字段">
+            placeholder="输入引用字段">
           </bk-input>
         </div>
         <ul class="field-content">
@@ -48,7 +48,7 @@
             :type="'textarea'"
             v-model="formulaValue">
           </bk-input>
-          <p v-show="!checkedValidate">配置公式错误</p>
+          <p v-show="!checkedValidate">公式无效，请重新选择</p>
         </div>
       </div>
     </div>
@@ -188,6 +188,12 @@ export default {
       height: 40px;
       width: 100%;
       padding:8px 12px 0 12px;
+      /deep/ .bk-form-input{
+      padding-right: 10px !important;
+      }
+      /deep/ .control-icon{
+        right: 0 !important;
+      }
     }
 
     .field-content {
@@ -253,7 +259,7 @@ export default {
     }
 
     p {
-      color: red;
+      color: #EA3636;
       margin-top: 8px;
       margin-left: 8px;
     }
