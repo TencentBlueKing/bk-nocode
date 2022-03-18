@@ -38,7 +38,7 @@
             </bk-radio>
           </bk-radio-group>
         </bk-form-item>
-        <bk-container :col="12">
+        <bk-container :col="12" style="margin-top: 24px">
           <bk-row>
             <bk-col :span="6">
               <div class="content" style="margin-right: 12px;">
@@ -81,6 +81,7 @@
           </bk-row>
         </bk-container>
         <bk-form-item
+          style="margin-top: 24px"
           label="关联条件"
           :property="'name'"
           desc-type="icon"
@@ -610,6 +611,7 @@ export default {
   color: #63656E;
   display: flex;
   margin-bottom: 16px;
+
   span {
     display: inline-block;
   }
