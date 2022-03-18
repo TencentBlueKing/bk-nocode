@@ -235,6 +235,7 @@ import {
   FIELDS_SHOW_DEFAULT_VALUE_IN_WORKFLOW,
   FIELDS_SHOW_DATA_SOURCE,
   FIELDS_FULL_LAYOUT,
+  DATA_SOURCE_FIELD,
   CALCULATION_FORMULA,
 } from '@/constants/forms.js';
 import DefaultValue from '@/components/form/defaultValue.vue';
@@ -378,6 +379,9 @@ export default {
         });
         this.fieldList = res.data.map((item) => {
           const { key, name, type } = item;
+          if (DATA_SOURCE_FIELD.includes(type)) {
+            return item;
+          }
           return { key, name, type };
           // return { key: `\${params_${key}}`, name, type };
         });

@@ -22,7 +22,7 @@
       :multiple="['MULTISELECT', 'CHECKBOX'].includes(field.type)"
       :disabled="!editable"
       @change="change">
-      <bk-option v-for="option in field.choice" :key="option.key" :id="option.key" :name="option.name"></bk-option>
+      <bk-option v-for="option in sourceData" :key="option.key" :id="option.key" :name="option.name"></bk-option>
     </bk-select>
     <member-select
       v-else-if="['MEMBER', 'MEMBERS'].includes(field.type)"
@@ -37,10 +37,13 @@
 <script>
 // 表单值填写组件，根据传入的field.type来渲染对应类型的表单，用在数据处理节点以及连线的条件配置等地方。
 import MemberSelect from '@/components/memberSelect.vue';
+import dataSourceMixins from './formFields/dataSourceMixins';
+import { DATA_SOURCE_FIELD } from '@/constants/forms.js';
 
 export default {
   name: 'FieldValue',
   components: { MemberSelect },
+  mixins: [dataSourceMixins],
   props: {
     field: {
       type: Object,
@@ -60,6 +63,11 @@ export default {
   watch: {
     value(val) {
       this.localVal = val;
+    },
+    field(val) {
+      if (DATA_SOURCE_FIELD.includes(val.type)) {
+        this.setSourceData();
+      }
     },
   },
   methods: {

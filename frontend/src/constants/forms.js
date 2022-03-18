@@ -240,4 +240,5 @@ export const ACCURACY_TIME = [
   { key: 'minute', name: '分钟' },
 ];
 
-
+// 支持数据源的字段类型
+export const DATA_SOURCE_FIELD = ['SELECT', 'INPUTSELECT', 'MULTISELECT', 'CHECKBOX', 'RADIO'];
