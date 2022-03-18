@@ -305,7 +305,8 @@ export default {
           await this.getSheetListFromApp(localValue.target.project_key);
           this.formData.sheetId = localValue.target.worksheet_id;
           this.formData.appId = localValue.target.project_key;
-          this.currentSheetFields = this.sheetList.find(item => item.id === localValue.target.worksheet_id).fields;
+          this.currentSheetFields = this.sheetList.find(item => item.id === localValue.target.worksheet_id).fields
+            .filter(item => FIELDS_CONDITION_VALUE.includes(item.type));
           this.getDefaultFields(this.currentSheetFields);
         }
       } else {
