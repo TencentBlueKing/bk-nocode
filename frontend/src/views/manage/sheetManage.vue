@@ -65,7 +65,7 @@
       <bk-form :label-width="200" :model="addSheetFormData" form-type="vertical" :rules="rules" ref="addAppForm">
         <bk-form-item
           label="选择应用"
-          property="openApplication"
+          property="checkApp"
           :required="true"
           v-if="formStatus==='ADD'"
           :error-display-type="'normal'"
@@ -170,7 +170,7 @@ export default {
         checkApp: '',
       },
       rules: {
-        openApplication: [
+        checkApp: [
           {
             required: true,
             message: '选择应用为必填项',

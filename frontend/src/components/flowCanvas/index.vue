@@ -620,6 +620,7 @@ export default {
   top: 20px;
   left: 83px;
   display: flex;
+  padding-right: 10px;
   border: 1px solid #C5DAFF;
   border-radius: 2px;
   background: #F0F8FF;

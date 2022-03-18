@@ -216,7 +216,7 @@ export default {
 
   .link-switch {
     position: absolute;
-    right: 8px;
+    right: 0;
     top: -32px;
   }
 
@@ -245,6 +245,7 @@ export default {
 
 .link-address {
   width: 240px;
+  font-size: 14px;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
