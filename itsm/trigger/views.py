@@ -70,6 +70,7 @@ class ComponentApiViewSet(component_viewsets.APIView):
                 "modify_ticket_status",
                 "unbind_parent_child_tickets",
                 "update_ticket_status",
+                "fill_fields",
             ]
             if code in ignore_trigger:
                 continue
