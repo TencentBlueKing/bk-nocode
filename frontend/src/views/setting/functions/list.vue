@@ -204,9 +204,10 @@ export default {
         /* 触发器隐藏部分触发事件
         * 节点触发器隐藏  分派单据 认领单据
         * 流程触发器隐藏  终止 挂起 恢复单据
-        * 处理人隐藏 cmdb业务公用角色 通用角色表
+        * 处理人隐藏 cmdb业务公用角色 通用角色表  权限中心角色
         * */
         globalInfo.processor_type.splice(0, 2);
+        globalInfo.processor_type.splice(-1, 1);
         globalInfo.trigger_signals.STATE = { DELIVER_STATE: '转单', ENTER_STATE: '进入节点', LEAVE_STATE: '离开节点' };
         globalInfo.trigger_signals.FLOW = { CLOSE_TICKET: '关闭单据', CREATE_TICKET: '创建单据', DELETE_TICKET: '撤销单据' };
         this.$store.commit('setting/changeConfigur', globalInfo);
