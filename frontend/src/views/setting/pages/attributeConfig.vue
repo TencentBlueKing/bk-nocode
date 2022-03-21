@@ -28,7 +28,7 @@
             </bk-switcher>
           </div>
           <div class="link-container" v-show="linkIsOpen" v-bkloading="{ bkLoading: linkIsLoading }">
-            <span class="link-address" v-bk-overflow-tips>{{ formData.linkAddress }}</span>
+            <span class="link-address" v-bk-overflow-tips="{ width: 280 }">{{ formData.linkAddress }}</span>
             <span class="custom-icon-font icon-copy copy-icon" v-bk-copy="formData.linkAddress"></span>
           </div>
           <p v-if="linkIsOpen">当应用未发布时，该链接失效</p>
