@@ -322,6 +322,7 @@ export default {
     handleAttrChange(val) {
       if (this.crtPage.type === 'SHEET') {
         this.attrData = { ...val };
+        console.log(val);
       } else if (this.crtPage.type === 'FUNCTION') {
         const { funcId, name, desc, bgColor, index } = val;
         const card = this.pageComponent[index];
@@ -385,7 +386,7 @@ export default {
               {
                 page_id: id,
                 type,
-                config: {},
+                config: { linkAddress: this.attrData.linkAddress },
                 value: this.attrData.funcId,
               },
             ],
