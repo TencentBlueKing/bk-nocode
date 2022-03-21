@@ -22,6 +22,7 @@ NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES
 WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
+import ast
 import datetime
 
 from celery.task import task
@@ -30,6 +31,7 @@ from django.db.models import Q
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.conf import settings
 
+from common.log import logger
 from nocode.data_engine.core.constants import (
     ALLOWED_CONDITION_KEY,
     CONNECTOR_KEYWORD,
@@ -188,3 +190,19 @@ def compute_time_range(time_range):
         time_range_conditions.add(Q(create_at__gte=value), Q.AND, squash=False)
 
     return time_range_conditions
+
+
+def value_to_list(upload_keys, queryset):
+    if upload_keys:
+        for item in queryset:
+            for field in upload_keys:
+                if item[field]:
+                    # 列表字符串转换成列表
+                    try:
+                        item[field] = ast.literal_eval(item[field])
+                    except SyntaxError:
+                        logger.warn(f"{field} -> 参数传输有误 {item[field]}")
+                        continue
+                else:
+                    item[field] = []
+    return queryset

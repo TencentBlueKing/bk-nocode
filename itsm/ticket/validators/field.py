@@ -73,6 +73,8 @@ def field_validate(field, state_fields, key_value, **kwargs):
         raise serializers.ValidationError(_("标题不能超过120个字符"))
 
     if field_obj.type == "INT":
+        if field["value"] == "":
+            raise serializers.ValidationError(_(f" {field_obj.name}: 请输入标准整数"))
         try:
             int(field["value"])
         except ValueError:
