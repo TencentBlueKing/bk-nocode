@@ -87,7 +87,7 @@ class ServiceHandler:
         service = Service._objects.get(id=self.service_id)
         first_state_fields = service.first_state_fields
         keys = []
-
+        upload_keys = []
         for field in first_state_fields:
             if field["meta"].get("worksheet"):
                 worksheet_id = field["meta"]["worksheet"]["id"]
@@ -95,4 +95,10 @@ class ServiceHandler:
                     keys.append(
                         "contents__{}".format(field["meta"]["worksheet"]["field_key"])
                     )
-        return keys
+                    if field["type"] in ["IMAGE", "FILE"]:
+                        upload_keys.append(
+                            "contents__{}".format(
+                                field["meta"]["worksheet"]["field_key"]
+                            )
+                        )
+        return keys, upload_keys

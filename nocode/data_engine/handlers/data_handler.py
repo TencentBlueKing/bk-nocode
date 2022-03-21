@@ -39,7 +39,11 @@ from itsm.component.drf.pagination import CustomPageNumberPagination
 from nocode.data_engine.core.constants import DAY, MONTH, YEAR
 from nocode.data_engine.core.managers import DataManager
 
-from nocode.data_engine.core.utils import ConditionTransfer, compute_time_range
+from nocode.data_engine.core.utils import (
+    ConditionTransfer,
+    compute_time_range,
+    value_to_list,
+)
 from nocode.data_engine.exceptions import (
     GetDetailDataError,
     ImportDataError,
@@ -114,19 +118,8 @@ class ListComponentDataHandler(BaseDataHandler):
             queryset = []
         else:
             queryset = page_config_queryset.filter(filters).values(*keys)
-
-        if upload_fields:
-            for item in queryset:
-                for field in upload_fields:
-                    if item[field]:
-                        # 列表字符串转换成列表
-                        try:
-                            item[field] = ast.literal_eval(item[field])
-                        except SyntaxError:
-                            logger.warn(f"{field} -> 参数传输有误 {item[field]}")
-                            continue
-                    else:
-                        item[field] = []
+        # 上传类控件数值变换
+        queryset = value_to_list(upload_fields, queryset)
         logger.info("[get_list_components_data] -> queryset={}".format(queryset))
         if not need_page:
             return Response(self.get_response_data(queryset))
@@ -358,7 +351,7 @@ class ListComponentDetailHandler(BaseDataHandler):
 
     def data(self):
         try:
-            keys = ServiceHandler(
+            keys, upload_keys = ServiceHandler(
                 service_id=self.service_id, worksheet_id=self.worksheet_id
             ).get_keys()
             manager = DataManager(self.worksheet_id)
@@ -366,6 +359,10 @@ class ListComponentDetailHandler(BaseDataHandler):
             queryset = manager.get_queryset()
 
             queryset = queryset.filter(id=self.pk).values(*keys)
+
+            # 上传类控件数值变换
+            queryset = value_to_list(upload_keys, queryset)
+
         except Exception as e:
             logger.info(
                 "数据详情获取失败，service_id={}, worksheet_id={}, pk={},"

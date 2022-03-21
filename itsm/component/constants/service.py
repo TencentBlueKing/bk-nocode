@@ -68,6 +68,8 @@ DELETE = "DELETE"
 IMPORT = "IMPORT"
 DETAIL = "DETAIL"
 EXPORT = "EXPORT"
+AUTO = "AUTO"
+
 SERVICE_TYPE_CHOICES = (
     (ADD, "添加"),
     (EDIT, "编辑"),
@@ -75,6 +77,7 @@ SERVICE_TYPE_CHOICES = (
     (IMPORT, "导入"),
     (DETAIL, "详情"),
     (EXPORT, "导出"),
+    (AUTO, "自动化"),
 )
 
 CUSTOM = "custom"
