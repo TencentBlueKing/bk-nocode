@@ -67,6 +67,7 @@ from itsm.component.constants import (
     START_STATE,
     STARTER,
     GUEST,
+    VARIABLE,
 )
 from itsm.component.dlls.component import ComponentLibrary
 from itsm.component.exceptions import TriggerValidateError
@@ -1211,6 +1212,14 @@ class TicketStateOperateSerializer(serializers.Serializer):
         if data["processors_type"] == STARTER:
             data["processors_type"] = PERSON
             data["processors"] = self.ticket.creator
+
+        if data["processors_type"] == VARIABLE:
+            fields_key = data["processors"].split(",")
+            user = self.ticket.fields.filter(key__in=fields_key).values_list(
+                "_value", flat=True
+            )
+            data["processors"] = ",".join(set(user))
+
         if "action_message" in data:
             data["action_message"] = html_escape(data["action_message"])
 
