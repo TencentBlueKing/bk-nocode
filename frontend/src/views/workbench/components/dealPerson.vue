@@ -310,7 +310,7 @@ export default {
       this.isLoading = true;
       const params = {
         workflow: this.nodeInfo.workflow,
-        state: this.nodeInfo.id,
+        state: this.nodeInfo.state_id,
         exclude_self: true,
       };
       // 从前置节点信息中筛选 MEMBER 信息
@@ -328,12 +328,13 @@ export default {
     // 获取前置节点列表
     getPreStates() {
       this.isLoading = true;
-      this.$store.dispatch('workbench/getPreStates', { id: this.nodeInfo.id }).then((res) => {
+      this.$store.dispatch('workbench/getPreStates', { id: this.nodeInfo.state_id }).then((res) => {
         // 排除分支节点和汇聚节点
         this.secondLevelList = res.data.filter(node => !['ROUTER-P', 'COVERAGE'].includes(node.type)).map(node => ({
           id: node.id,
           name: node.name,
-        }));
+        }))
+          .filter(item => item.id === Number(this.nodeInfo.origin_delivers));
       })
         .catch((res) => {
           errorHandler(res, this);
