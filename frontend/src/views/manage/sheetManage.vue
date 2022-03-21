@@ -337,11 +337,11 @@ export default {
     },
     handlePageChange(page) {
       this.pagination.current = page;
-      this.initData();
+      this.initData(this.project_key);
     },
     handlePageLimitChange(limit) {
       this.pagination.limit = limit;
-      this.initData();
+      this.initData(this.project_key);
     },
     handleEditor(row) {
       this.formStatus = 'EDIT';

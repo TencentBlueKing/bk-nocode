@@ -62,10 +62,7 @@
             class="deal-person"
             form-type="vertical"
             :shortcut="true"
-            :value="{
-                            type: distribution.type,
-                            value: distribution.value
-                        }"
+            :value="{ type: distribution.type,value: distribution.value }"
             :specify-id-list="distribution.specifyIdList"
             :exclude-role-type-list="distribution.excludeTypeList"
             :show-role-type-list="distribution.includeTypeList"
@@ -91,9 +88,10 @@
             form-type="vertical"
             :shortcut="true"
             :value="{
-                            type: deliverInfo.type,
-                            value: deliverInfo.value
-                        }"
+                        type: deliverInfo.type,
+                          value: deliverInfo.value
+             }"
+            :node-info="nodeInfo"
             :specify-id-list="deliverInfo.specifyIdList"
             :exclude-role-type-list="deliverInfo.excludeTypeList"
             :show-role-type-list="deliverInfo.includeTypeList"

@@ -177,4 +177,50 @@ export default {
 .bk-search-tree-content {
   height: 170px;
 }
+.bk-search-tree {
+  position: relative;
+  width: 100%;
+  .bk-search-tree-wrapper {
+    border: 1px solid #c4c6cc;
+    width: 100%;
+    height: 32px;
+    line-height: 32px;
+    cursor: pointer;
+    color: #c3cdd7;
+    position: relative;
+    padding: 0 32px 0 10px;
+    font-size: 12px;
+    &:hover {
+      border-color: #0082ff;
+      color: #3c96ff;
+    }
+    &.bkdisabled{
+      color: #c3cdd7;
+      background-color: #fafbfd !important;
+      cursor: not-allowed;
+      border-color: #dcdee5 !important;
+    }
+    .bk-select-angle {
+      position: absolute;
+      top: 12px;
+      right: 10px;
+    }
+  }
+  .bk-search-tree-content {
+    width: 100%;
+    height: 207px;
+    position: absolute;
+    top: 40px;
+    right: 0;
+    box-shadow: 0 0 8px 1px rgba(0,0,0,0.1);
+    background-color: #fff;
+    z-index: 100;
+    overflow-y: auto;
+    border-radius: 2px;
+  }
+  .bk-color-tree {
+    color: #63656e!important;
+    font-size: 12px;
+  }
+}
 </style>

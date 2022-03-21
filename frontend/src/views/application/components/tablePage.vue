@@ -97,13 +97,23 @@
                 暂无内容
               </span>
               <bk-button
-                v-else-if="['RICHTEXT', 'IMAGE','TABLE'].includes(field.type)"
+                v-else-if="['RICHTEXT','TABLE'].includes(field.type)"
                 theme="primary"
                 style="margin-right: 8px"
                 @click="handleView(row,column,field)"
                 text>
                 查看
               </bk-button>
+              <div v-else-if="'IMAGE'.includes(field.type)" class="photo-view">
+                <viewer :images="getImageListFullPath(row[column.property])">
+                  <template v-for=" (item,index) in row[column.property]">
+                    <img :src="getFullPath(item)" :key="index" v-show="index===0" />
+                  </template>
+                  <span v-if="row[column.property].length>1">
+                   ...
+                  </span>
+                </viewer>
+              </div>
               <bk-button
                 v-else-if="['FILE'].includes(field.type)"
                 theme="primary"
@@ -242,9 +252,9 @@
               :value="imageConfig.imgList.val"
               :field="imageConfig.imgList.fields">
             </custom-table>
-            <viewer :images="imageConfig.imgList" v-else>
-              <img v-for="(img, index) in imageConfig.imgList" class="image-item" :key="index" :src="img.path">
-            </viewer>
+            <!--            <viewer :images="imageConfig.imgList" v-else>-->
+            <!--              <img v-for="(img, index) in imageConfig.imgList" class="image-item" :key="index" :src="img.path">-->
+            <!--            </viewer>-->
           </bk-form-item>
         </bk-form>
       </div>
@@ -296,6 +306,7 @@ import CreateTicketSuccess from './createTicketSuccess.vue';
 import customTable from '@/components/form/formFields/fields/table.vue';
 import SearchTag from './searchTag.vue';
 import { SHOW_SELECT_TYPE_LIST } from '@/constants/fromTypeMap.js';
+
 export default {
   name: 'TablePage',
   components: {
@@ -501,7 +512,7 @@ export default {
       const tempMutiSelecet = this.fieldList.filter(item => ['CHECKBOX', 'MULTISELECT'].includes(item.type)).map(item => item.key);
       const tempText = this.fieldList.filter(item => ['STRING', 'TEXT'].includes(item.type)).map(item => item.key);
       // 下拉框数据源为api和表单 来源
-      const  tempSourceType = this.fieldList.filter(item => SHOW_SELECT_TYPE_LIST.includes(item.type)
+      const tempSourceType = this.fieldList.filter(item => SHOW_SELECT_TYPE_LIST.includes(item.type)
         && ['API', 'WORKSHEET'].includes(item.source_type)).map(item => item.key);
       const tempArr = [];
       for (const key in item) {
@@ -509,21 +520,15 @@ export default {
         if (Array.isArray(item[key]) && !tempMutiSelecet.includes(key)) {
           item[key].forEach((el, index) => {
             if (el) {
-              index === 0
-                ? tempArr.push({ key, value: formatTimer(el), type: 'const', condition: '>=' })
-                : tempArr.push({ key, value: formatTimer(el), type: 'const', condition: '<=' });
+              tempArr.push({ key, value: formatTimer(el), type: 'const', condition: index === 0 ? '>=' : '<=' });
             }
           });
           //  多选下拉框以及checkbox
-        } else if (Array.isArray(item[key])) {
-          if (item[key].length > 0) {
-            tempArr.push({ key, value: item[key].toString(), type: 'const', condition: '==' });
-          }
+        } else if (Array.isArray(item[key]) && item[key].length > 0) {
+          tempArr.push({ key, value: item[key].toString(), type: 'const', condition: '==' });
           //  数字类型
-        } else if (tempIntType.includes(key)) {
-          if (item[key].length > 0) {
-            tempArr.push({ key, value: Number(item[key]), type: 'const', condition: '==' });
-          }
+        } else if (tempIntType.includes(key) && item[key].length > 0) {
+          tempArr.push({ key, value: Number(item[key]), type: 'const', condition: '==' });
         } else if (tempText.includes(key) || tempSourceType.includes(key)) {
           if (item[key].length > 0) {
             tempArr.push({ key, value: item[key], type: 'const', condition: 'icontains' });
@@ -680,7 +685,7 @@ export default {
         this.editFiledsList.forEach((item) => {
           if (typeof (resData[item.key]) !== 'undefined') {
             if (['IMAGE'].includes(item.type)) {
-              const arr = (new Function(`return( ${resData[item.key]} );`))();
+              const arr = resData[item.key];
               item.val = arr ? arr.map(el => ({
                 path: el,
               })) : [];
@@ -711,6 +716,7 @@ export default {
         console.warn(e);
       }
     },
+
     handleClick(btn, row = {}, actionType) {
       // 按钮权限映射表如果没有按钮id字段，则点击无效果
       if (!(btn.id in this.actionsPermMap)) {
@@ -840,7 +846,10 @@ export default {
               if (['MULTISELECT', 'CHECKBOX', 'MEMBER', 'MEMBERS'].includes(item.type)) {
                 // 以上接受一个数组 给的是字符串
                 value[item.key] = (editorValue[i] && editorValue[i].split(',')) || [];
+              } else if ('INT' === item.type) {
+                value[item.key] = editorValue[i] || 0;
               } else {
+                // console.log(typeof  editorValue[i], editorValue[i]);
                 value[item.key] = editorValue[i] || '';
               }
             }
@@ -1013,6 +1022,12 @@ export default {
         showValue = row[field.key];
       }
       return showValue || '--';
+    },
+    getImageListFullPath(list) {
+      return list.map(item => `${window.location.origin}${window.SITE_URL}${item}`);
+    },
+    getFullPath(item) {
+      return `${window.location.origin}${window.SITE_URL}${item}`;
     },
     formatDay(abSoluteValue) {
       let totalYear;
@@ -1397,6 +1412,13 @@ export default {
     cursor: pointer;
     font-size: 12px;
     color: #1768EF;
+  }
+}
+
+.photo-view {
+  img {
+    height: 27px;
+    width: 27px;
   }
 }
 

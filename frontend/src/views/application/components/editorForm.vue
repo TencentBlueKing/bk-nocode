@@ -1,5 +1,5 @@
 <template>
-  <bk-form :label-width="100" ext-cls="custom-form">
+  <bk-form :label-width="100" ext-cls="custom-edit-form">
     <form-fields :fields="currentFields" :value="value" @change="handleSetValue" />
   </bk-form>
 </template>
@@ -32,8 +32,8 @@ export default {
 </script>
 
 <style scoped lang="postcss">
-.custom-form {
-  padding: 24px 40px 0;
+.custom-edit-form {
+  padding: 0 40px 24px;
   /deep/ .bk-label-text {
     font-size: 14px;
     color: #979ba5;
