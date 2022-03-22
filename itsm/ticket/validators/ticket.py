@@ -231,9 +231,20 @@ class StateOperateValidator(object):
             and reference_processors
         ):
             # 指定了角色范围的人员信息
-            valid_person = UserRole.get_users_by_type(
-                self.bk_biz_id, reference_processor_type, reference_processors, self
-            )
+            fields_key = reference_processors.split(",")
+            if reference_processor_type == "VARIABLE":
+                valid_person = []
+                ticket = Ticket.objects.get(id=self.current_node.ticket_id)
+                person = ticket.fields.filter(key__in=fields_key).values_list(
+                    "_value", flat=True
+                )
+                for item in person:
+                    valid_person += item.strip().split(",")
+
+            else:
+                valid_person = UserRole.get_users_by_type(
+                    self.bk_biz_id, reference_processor_type, reference_processors, self
+                )
 
             if not set(processors).issubset(set(valid_person)):
                 raise ParamError(
