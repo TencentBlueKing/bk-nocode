@@ -23,7 +23,11 @@
             </processors>
           </bk-form-item>
           <template v-if="['APPROVAL','SIGN','NORMAL'].includes(nodeDetail.type)&&!nodeDetail.is_builtin">
-            <bk-form-item label="是否支持转派" error-display-type="normal" :required="true">
+            <bk-form-item
+              label="是否支持转派"
+              error-display-type="normal"
+              :required="true"
+            >
               <bk-radio-group v-model="formData.isTrans">
                 <bk-radio :value="true">
                   是
@@ -33,7 +37,14 @@
                 </bk-radio>
               </bk-radio-group>
             </bk-form-item>
-            <bk-form-item label="转派范围" error-display-type="normal" :required="true" v-if="formData.isTrans">
+            <bk-form-item
+              label="转派范围"
+              error-display-type="normal"
+              :required="true"
+              v-if="formData.isTrans"
+              :desc-type="isTransTypeVariable?'icon':''"
+              :desc-icon="isTransTypeVariable?'icon-info-circle':''"
+              :desc="isTransTypeVariable?'只能引用字段类型为”人员选择类“且属性为“必填“的字段':''">
               <processors
                 ref="processorForm"
                 v-model="formData.processorData"
@@ -172,6 +183,9 @@ export default {
         return NODE_TYPE_LIST.find(item => item.type === this.nodeDetail.type).name;
       }
       return '';
+    },
+    isTransTypeVariable() {
+      return this.formData.processorData.type === 'VARIABLE';
     },
   },
   async created() {

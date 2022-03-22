@@ -171,6 +171,8 @@ export default {
           value = this.formValue[key].map(item => item.path);
         } else if (['MULTISELECT', 'CHECKBOX', 'MEMBER', 'MEMBERS'].includes(type)) {
           value = Array.isArray(this.formValue[key]) ? this.formValue[key].join(',') : this.formValue[key];
+        } else if (type === 'INT') {
+          value = this.formValue[key] || 0;
         }
         return { choice, id, key, type, value };
       });
@@ -282,6 +284,10 @@ export default {
       this.formValue = $event;
       const item = this.fieldList;
       for (let i = 0 ;i < item.length;i++) {
+        // 当前用户输入的值 跳出联动
+        if (item[i].key === key) {
+          continue;
+        }
         if (item[i].meta.data_config) {
           const { type, conditions, value } = item[i].meta.data_config;
           // 判断变化的字段是不是被联动的字段
@@ -328,15 +334,10 @@ export default {
                 console.error(e);
               }
             }
-            validateFlag
-              ? this.$set(this.formValue, item[i].key, res.data[0][item[i].meta.data_config.value])
-              : this.$set(this.formValue, item[i].key, '');
-          } else {
-            // 其他应用开放表单
+            validateFlag && this.$set(this.formValue, item[i].key, res.data[0][item[i].meta.data_config.value]);
           }
         }
       }
-      // });
     },
     getConditionParams(info) {
       const   { key, value, token, fields } = info;

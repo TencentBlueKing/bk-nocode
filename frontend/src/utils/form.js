@@ -29,7 +29,7 @@ export function getFieldConditionsInTablePage(type) {
   ) {
     return [
       { id: '==', name: '等于' },
-      { id: 'in', name: '包含' },
+      { id: 'icontains', name: '包含' },
     ];
   }
   return [

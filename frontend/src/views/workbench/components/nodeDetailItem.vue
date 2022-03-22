@@ -520,7 +520,7 @@ export default {
           this.$emit('closeSlider');
         })
         .catch((res) => {
-          errorHandler(res, this);
+          console.log(res);
         })
         .finally(() => {
           this.submitting = false;
