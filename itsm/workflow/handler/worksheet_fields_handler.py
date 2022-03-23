@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
+import random
+import string
 import uuid
 
 from common.log import logger
@@ -73,7 +75,12 @@ class WorkSheetFieldModelHandler(WorkSheetFieldModelHandler):
                 worksheet_key = data["key"]
                 worksheet_name = data["name"]
                 field_key = item.pop("key")
-                item["key"] = uuid.uuid3(uuid.uuid1(), uuid.uuid4().hex).hex
+                key = uuid.uuid3(uuid.uuid1(), uuid.uuid4().hex).hex
+                if key[0].isdigit():
+                    # 开头为数字，重新生成
+                    first_letter = random.choice(string.ascii_letters)
+                    key = first_letter + key[1:]
+                item["key"] = key
                 item["state_id"] = state.id
                 item["workflow_id"] = service.workflow.workflow_id
 
