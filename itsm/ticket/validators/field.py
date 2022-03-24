@@ -255,7 +255,13 @@ def regex_validate(field, field_obj):
     if regex and regex not in [reg[0] for reg in list(set(regex_list))]:
         raise serializers.ValidationError(_("该正则规则不在可选范围内"))
 
-    if regex in ["AFTER_DATE", "BEFORE_DATE", "AFTER_TIME", "BEFORE_TIME"]:
+    if regex in [
+        "AFTER_DATE",
+        "BEFORE_DATE",
+        "AFTER_TIME",
+        "BEFORE_TIME",
+        "ONLY_NOW_DATE",
+    ]:
         RegexValidator(field_obj.name, regex).validate(field["value"])
 
     elif regex and regex != "EMPTY":
@@ -287,6 +293,7 @@ class RegexValidator(Regex):
         self.validate_type_action = {
             "after_date": "date",
             "before_date": "date",
+            "only_now_date": "data",
             "after_time": "time",
             "before_time": "time",
         }
@@ -325,6 +332,14 @@ class RegexValidator(Regex):
         if self.validate_type == "before_date" and value > datetime.datetime.now():
             raise serializers.ValidationError(
                 _("【{}】{} 不在当前日期之前").format(self.field_name, value.date())
+            )
+
+        if (
+            self.validate_type == "only_now_date"
+            and value != datetime.datetime.now().date()
+        ):
+            raise serializers.ValidationError(
+                _("【{}】{} 不在当前系统日").format(self.field_name, value.date())
             )
 
     def time_validate(self, value):
