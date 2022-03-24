@@ -194,6 +194,9 @@ def choice_validate(field, field_obj, key_value, **kwargs):
     # 验证数量, 如果类型为Bunch，说明是提单的时候的校验
     if isinstance(field_obj, Bunch):
         # 如果有边界设置，则校验
+        if not hasattr(field_obj, "num_range"):
+            return
+
         num_range = field_obj.num_range
         if isinstance(num_range, str):
             num_range = json.loads(num_range)
