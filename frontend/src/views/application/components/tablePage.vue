@@ -252,9 +252,6 @@
               :value="imageConfig.imgList.val"
               :field="imageConfig.imgList.fields">
             </custom-table>
-            <!--            <viewer :images="imageConfig.imgList" v-else>-->
-            <!--              <img v-for="(img, index) in imageConfig.imgList" class="image-item" :key="index" :src="img.path">-->
-            <!--            </viewer>-->
           </bk-form-item>
         </bk-form>
       </div>
@@ -780,7 +777,7 @@ export default {
         title,
         confirmFn: async () => {
           try {
-            const res = await this.getSheetPage(id);
+            const res = await this.getFieldList(id);
             const fields = res.map((item) => {
               const { choice, id, key, type } = item;
               if (key === 'id') {
@@ -835,7 +832,7 @@ export default {
       this.editorLoading = true;
       const value = {};
       const editorValue = await this.getTotalValue(id, row);
-      const editorData = await this.getSheetPage(id);
+      const editorData = await this.getEditFieldList(id);
       const tempEditData = [];
       const tempKeyList = this.editFiledsList.map(item => item.key);
       editorData.forEach((item) => {
@@ -893,15 +890,35 @@ export default {
       const BASE_URL = `${window.SITE_URL}api/engine/data/generate_export_template/${paramsStr}`;
       window.open(BASE_URL);
     },
-    async getSheetPage(id) {
-      const params = {
-        service_id: id,
-      };
+    // async getSheetPage(id) {
+    //   const params = {
+    //     service_id: id,
+    //   };
+    //   try {
+    //     const result = await this.$store.dispatch('setting/getSheetPage', params);
+    //     return result.data;
+    //   } catch (e) {
+    //     console.log(e);
+    //   } finally {
+    //     this.editorLoading = false;
+    //   }
+    // },
+    async getEditFieldList(id) {
       try {
-        const result = await this.$store.dispatch('setting/getSheetPage', params);
-        return result.data;
+        const res = await this.$store.dispatch('application/getFormPageFields', {
+          type: this.page.type,
+          paths: {
+            project_key: this.appId,
+            page_id: this.page.id,
+            version_number: this.version,
+            page_component_id: this.componentId,
+            service_id: id,
+            source: 'optionList',
+          },
+        });
+        return  res.data.filter(item => item.type !== 'AUTO-NUMBER');
       } catch (e) {
-        console.log(e);
+        console.error(e);
       } finally {
         this.editorLoading = false;
       }

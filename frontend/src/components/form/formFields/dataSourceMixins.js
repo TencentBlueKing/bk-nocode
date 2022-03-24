@@ -19,7 +19,6 @@ export default {
   methods: {
     setSourceData() {
       if (this.field.source_type === 'CUSTOM' || this.useFixedDataSource) {
-        console.log(this.field);
         this.sourceData = this.field.choice;
       } else if (this.field.source_type === 'API') {
         this.setApiData();

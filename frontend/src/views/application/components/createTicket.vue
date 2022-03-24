@@ -291,7 +291,7 @@ export default {
         if (item[i].meta.data_config) {
           const { type, conditions, value } = item[i].meta.data_config;
           // 判断变化的字段是不是被联动的字段
-          const isRelationFields = conditions.map(condition => `${item[i].meta.worksheet.key}_${condition.id}`).includes(key);
+          const isRelationFields = Array.isArray(conditions) && conditions.map(condition => `${item[i].meta.worksheet.key}_${condition.id}`).includes(key);
           // 当前表单
           let isConditonFlag;
           if (type === 1 && isRelationFields) {
@@ -320,7 +320,8 @@ export default {
               const params = this.getConditionParams({
                 key: field,
                 value: conditions[j].type === 'variable' ? $event[curKey] : conditions[j].relationCurrentValue,
-                token: item[i].token, fields: [item[i].meta.data_config.value],
+                token: item[i].token,
+                fields: [item[i].meta.data_config.value],
               });
               try {
                 res = await this.$store.dispatch('setting/getWorksheetData', params);
@@ -334,10 +335,19 @@ export default {
                 console.error(e);
               }
             }
-            validateFlag && this.$set(this.formValue, item[i].key, res.data[0][item[i].meta.data_config.value]);
+            validateFlag
+              ? this.$set(this.formValue, item[i].key, this.getValue(item[i], res))
+              : this.$set(this.formValue, item[i].key, '');
           }
         }
       }
+    },
+    getValue(item, res) {
+      const { choice } = item.meta.data_config;
+      if (choice && choice.length > 0) {
+        return item.meta.data_config.choice.find(it => it.key === res.data[0][item.meta.data_config.value]).name;
+      }
+      return res.data[0][item.meta.data_config.value];
     },
     getConditionParams(info) {
       const   { key, value, token, fields } = info;
