@@ -62,9 +62,12 @@ export default {
     };
   },
   watch: {
-    fieldList(val) {
-      this.localVal =  cloneDeep(this.fieldList);
-      this.initChoice();
+    fieldList: {
+      handler(val) {
+        this.localVal =  cloneDeep(this.fieldList);
+        this.initChoice();
+      },
+      immediate: true,
     },
   },
   methods: {
