@@ -122,14 +122,16 @@
                 :searchable="true"
                 :loading="SheetFieldsLoading">
                 <bk-option
-                  v-for="option in currentFieldList" :key="option.key" :id="option.key"
+                  v-for="option in currentFieldList"
+                  :key="option.key"
+                  :id="option.key"
                   :name="option.name">
                 </bk-option>
               </bk-select>
               <div class="condition-select" v-else>
                 <component
                   :is="item.fieldComp==='AutoNumber'?'Input':item.fieldComp"
-                  :field="field"
+                  :field="onChangefield(item)"
                   :value="item.relationCurrentValue"
                   :disabled="item.type!=='const'"
                   @change="(val) => handleRuleChange(item,val)">
@@ -155,7 +157,8 @@
               <bk-select
                 v-else
                 v-model="formData.value"
-                :searchable="true">
+                :searchable="true"
+                @selected="handleSelectDefaultVal">
                 <bk-option
                   v-for="option in defaultFields" :key="option.key" :id="option.key" :name="option.name">
                 </bk-option>
@@ -183,7 +186,7 @@
 import cloneDeep from 'lodash.clonedeep';
 import DefaultValue from '@/components/form/defaultValue.vue';
 import { uuid } from '@/utils/uuid.js';
-import { FIELDS_TYPES, FIELDS_CONDITION_VALUE } from '@/constants/forms.js';
+import { FIELDS_TYPES, FIELDS_CONDITION_VALUE, DATA_SOURCE_FIELD } from '@/constants/forms.js';
 
 // 注册fields文件夹下所有字段类型组件
 function registerField() {
@@ -264,6 +267,7 @@ export default {
         id: 'variable',
         name: '变量',
       }],
+      defaultFields: [],
     };
   },
   computed: {
@@ -291,12 +295,13 @@ export default {
   methods: {
     async initData(localValue) {
       if (Object.keys(localValue).length !== 0) {
-        const { value, type, conditions, changeFields } = localValue;
+        const { value, type, conditions, changeFields, choice } = localValue;
         this.defaultValue = 'linkageRules';
         this.formData.value = value;
         this.formData.container = type;
         this.formData.changeFields = changeFields;
         this.formData.condition = conditions;
+        choice ? this.formData.choice = choice : '';
         if (type === 2) {
           await this.getSheetList();
           await this.getFieldList(localValue.target.worksheet_id);
@@ -333,7 +338,8 @@ export default {
       if (['STRING', 'TEXT'].includes(this.field.type)) {
         this.defaultFields = data.filter(item => FIELDS_CONDITION_VALUE.includes(item.type));
       } else {
-        this.defaultFields = data.filter(item => FIELDS_CONDITION_VALUE.includes(item.type) && item.type === this.field.type);
+        this.defaultFields = data.filter(item => FIELDS_CONDITION_VALUE.includes(item.type)
+          && item.type === this.field.type);
       }
     },
     async getSheetList() {
@@ -423,8 +429,13 @@ export default {
       }
     },
     handleDefaultValChange(val) {
-      console.log(val);
       this.$emit('changeFixedValue', val);
+    },
+    handleSelectDefaultVal(val) {
+      const selectedField = this.defaultFields.find(item => item.key === val);
+      if (DATA_SOURCE_FIELD.includes(selectedField.type)) {
+        this.formData.choice = selectedField.choice;
+      }
     },
     handleAddLinkAgeRules() {
       this.getFieldList();
@@ -500,7 +511,7 @@ export default {
       this.$emit('confirm', params);
     },
     getParams() {
-      const { container, value, condition, changeFields } = this.formData;
+      const { container, value, condition, changeFields, choice } = this.formData;
       const { appId, formId } = this.$route.params;
       const conditions = [];
       condition.forEach((item) => {
@@ -525,9 +536,17 @@ export default {
           value,
           type: container,
           changeFields,
+          choice,
         },
       };
       return params;
+    },
+    onChangefield(item) {
+      if (DATA_SOURCE_FIELD.includes(item.fieldComp.toUpperCase())) {
+        const arr = this.currentSheetFields.filter(it => it.key === item.id);
+        if (arr.length > 0) return arr[0];
+      }
+      return this.field;
     },
     handleRuleChange(item, val) {
       item.relationCurrentValue = val;
