@@ -215,6 +215,7 @@ REGEX_CHOICES = {
         ("EMPTY", ""),
         ("AFTER_DATE", _("系统日期之后")),
         ("BEFORE_DATE", _("系统日期之前")),
+        ("ONLY_NOW_DATE", _("系统日期")),
         ("ASSOCIATED_FIELD_VALIDATION", _("联合字段校验")),
     ],
     "DATETIME": [
@@ -245,6 +246,7 @@ REGEX_CHOICES_LIST = REGEX_STRING_TEXT + [
     ("AFTER_TIME", _("系统时间之后")),
     ("BEFORE_TIME", _("系统时间之前")),
     ("ASSOCIATED_FIELD_VALIDATION", _("联合字段校验")),
+    ("ONLY_NOW_DATE", _("系统日期")),
 ]
 
 # 单据关联关系
