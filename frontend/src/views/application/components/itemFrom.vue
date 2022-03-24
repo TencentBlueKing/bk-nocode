@@ -1,7 +1,7 @@
 <template>
   <bk-form :label-width="150" ext-cls="custom-form">
     <bk-form-item v-for="item in localVal" :label="`${item.name}:`" :key="item.id">
-      <span v-if="['SELECT', 'RADIO', 'CHECKBOX','INPUTSELECT', 'MULTISELECT'].includes(item.type)">
+      <span v-if="dataSourceField.includes(item.type)">
         {{ transformFields(item) }}
       </span>
       <span v-else-if="item.type === 'RICHTEXT'" v-html="item.val||'--'"></span>
@@ -42,6 +42,7 @@
 
 <script>
 import imageFile from '@/components/form/formFields/fields/imageFile.vue';
+import { DATA_SOURCE_FIELD } from '@/constants/forms.js';
 import cloneDeep from 'lodash.clonedeep';
 export default {
   name: 'ItemFrom',
@@ -57,17 +58,30 @@ export default {
   data() {
     return {
       localVal: cloneDeep(this.fieldList),
+      dataSourceField: DATA_SOURCE_FIELD,
     };
   },
   watch: {
     fieldList(val) {
-      this.localVal = val;
+      this.localVal =  cloneDeep(this.fieldList);
+      this.initChoice();
     },
   },
   methods: {
+    async initChoice() {
+      const arr = this.localVal;
+      const len = arr.length;
+      if (len > 0) {
+        for (let i = 0 ;i < len;i++) {
+          if (DATA_SOURCE_FIELD.includes(arr[i].type) && arr[i].source_type !== 'CUSTOM') {
+            await this.setSourceData(arr[i]);
+          }
+        }
+      }
+    },
     transformFields(field) {
       let showValue = '';
-      if (['SELECT', 'RADIO', 'CHECKBOX', 'INPUTSELECT',  'MULTISELECT'].includes(field.type)) {
+      if (DATA_SOURCE_FIELD.includes(field.type)) {
         if (['MULTISELECT', 'CHECKBOX'].includes(field.type)) {
           const tempArr = [];
           field.choice.forEach((item) => {
@@ -91,11 +105,67 @@ export default {
       return  showValue || '--';
     },
     handleDownload(val) {
-      console.log(val);
-      const fileArr = (new Function(`return( ${val} );`))();
+      const fileArr = val;
       fileArr.forEach((item) => {
         window.open(`${window.location.origin}${window.SITE_URL}api/misc/download_file/?file_name=${item.file_name}&origin_name=${item.origin_name}&download_flag=1`);
       });
+    },
+    setSourceData(field) {
+      if (field.source_type === 'CUSTOM') {
+        this.sourceData = field.choice;
+      } else if (field.source_type === 'API') {
+        this.setApiData(field);
+        return;
+      } else if (field.source_type === 'WORKSHEET') {
+        this.setWorksheetData(field);
+      }
+    },
+    async setApiData(field) {
+      try {
+        const { id, api_info, api_instance_id, kv_relation } = field;
+        const params = {
+          id,
+          api_instance_id,
+          kv_relation,
+          api_info: {
+            api_instance_info: api_info,
+            remote_api_info: api_info.remote_api_info,
+          },
+        };
+        const resp = await this.$store.dispatch('setting/getSourceData', params);
+        field.choice = resp.data.map((item) => {
+          const { key, name } = item;
+          return { key, name };
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    },
+    async setWorksheetData(item) {
+      try {
+        const { field, conditions } = item.meta.data_config;
+        let params;
+        if (!conditions.connector && !conditions.expressions.every(i => i)) {
+          params = {
+            token: item.token,
+            fields: [field],
+            conditions: {},
+          };
+        } else {
+          params = {
+            token: item.token,
+            fields: [field],
+            conditions,
+          };
+        }
+        const resp = await this.$store.dispatch('setting/getWorksheetData', params);
+        item.choice = resp.data.map((item) => {
+          const val = item[field];
+          return { key: val, name: val };
+        });
+      } catch (e) {
+        console.error(e);
+      }
     },
   },
 };
