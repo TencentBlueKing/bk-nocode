@@ -23,6 +23,8 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 import datetime
+import random
+import string
 import uuid
 
 from django.db import transaction
@@ -83,7 +85,12 @@ class WorkSheetFieldIndexHandler:
         :param validated_data:
         :return:
         """
-        return uuid.uuid4().hex
+        key = uuid.uuid4().hex
+        if key[0].isdigit():
+            # 开头为数字，重新生成
+            first_letter = random.choice(string.ascii_letters)
+            key = first_letter + key[1:]
+        return key
 
     @classmethod
     def is_support_unique_index(cls, validated_data):
