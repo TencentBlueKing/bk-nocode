@@ -11,7 +11,7 @@
       <component
         :is="fieldComp"
         :field="field"
-        :disabled="disabled"
+        :disabled="isDisabled"
         :use-fixed-data-source="useFixedDataSource"
         :value="value"
         @change="$emit('change', $event)">
@@ -64,6 +64,11 @@ export default {
   computed: {
     fieldComp() {
       return FIELDS_TYPES.find(item => item.type === this.field.type).comp;
+    },
+    // 默认规则设置为禁止填写 和 字段设置为禁止编辑的时候禁止编辑
+    isDisabled() {
+      return  this.disabled
+        || !(this.field.meta && this.field.meta.data_config && this.field.meta.data_config.changeFields);
     },
   },
   beforeCreate() {
