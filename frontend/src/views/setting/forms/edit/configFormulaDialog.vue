@@ -43,12 +43,19 @@
         </div>
         <div class="editor-area">
           <bk-input
+            ref="textarea"
+            id="editor-input"
             placeholder="请输入计算公式"
             ext-cls="editor-input"
+            v-model="formulaValue"
+            clearable
             :type="'textarea'"
-            v-model="formulaValue">
+            @change="handleInput"
+            @keydown="handleKeyDown"
+            @clear="handleClearFormulaValue">
           </bk-input>
           <p v-show="!checkedValidate">公式无效，请重新选择</p>
+          <p v-show="!validateInput">如需要删除字段，请清空定义公式配置</p>
         </div>
       </div>
     </div>
@@ -91,24 +98,63 @@ export default {
         rightBracket: ')',
       },
       checkedValidate: true,
+      validateInput: true,
       localFields: cloneDeep(this.bindFields),
+      // 传个后端的字段
       localValue: cloneDeep(this.value),
+      // 展示公式
       formulaValue: '',
+      showValue: '',
     };
   },
+  watch: {
+    value() {
+      this.initData();
+    },
+  },
   created() {
-    if (this.value) {
-      let tempVale = cloneDeep(this.value);
-      this.fieldList.forEach((item) => {
-        tempVale  =   tempVale.replaceAll(`{${item.key}}`, item.name);
-      });
-      this.formulaValue = tempVale;
-    }
+    this.initData();
+  },
+  mounted() {
+    const input = document.getElementById('editor-input');
+    const _this = this;
+    input.onclick =  async function (e) {
+      const textarea = document.querySelector('#editor-input textarea');
+      const len = _this.formulaValue.length;
+      if (textarea.setSelectionRange) {
+        // 现代浏览器
+        textarea.setSelectionRange(len, len);
+        textarea.focus();
+      } else if (textarea.createTextRange) {
+        // 兼容非现代浏览器
+        const range = textarea.createTextRange();
+        range.collapse(true);
+        range.moveStart(_this.formulaValue, len);
+        range.moveEnd(_this.formulaValue, len);
+        range.select();
+      }
+    };
   },
   methods: {
+    initData() {
+      if (this.value) {
+        let tempVale = cloneDeep(this.value);
+        this.fieldList.forEach((item) => {
+          tempVale = tempVale.replaceAll(`{${item.key}}`, item.name);
+        });
+        this.formulaValue = tempVale;
+      } else {
+        this.formulaValue = '';
+        this.localValue = '';
+      }
+    },
     onConfirm() {
       if (this.checkFormula(this.localValue)) {
-        this.$emit('confirm', { value: cloneDeep(this.localValue), fields: cloneDeep(this.localFields), show: this.formulaValue });
+        this.$emit('confirm', {
+          value: cloneDeep(this.localValue),
+          fields: cloneDeep(this.localFields),
+          show: this.formulaValue,
+        });
       } else {
         this.checkedValidate = false;
       }
@@ -118,7 +164,6 @@ export default {
     },
     // 检查括号是否闭合
     isCloseBrackets(s) {
-      console.log(s);
       const array = [];
       for (let i = 0; i < s.length; i++) {
         const item = s[i];
@@ -132,7 +177,8 @@ export default {
         } else {
           continue;
         }
-      };
+      }
+      ;
       return array.length === 0;
     },
     handleSearchField(val) {
@@ -152,10 +198,40 @@ export default {
       if (!this.localFields.includes(field.key)) {
         this.localFields.push(field.key);
       }
+      this.showValue = this.formulaValue;
+    },
+    handleClearFormulaValue() {
+      this.formulaValue = '';
+      this.localValue = '';
+      this.localFields = [];
     },
     handleSelectFormula(formula) {
       this.formulaValue += formula;
       this.localValue += formula;
+      this.showValue = this.formulaValue;
+    },
+    handleInput(val, event) {
+      this.validateInput = true;
+      const len = this.localValue.length;
+      const lastChar = this.localValue.charAt(len - 1);
+      if (/^\d+$/.test(event.data)) {
+        this.localValue += event.data;
+        this.showValue = this.formulaValue;
+      } else if (event.inputType === 'deleteContentBackward' && lastChar !== '}') {
+        this.localValue = this.localValue.substring(0, len - 1);
+        this.showValue = this.formulaValue;
+      } else if (event.inputType === 'deleteContentBackward' && lastChar === '}') {
+        this.validateInput = false;
+        this.$nextTick(() => {
+          this.formulaValue = cloneDeep(this.showValue);
+        });
+      }
+    },
+    handleKeyDown(val, event) {
+      const { keyCode } = event;
+      if (keyCode === 37 || keyCode === 39) {
+        event.returnValue = false;
+      }
     },
   },
 };
@@ -187,11 +263,13 @@ export default {
     .search-input {
       height: 40px;
       width: 100%;
-      padding:8px 12px 0 12px;
-      /deep/ .bk-form-input{
-      padding-right: 10px !important;
+      padding: 8px 12px 0 12px;
+
+      /deep/ .bk-form-input {
+        padding-right: 10px !important;
       }
-      /deep/ .control-icon{
+
+      /deep/ .control-icon {
         right: 0 !important;
       }
     }
@@ -202,6 +280,7 @@ export default {
       height: 300px;
       overflow: auto;
       margin-top: 12px;
+
       li {
         width: 130px;
         height: 32px;
