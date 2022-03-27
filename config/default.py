@@ -41,17 +41,16 @@ from itsm.monitor.opentelemetry.utils import inject_logging_trace_info
 INSTALLED_APPS += (
     # 配置项
     "itsm.iadmin",
+    "itsm.helper",
     # 引擎相关的内容
     "pipeline",
-    "pipeline.log",
     "pipeline.engine",
     "pipeline.component_framework",
-    "pipeline.variable_framework",
+    "pipeline.eri",
     # "pipeline.contrib.periodic_task",
     "django_signal_valve",
     # itsm
     "itsm.gateway",
-    "itsm.helper",
     "itsm.role",
     "itsm.pipeline_plugins",
     "itsm.ticket",

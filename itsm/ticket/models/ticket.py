@@ -147,7 +147,6 @@ from itsm.component.constants.trigger import (
     DELETE_TICKET,
     ENTER_STATE,
     LEAVE_STATE,
-    THROUGH_TRANSITION,
     SOURCE_TICKET,
 )
 from common.shortuuid import uuid as _uu
@@ -3228,6 +3227,16 @@ class Ticket(Model):
         self.pipeline_data = pipeline_data
         self.save(update_fields=("pipeline_data",))
 
+    def start_builtin_ticket(self, **kwargs):
+        # 创建并启动 自定义运行时pipeline
+        print("\n-------  ticket pipeline start  ----------\n")
+        pipeline_wrapper = PipelineWrapper(kwargs.pop("flow", self.flow))
+        pipeline_data = pipeline_wrapper.create_pipeline(
+            self.id, need_start=True, start_builtin=True, **kwargs
+        )
+        self.pipeline_data = pipeline_data
+        self.save(update_fields=("pipeline_data",))
+
     def clone_pipeline(self, parent_ticket):
         # 创建并启动pipeline
         print("\n-------  clone parent ticket pipeline start  ----------\n")
@@ -3325,10 +3334,6 @@ class Ticket(Model):
         2. 判断是否启动任务模块
         3. 发送通知信息
         """
-        # 线条信号
-        from_transitions = self.get_from_transition(kwargs.get("by_flow"))
-        for from_transition in from_transitions:
-            self.send_trigger_signal(THROUGH_TRANSITION, sender=from_transition["id"])
 
         # 更新节点
         status = self.update_state_before_enter(state_id, **kwargs)
@@ -3384,10 +3389,6 @@ class Ticket(Model):
         4. Update Ticket processors
         5. Send notify
         """
-        # 线条信号
-        from_transitions = self.get_from_transition(kwargs.get("by_flow"))
-        for from_transition in from_transitions:
-            self.send_trigger_signal(THROUGH_TRANSITION, sender=from_transition["id"])
 
         state = self.flow.get_state(state_id)
         variables = state["variables"].get("outputs", [])

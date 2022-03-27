@@ -53,7 +53,7 @@ class ItsmSignService(ItsmBaseService):
         state_id = data.inputs.state_id
         ticket = Ticket.objects.get(id=ticket_id)
         variables, finish_condition, code_key = ticket.do_before_enter_sign_state(
-            state_id, by_flow=self.by_flow
+            state_id
         )
 
         # Set outputs to data
