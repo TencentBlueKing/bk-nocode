@@ -237,19 +237,30 @@ class ListComponentDataHandler(BaseDataHandler):
             fields = [row + 1]
             for index, key in enumerate(keys):
                 if key in key_map:
-                    choices = key_map.get(key).get("choice", [])
-                    try:
-                        choice_keys = values.get(key, "--").split(",")
-                    except Exception:
-                        fields.append("")
-                        continue
+                    field = key_map.get(key)
 
-                    choice_map = {item["key"]: item["name"] for item in choices}
-                    value = ""
-                    for choice_key in choice_keys:
-                        value += choice_map.get(choice_key, "") + ","
-                    value = value.strip(",")
-                    fields.append(value)
+                    if field["type"] in ["SELECT", "MULTISELECT", "CHECKBOX", "RADIO"]:
+                        choices = field.get("choice", [])
+
+                        # 如果配置了数据源，优先使用数据源
+                        if "data_config" in field.get("meta"):
+                            value = values.get(key, "--")
+                        elif choices:
+                            try:
+                                choice_keys = values.get(key, "--").split(",")
+                            except Exception:
+                                fields.append("")
+                                continue
+
+                            choice_map = {item["key"]: item["name"] for item in choices}
+                            value = ""
+                            for choice_key in choice_keys:
+                                value += choice_map.get(choice_key, "") + ","
+                            value = value.strip(",")
+                        else:
+                            value = values.get(key, "--")
+
+                        fields.append(value)
                 else:
                     fields.append(values.get(key, "--"))
             writer.writerow(fields)
