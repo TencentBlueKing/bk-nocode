@@ -67,8 +67,7 @@ export default {
     },
     // 默认规则设置为禁止填写 和 字段设置为禁止编辑的时候禁止编辑
     isDisabled() {
-      return  this.disabled
-        || !(this.field.meta && this.field.meta.data_config && this.field.meta.data_config.changeFields);
+      return  this.field.is_readonly;
     },
   },
   beforeCreate() {
