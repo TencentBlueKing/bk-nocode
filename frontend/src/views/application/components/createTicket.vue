@@ -283,9 +283,10 @@ export default {
     async handleChangeFormValue(key, $event) {
       this.formValue = $event;
       const item = this.fieldList;
+      const currentIndex = this.fieldList.findIndex(i => i.key === key);
       for (let i = 0 ;i < item.length;i++) {
-        // 当前用户输入的值 跳出联动
-        if (item[i].key === key) {
+        // 当前用户输入之前的值跳出联动
+        if (currentIndex >= i) {
           continue;
         }
         if (item[i].meta.data_config) {
