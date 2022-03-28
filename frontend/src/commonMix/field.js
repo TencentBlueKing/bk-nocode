@@ -106,6 +106,11 @@ export default {
     // 关联数据展示的逻辑处理
     conditionField(item, list) {
       for (let i = 0; i < list.length; i++) {
+        // 缺一个条件判断 todo
+        if (fields.show_conditions.connector){
+          list[i].showFeild = false;
+          continue;
+        }
         if (list[i].show_type || (!list[i].hasOwnProperty('show_conditions') && list[i].show_result)) {
           list[i].showFeild = true;
           continue;

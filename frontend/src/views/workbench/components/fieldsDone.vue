@@ -21,7 +21,7 @@
   -->
 
 <template>
-  <div :class="{ 'bk-fields-done': true, 'bk-fields-log': origin === 'log' }" :key="routerKey">
+  <div :class="{ 'bk-fields-done': true, 'bk-fields-log': origin === 'log' }" :key="routerKey" v-if="item.showFeild">
     <!-- table -->
     <div v-if="item.type === 'TABLE'" class="bk-fields-done-item" style="width: 100%; max-width: 100%;">
       <span class="bk-li-left">{{ item.name }}：</span>

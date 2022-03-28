@@ -1,5 +1,5 @@
 <template>
-  <div :class="['field-form-item', { 'half-row': field.layout === 'COL_6' }]">
+  <div :class="['field-form-item', { 'half-row': field.layout === 'COL_6' }]" v-if="!field.show_conditions.connector">
     <div
       v-if="showLabel && field.type !== 'DESC'"
       :class="['field-label', { required: field.validate_type === 'REQUIRE' }]">
