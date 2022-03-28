@@ -196,7 +196,7 @@ export default {
       const copyList = deepClone(newNodeList);
       copyList.forEach((item) => {
         item.fields.forEach((fields) => {
-          this.$set(fields, 'showFeild', !!fields.show_type);
+          this.$set(fields, 'showFeild', !fields.show_conditions.connector);
           this.$set(fields, 'val', '');
         });
         if (item.status === 'AUTO_SUCCESS') {

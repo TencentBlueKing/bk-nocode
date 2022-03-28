@@ -340,4 +340,11 @@ export default {
 /deep/ .bk-form-item.is-required .bk-label {
   width: auto !important;
 }
+
+</style>
+
+<style lang="postcss">
+.bk-task-error{
+  color: #ff5656;
+}
 </style>
