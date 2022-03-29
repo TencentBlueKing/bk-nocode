@@ -1,5 +1,5 @@
 <template>
-  <div :class="['field-form-item', { 'half-row': field.layout === 'COL_6' }]" v-if="!field.show_conditions.connector">
+  <div :class="['field-form-item', { 'half-row': field.layout === 'COL_6' }]" v-if="isShow">
     <div
       v-if="showLabel && field.type !== 'DESC'"
       :class="['field-label', { required: field.validate_type === 'REQUIRE' }]">
@@ -68,6 +68,12 @@ export default {
     // 默认规则设置为禁止填写 和 字段设置为禁止编辑的时候禁止编辑
     isDisabled() {
       return  this.field.is_readonly;
+    },
+    isShow() {
+      if (this.field.show_conditions && this.field.show_conditions.connector) {
+        return  false;
+      }
+      return  true;
     },
   },
   beforeCreate() {
