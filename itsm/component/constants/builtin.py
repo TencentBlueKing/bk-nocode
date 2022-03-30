@@ -368,6 +368,7 @@ OPERATE_CATALOG = [
     {"level": 1, "name": _("详情"), "key": "INFO", "parent_key": "root"},
     {"level": 1, "name": _("导入"), "key": "IMPORT", "parent_key": "root"},
     {"level": 1, "name": _("导出"), "key": "OUTPUT", "parent_key": "root"},
+    {"level": 1, "name": _("自动"), "key": "AUTO", "parent_key": "root"},
 ]
 
 # 角色类型和角色名初始化

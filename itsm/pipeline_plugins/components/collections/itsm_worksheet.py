@@ -51,6 +51,7 @@ from itsm.ticket.models import (
     SignTask,
     TicketGlobalVariable,
 )
+from itsm.trigger.signal import event_execute
 from nocode.data_engine.core.managers import DataManager
 from nocode.data_engine.core.utils import ConditionTransfer
 from nocode.data_engine.core.constants import (
@@ -247,6 +248,17 @@ class DataProcessingService(Service):
     __need_schedule__ = False
     __multi_callback_enabled__ = False
 
+    def worksheet_event_signal(
+        self, ticket, worksheet_id, record_contents, action_type
+    ):
+        if ticket.service_instance.type != "AUTO":
+            content = {
+                "worksheet_id": worksheet_id,
+                "record_contents": record_contents,
+                "action": action_type,
+            }
+            event_execute.send(sender="DataProcessingService", content=content)
+
     def execute(self, data, parent_data):
         logger.info(
             "DataProcessingService execute: data={}, parent_data={}".format(
@@ -302,6 +314,7 @@ class DataProcessingService(Service):
             # 添加操作
             if action == ADD_STATE:
                 obj = manager.add(map_data, operator)
+                self.worksheet_event_signal(ticket, worksheet_id, obj.contents, action)
                 logger.info(
                     "DataProcessingService Data Add Success (id={})".format(obj.id)
                 )
@@ -323,12 +336,14 @@ class DataProcessingService(Service):
                     action_type=SYSTEM_OPERATE,
                     fields=log_data,
                 )
+                self.worksheet_event_signal(ticket, worksheet_id, map_data, action)
                 for ws in worksheets:
                     ws_id = ws.id
                     data = copy.deepcopy(ws.contents)
                     data = state_extra_manager.compute_field(compute_fields, data)
                     data.update(map_data)
                     manager.update(ws_id, data, operator)
+
                     logger.info(
                         "DataProcessingService Data Update Success (id={})".format(
                             ws_id
@@ -346,6 +361,8 @@ class DataProcessingService(Service):
                 )
                 for ws in worksheets:
                     ws_id = ws.id
+                    data = ws.contents
+                    self.worksheet_event_signal(ticket, worksheet_id, data, action)
                     manager.delete(ws_id)
                     logger.info(
                         "DataProcessingService Data Delete Success (id={})".format(
