@@ -36,6 +36,8 @@ from nocode.base.constants import (
     DEFAULT_ORDER,
     ROOT_ORDER,
     OPEN,
+    FUNCTION_CARD,
+    LINK_CARD,
 )
 from nocode.page.handlers.moudle_handler import ProjectHandler, ProjectVersionHandler
 from nocode.page.handlers.role_handler import RoleHandler
@@ -166,6 +168,7 @@ class PageModelHandler(APIModel):
             "display_type": node["display_type"],
             "display_role": node["display_role"],
             "icon": node["icon"],
+            "component_list": node["component_list"],
         }
 
         return data
@@ -206,6 +209,7 @@ class PageModelHandler(APIModel):
             # "openedIcon": "icon-folder-open",
             # "closedIcon": "icon-folder",
             "icon": node.icon,
+            "component_list": node.component_list,
         }
 
         return data
@@ -216,6 +220,7 @@ class PageComponentHandler(APIModel):
         self.component_id = component_id
         self.obj = instance
         self.kwarg = kwargs
+        self.current_components_in_page = []
         super(PageComponentHandler, self).__init__()
 
     def _get_instance(self):
@@ -262,12 +267,29 @@ class PageComponentHandler(APIModel):
                     current_ids.append(instance.id)
 
             all_ids = set(self.filter(page_id=page_id).values_list("id", flat=True))
-            remove_ids = all_ids - set(current_ids)
+            remove_ids = all_ids - set(self.current_components_in_page)
+            page = PageModelHandler(page_id=page_id).instance
+            page.component_list = current_ids
+            page.save()
             self.delete(remove_ids)
-        return self.filter(page_id=page_id)
+        return self.filter(page_id=page_id, id__in=current_ids)
 
     def uniqid(self):
         return uuid.uuid3(uuid.uuid1(), uuid.uuid4().hex).hex
+
+    def restore_card_by_type(self, item, page_id, group_type):
+        from nocode.page.serializers.serializers import PageComponentSerializer
+
+        if group_type == "FUNCTION_GROUP":
+            card_struct_data = FUNCTION_CARD
+        else:
+            card_struct_data = LINK_CARD
+
+        card_struct_data["page_id"] = page_id
+        card_struct_data.update(item)
+        serializer = PageComponentSerializer(data=card_struct_data)
+        serializer.is_valid(raise_exception=True)
+        return serializer.validated_data
 
     def update_list_component(self, item):
         for button_group in item["config"]["buttonGroup"]:
@@ -278,22 +300,90 @@ class PageComponentHandler(APIModel):
             if "id" not in option:
                 option["id"] = self.uniqid()
 
+    def save_card_in_group(self, item):
+        children = item.pop("children")
+        component_list = []
+        for child in children:
+            card_data = self.restore_card_by_type(child, item["page_id"], item["type"])
+            instance = PageComponent.objects.create(**card_data)
+            component_list.append(instance.id)
+        item["config"]["component_order"] = component_list
+        self.current_components_in_page += component_list
+
+    def update_card_in_group(self, item):
+        new_cards = item.pop("children")
+        card_group = PageComponent.objects.get(id=item["id"])
+        # 更新，新增内部卡片
+        new_card_list = []
+        for card in new_cards:
+            if "id" in card:
+                # 更新
+                instance = PageComponent.objects.get(id=card["id"])
+                for key, value in card.items():
+                    if hasattr(instance, key):
+                        setattr(instance, key, value)
+                    instance.save()
+                    new_card_list.append(instance.id)
+                continue
+            # 新增
+            card_data = self.restore_card_by_type(card, item["page_id"], item["type"])
+            instance = PageComponent.objects.create(**card_data)
+
+            new_card_list.append(instance.id)
+
+        card_group.config["meta"]["component_order"] = new_card_list
+        self.current_components_in_page += new_card_list
+        card_group.save()
+
     def update_data(self, item):
         instance = PageComponent.objects.get(id=item["id"])
         item.setdefault("update_at", datetime.datetime.now())
         if item["type"] == "LIST":
             self.update_list_component(item)
+        if item["type"] == ["FUNCTION_GROUP", "LINK_GROUP"]:
+            self.update_card_in_group(item)
+        if item["type"] == "TAB":
+            children_component = item.pop("children", [])
+            new_component_order = []
+            if children_component:
+                for component in children_component:
+                    if "id" not in component:
+                        new_component = self.save_data(component)
+                        new_component_order.append(new_component.id)
+                        continue
+                    update_component = self.update_data(component)
+                    new_component_order.append(update_component.id)
+
+            item["config"]["component_order"] = new_component_order
+            self.current_components_in_page += new_component_order
+
         for key, value in item.items():
             if hasattr(instance, key):
                 setattr(instance, key, value)
         instance.save()
+        self.current_components_in_page.append(instance.id)
         return instance
 
     def save_data(self, item):
+        from nocode.page.serializers.serializers import PageComponentSerializer
+
         # 按钮分配id
         if item["type"] == "LIST":
             self.update_list_component(item)
+        if item["type"] in ["FUNCTION_GROUP", "LINK_GROUP"]:
+            self.save_card_in_group(item)
+        if item["type"] == "TAB":
+            children_component = item.pop("children", [])
+            children_ids_list = []
+            if children_component:
+                for item in children_component:
+                    serializer = PageComponentSerializer(data=item)
+                    serializer.is_valid(raise_exception=True)
+                    instance = self.save_data(serializer.validated_data)
+                    children_ids_list.append(instance.id)
+            item["config"]["component_order"] = children_ids_list
         instance = PageComponent.objects.create(**item)
+        self.current_components_in_page.append(instance.id)
         return instance
 
     def delete(self, remove_ids):
@@ -367,6 +457,14 @@ class PageComponentHandler(APIModel):
                 component_info = dict()
                 component_info.setdefault("id", button["id"])
                 component_info.setdefault("name", button["name"])
+                actions.append(component_info)
+
+        if page_type == "CUSTOM":
+            page_components = page_components.filter(type__in=["FUNCTION", "LINK"])
+            for item in page_components:
+                component_info = dict()
+                component_info.setdefault("id", item.id)
+                component_info.setdefault("name", item.config["name"])
                 actions.append(component_info)
 
         return actions

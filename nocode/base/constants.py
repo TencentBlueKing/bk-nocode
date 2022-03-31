@@ -170,3 +170,36 @@ FILE_PATH = "/data/app/code/USERRES/"
 
 WORKSHEET = "WORKSHEET"
 FUNCTION = "FUNCTION"
+
+FUNCTION_CARD = {
+    "page_id": "",
+    "type": "FUNCTION",
+    "value": 0,
+}
+
+LINK_CARD = {
+    "page_id": "",
+    "type": "LINK",
+    "value": 0,
+}
+
+PAGE_TYPE_CHOICES = [
+    ("FUNCTION", "功能卡片"),
+    ("LIST", "列表"),
+    ("SHEET", "表单"),
+    ("CHART", "图表"),
+    ("GROUP", "分组"),
+    ("CUSTOM", "自定义"),
+]
+
+PAGE_COMPONENT_TYPE_CHOICES = [
+    ("FUNCTION", "功能组件"),
+    ("FUNCTION_GROUP", "功能组"),
+    ("LIST", "列表组件"),
+    ("SHEET", "表单组件"),
+    ("CHART", "图表"),
+    ("RICHTEXT", "图文"),
+    ("LINK", "链接组件"),
+    ("LINK_GROUP", "外部链接组"),
+    ("TAB", "选项卡"),
+]

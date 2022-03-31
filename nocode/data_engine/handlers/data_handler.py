@@ -377,6 +377,21 @@ class WorkSheetDataHandler(BaseDataHandler):
         self.worksheet_id = worksheet_id
         self.request = request
 
+    def queryset_unrepeated(self, fields, queryset):
+        if len(fields) == 1 and queryset:
+            key = "contents__{}".format(fields[0])
+            exist_value = []
+            new_queryset = []
+            for item in queryset:
+                if item[key] in exist_value:
+                    continue
+                else:
+                    exist_value.append(item[key])
+                    new_queryset.append(item)
+            queryset = new_queryset
+
+        return queryset
+
     def data(self, conditions, fields, need_page):
         manager = DataManager(self.worksheet_id)
         keys = self.get_keys(fields)
@@ -384,6 +399,10 @@ class WorkSheetDataHandler(BaseDataHandler):
             conditions = {}
         filters = self.convert_conditions(conditions)
         queryset = manager.get_queryset().filter(filters).values(*keys)
+
+        # 只针对单一字段数据查询的时候后做过滤
+        queryset = self.queryset_unrepeated(fields, queryset)
+
         if need_page:
             pagination = CustomPageNumberPagination()
             page_queryset = pagination.paginate_queryset(queryset, self.request)

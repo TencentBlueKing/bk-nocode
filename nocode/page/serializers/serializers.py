@@ -118,6 +118,7 @@ class PageSerializer(serializers.ModelSerializer):
                 "display_type": node.display_type,
                 "display_role": node.display_role,
                 "icon": node.icon,
+                "component_list": node.component_list,
             }
             for node in instance.get_children()
         ]
@@ -331,6 +332,8 @@ class PageComponentSerializer(serializers.ModelSerializer):
     page_id = serializers.IntegerField(required=True, help_text="页面id")
     type = serializers.CharField(required=True, help_text="页面组件类型")
     config = JSONField(required=False, initial={}, help_text="页面组件配置")
+    value = serializers.CharField(required=False, help_text="组件绑定值", allow_blank=True)
+    children = serializers.JSONField(required=False, help_text="容器类型组件下的组件")
 
     def validate(self, attrs):
         page_id = attrs.get("page_id")
@@ -341,14 +344,35 @@ class PageComponentSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(detail=_("页面组件不允许绑定在组页面下"))
 
         component_type = attrs.get("type")
-        if component_type != page.instance.type:
-            raise serializers.ValidationError(detail=_("只能绑定在同类型页面下"))
+        if page.instance.type != "CUSTOM" and component_type != page.instance.type:
+            raise serializers.ValidationError(detail=_("非自定义页面,只能绑定在同类型页面下"))
 
-        if component_type in ["FUNCTION"]:
+        if component_type in ["FUNCTION", "LINK"]:
             if not attrs["config"].get("name"):
-                raise serializers.ValidationError(_("功能卡片名称不可为空"))
+                raise serializers.ValidationError(_("卡片名称不可为空"))
+            if not attrs.get("value"):
+                raise serializers.ValidationError(_("卡片值不可为空"))
+
+        if attrs["type"] == "TAB":
+            if "children" not in attrs:
+                raise serializers.ValidationError(
+                    detail=_("当为选项卡组件的时候后，children参数时必须的")
+                )
+            if attrs["children"]:
+                [self.run_validation(item) for item in attrs["children"]]
 
         return attrs
+
+    def to_representation(self, instance):
+        data = super(PageComponentSerializer, self).to_representation(instance)
+        data.setdefault("children", [])
+        if data["config"].get("component_order"):
+            component_queryset = PageComponent.objects.filter(
+                id__in=data["config"]["component_order"]
+            )
+            for item in component_queryset:
+                data["children"].append(self.to_representation(item))
+        return data
 
     class Meta:
         model = PageComponent

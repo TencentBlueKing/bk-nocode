@@ -112,11 +112,46 @@ class ProjectVersionModelHandler(APIModel):
     def get_project_config(self):
         return self.instance.project_config
 
-    def get_page(self):
+    def get_page(self, page_id=None):
         return self.instance.page
 
     def get_page_component(self, page_id):
-        return self.instance.page_component.get(page_id)
+        components = self.instance.page_component.get(page_id)
+
+        def get_children_in_container(component_data, data_struct):
+            if component_data["type"] in ["FUNCTION_GROUP", "LINK_GROUP"]:
+                component_data.setdefault(
+                    "children",
+                    [
+                        data_struct[child]
+                        for child in component_data["config"]["component_order"]
+                    ],
+                )
+            return component_data
+
+        # 重新构造组件数据结构
+        data_struct = {}
+        for item in components:
+            data_struct.setdefault(item["id"], item)
+        return_components = []
+        for item in components:
+            if item["type"] not in ["FUNCTION_GROUP", "LINK_GROUP", "TAB"]:
+                return_components.append(item)
+                continue
+
+            if item["type"] == "TAB":
+                component_ids_in_tab = item["config"]["component_order"]
+                component_in_tab = []
+                for component_id_tab in component_ids_in_tab:
+                    component_data = get_children_in_container(
+                        data_struct[component_id_tab], data_struct
+                    )
+                    component_in_tab.append(component_data)
+                item.setdefault("children", component_in_tab)
+
+            item = get_children_in_container(item, data_struct)
+            return_components.append(item)
+        return return_components
 
     def get_worksheet(self):
         return self.instance.worksheet
