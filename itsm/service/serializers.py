@@ -49,6 +49,10 @@ from itsm.component.constants import (
     DEFAULT_PROJECT_PROJECT_KEY,
     PUBLIC_PROJECT_PROJECT_KEY,
     SERVICE_TYPE_CHOICES,
+    EMPTY_DICT,
+    PERIOD,
+    WORKSHEET_RECORD,
+    AUTO,
 )
 from itsm.component.drf.serializers import (
     DynamicFieldsModelSerializer,
@@ -367,11 +371,18 @@ class ServiceSerializer(AuthModelSerializer):
     owners = serializers.CharField(
         required=False, error_messages={"blank": _("服务负责人不能为空")}
     )
+    rule_type = serializers.CharField(required=False, default=EMPTY_STRING)
     # TODO sla开始节点结束节点交叉校验
     sla = ServiceSlaSerializer(required=False, many=True)
 
     # 服务绑定的表单
     worksheet_ids = serializers.ListField(required=True, help_text="用户绑定的表单列表")
+    periodic_task = serializers.DictField(
+        required=False, help_text="功能周期触发规则", write_only=True
+    )
+    worksheet_event = serializers.DictField(
+        required=False, help_text="表单触发规则", write_only=True
+    )
 
     class Meta:
         model = Service
@@ -398,6 +409,9 @@ class ServiceSerializer(AuthModelSerializer):
             "worksheet_ids",
             "show_all_workflow",
             "show_my_create_workflow",
+            "rule_type",
+            "periodic_task",
+            "worksheet_event",
         ) + model.DISPLAY_FIELDS
         read_only_fields = model.DISPLAY_FIELDS
 
@@ -486,9 +500,13 @@ class ServiceSerializer(AuthModelSerializer):
 
         validated_data["workflow"] = version
 
-        validated_data["is_valid"] = (
-            True if validated_data["type"] in ["DETAIL", "EXPORT"] else False
-        )
+        if validated_data["type"] == "AUTO":
+            # 自动化功能可自我设定是否启用
+            validated_data["is_valid"] = validated_data.get("is_valid", False)
+        else:
+            validated_data["is_valid"] = (
+                True if validated_data["type"] in ["DETAIL", "EXPORT"] else False
+            )
 
         validated_data.pop("catalog_id", None)
 
@@ -499,6 +517,18 @@ class ServiceSerializer(AuthModelSerializer):
 
         sla_tasks = validated_data.pop("sla", [])
 
+        periodic_task = {}
+        worksheet_event = {}
+        if validated_data["type"] == AUTO:
+            if validated_data["rule_type"] == PERIOD:
+                if "periodic_task" not in validated_data:
+                    raise serializers.ValidationError("请设置周期运行方案")
+                periodic_task = validated_data.pop("periodic_task", {})
+            else:
+                if "worksheet_event" not in validated_data:
+                    raise serializers.ValidationError("请设置表单触发运行方案")
+                worksheet_event = validated_data.pop("worksheet_event", {})
+
         instance = super(ServiceSerializer, self).create(validated_data)
 
         # 服务根据操作类型绑定到相应的操作目录
@@ -506,6 +536,15 @@ class ServiceSerializer(AuthModelSerializer):
             instance=instance, project_key=instance.project_key
         )
         service_handler.bind_operate_catalog(catalog_id)
+
+        # 周期自动化功能
+        if instance.type == "AUTO":
+            if instance.rule_type == PERIOD:
+                # 周期功能触发
+                instance.update_periodic_task(periodic_task)
+            # 表单记录更新触发
+            else:
+                instance.update_worksheet_event(worksheet_event)
 
         # instance.bind_catalog(catalog_id, instance.project_key)
         instance.update_service_sla(sla_tasks)
@@ -548,6 +587,9 @@ class ServiceSerializer(AuthModelSerializer):
         if instance.worksheet_ids != validated_data.get("worksheet_ids"):
             raise serializers.ValidationError(_("禁止对已关联表单进行变更"))
 
+        if instance.type != validated_data["type"]:
+            raise serializers.ValidationError(_("禁止变更功能属性"))
+
         with transaction.atomic():
             # 已经有默认key，key无需更新
             # instance.key = validated_data["key"]
@@ -573,6 +615,28 @@ class ServiceSerializer(AuthModelSerializer):
             service_handler.bind_operate_catalog(catalog_id)
 
             instance.update_service_sla(sla_tasks)
+
+            # 定时自动化专属设置
+            if validated_data["type"] == AUTO:
+                if instance.rule_type != validated_data["rule_type"]:
+                    # 重新初始化
+                    if instance.rule_type == PERIOD:
+                        instance.update_periodic_task(EMPTY_DICT)
+                    else:
+                        instance.update_worksheet_event(EMPTY_DICT)
+
+                if validated_data["rule_type"] == PERIOD:
+                    if "periodic_task" not in validated_data:
+                        raise serializers.ValidationError("请设置周期运行方案")
+                    periodic_task = validated_data.pop("periodic_task", {})
+                    instance.update_periodic_task(periodic_task)
+
+                else:
+                    if "worksheet_event" not in validated_data:
+                        raise serializers.ValidationError("请设置表单触发运行方案")
+                    worksheet_event = validated_data.pop("worksheet_event", {})
+                    instance.update_worksheet_event(worksheet_event)
+
             super(ServiceSerializer, self).update(instance, validated_data)
             change_so_project_change(instance.project_key)
 
@@ -622,6 +686,16 @@ class ServiceSerializer(AuthModelSerializer):
         data["extras"] = workflow_instance.extras
         data["owners"] = ",".join(list_by_separator(data["owners"]))
         data["favorite"] = username in self.favorite_service.get(instance.id, [])
+        data["period_task"] = (
+            instance.get_periodic_task
+            if data["type"] == AUTO and data["rule_type"] == PERIOD
+            else {}
+        )
+        data["worksheet_event"] = (
+            instance.get_worksheet_event
+            if data["type"] == AUTO and data["rule_type"] == WORKSHEET_RECORD
+            else {}
+        )
         return self.update_auth_actions(instance, data)
 
 
@@ -877,7 +951,6 @@ class ServiceConfigSerializer(serializers.Serializer):
         required=False, choices=DISPLAY_CHOICES, default=OPEN
     )
     display_role = serializers.CharField(required=False, max_length=LEN_LONG)
-    periodic_task = serializers.DictField(required=False)
 
 
 class ServiceListQuerySerializer(serializers.Serializer):

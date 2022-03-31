@@ -65,6 +65,7 @@ from itsm.service.models import (
     SysDict,
     FavoriteService,
     ServiceSla,
+    WorkSheetEvent,
 )
 from itsm.component.drf import permissions as perm
 from itsm.service.permission import ServicePermission
@@ -410,6 +411,7 @@ class ServiceViewSet(component_viewsets.AuthModelViewSet):
             raise serializers.ValidationError(_("内置服务不允许进行删除"))
         with transaction.atomic():
             ServiceSla.objects.filter(service_id=instance.id).delete()
+            WorkSheetEvent.objects.filter(service_id=instance.id).delete()
             change_so_project_change(instance.project_key)
             super().perform_destroy(instance)
 
@@ -668,7 +670,6 @@ class ServiceViewSet(component_viewsets.AuthModelViewSet):
         configs = serializer.validated_data
 
         workflow_config = configs["workflow_config"]
-        periodic_task = configs.get("periodic_task", {})
 
         workflow_id = service.workflow.workflow_id
         WorkflowPipelineValidator(Workflow.objects.get(id=workflow_id))()
@@ -678,7 +679,6 @@ class ServiceViewSet(component_viewsets.AuthModelViewSet):
             # 流程模板版本更新
             # configs["workflow_id"] = workflow.create_version().id
             self.sync_first_state_process(workflow, configs)
-            service.update_periodic_task(periodic_task)
             service.update_service_configs(configs)
         context = self.get_serializer_context()
         return Response(self.serializer_class(instance=service, context=context).data)

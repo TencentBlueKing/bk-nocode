@@ -33,3 +33,6 @@ from itsm.trigger.signal.dispatcher import TriggerSignal
 trigger_signal = TriggerSignal()
 action_finish = Signal(providing_args=("action_id", "result", "error_message"))
 post_action_finish = Signal(providing_args=("instance",))
+
+# 表单功能触发
+event_execute = Signal(providing_args=["content"])

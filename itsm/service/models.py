@@ -56,6 +56,9 @@ from itsm.component.constants import (
     SERVICE_TYPE_CHOICES,
     ADD,
     EMPTY_DICT,
+    AUTO_RULE_TYPE,
+    WORKSHEET_EVENT_CHOICE,
+    NO_RULE,
 )
 from itsm.component.drf.mixins import ObjectManagerMixin
 from itsm.component.exceptions import DeleteError, ParamError, SlaParamError
@@ -277,6 +280,13 @@ class Service(ObjectManagerMixin, Model):
 
     worksheet_ids = jsonfield.JSONField(
         _("绑定的表单列表"), max_length=LEN_NORMAL, null=True, blank=True, default=EMPTY_LIST
+    )
+
+    rule_type = models.CharField(
+        _("自动化触发规则类型"),
+        max_length=LEN_NORMAL,
+        default=NO_RULE,
+        choices=AUTO_RULE_TYPE,
     )
 
     change_flag = True
@@ -536,6 +546,34 @@ class Service(ObjectManagerMixin, Model):
                     service_id=self.id,
                     timezone=settings.TIME_ZONE,
                 )
+
+    @property
+    def get_periodic_task(self):
+        return PeriodicTask.objects.get(service_id=self.id, is_deleted=False).tag_data()
+
+    @property
+    def get_worksheet_event(self):
+        return WorkSheetEvent.objects.get(
+            service_id=self.id, is_deleted=False
+        ).tag_data()
+
+    def update_worksheet_event(self, worksheet_event):
+        if not worksheet_event:
+            WorkSheetEvent.objects.filter(service_id=self.id).delete()
+            return
+
+        worksheet_event["service_id"] = self.id
+        worksheet_event["project_key"] = self.project_key
+        try:
+            event = WorkSheetEvent.objects.get(
+                service_id=self.id,
+            )
+            for key, value in worksheet_event.items():
+                if hasattr(event, key):
+                    setattr(event, key, value)
+            event.save()
+        except WorkSheetEvent.DoesNotExist:
+            WorkSheetEvent.objects.create(**worksheet_event)
 
     def sla_validate(self):
         from itsm.workflow.models import Workflow
@@ -1465,3 +1503,39 @@ class PeriodicTask(Model):
         app_label = "service"
         verbose_name = _("服务周期任务配置表")
         verbose_name_plural = _("服务周期任务配置表")
+
+    def tag_data(self):
+        return {
+            "service_id": self.service_id,
+            "cron_list": self.cron_list,
+            "celery_task_ids": self.celery_task_ids,
+            "config": self.config,
+            "timezone": self.timezone,
+            "total_run_count": self.total_run_count,
+            "project_key": self.project_key,
+        }
+
+
+class WorkSheetEvent(Model):
+    worksheet_id = models.IntegerField(_("表单ID"))
+    service_id = models.IntegerField(_("服务ID"))
+    action_type = models.CharField(
+        _("触发类型"), choices=WORKSHEET_EVENT_CHOICE, max_length=LEN_SHORT
+    )
+    conditions = models.JSONField(_("触发条件"), default=EMPTY_LIST)
+    params = models.JSONField(_("触发参数，默认{id}"), default=EMPTY_DICT)
+
+    class Meta:
+        app_label = "service"
+        verbose_name = _("服务表单触发任务配置表")
+        verbose_name_plural = _("服务表单触发任务配置表")
+
+    def tag_data(self):
+        return {
+            "worksheet_id": self.worksheet_id,
+            "service_id": self.service_id,
+            "action_type": self.action_type,
+            "conditions": self.conditions,
+            "params": self.params,
+            "project_key": self.project_key,
+        }

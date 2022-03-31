@@ -80,6 +80,15 @@ SERVICE_TYPE_CHOICES = (
     (AUTO, "自动化"),
 )
 
+NO_RULE = "NO_RULE"
+PERIOD = "PERIOD"
+WORKSHEET_RECORD = "WORKSHEET_RECORD"
+AUTO_RULE_TYPE = (
+    (NO_RULE, "无触发规则"),
+    (PERIOD, "周期触发"),
+    (WORKSHEET_RECORD, "记录更新触发"),
+)
+
 CUSTOM = "custom"
 SERVICE = "service"
 TEMPLATE = "template"
@@ -113,3 +122,6 @@ SERVICE_CATEGORY_DESC = {
 RECENTLY_USING_LENGTH = 4
 # 表单个数限制
 WORKSHEET_LIMIT = 1
+
+# 定时功能表单触发类型
+WORKSHEET_EVENT_CHOICE = [("ADD", "增加记录"), ("EDIT", "更新记录"), ("DEL", "删除记录")]
