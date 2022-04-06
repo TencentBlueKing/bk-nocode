@@ -14,6 +14,7 @@
           v-if="!funcDataLoading"
           :app-id="appId"
           :func-data="functionData"
+          @select="handleSelect"
           @update="updateFuncData"></router-view>
       </div>
     </page-wrapper>
@@ -89,6 +90,9 @@ export default {
       } finally {
         this.funcDataLoading = false;
       }
+    },
+    handleSelect(val) {
+      this.steps = val === 'DETAIL' ? STEPS.slice(0, -1) : STEPS;
     },
     handleBackClick() {
       this.$bkInfo({

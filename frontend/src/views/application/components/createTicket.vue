@@ -376,7 +376,7 @@ export default {
 @import '../../../css/scroller.css';
 
 .create-ticket-container {
-  padding: 40px;
+  padding: 16px  40px 40px 40px;
   height: 100%;
   background: #ffffff;
   overflow: auto;

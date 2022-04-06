@@ -38,7 +38,7 @@
             </bk-radio>
           </bk-radio-group>
         </bk-form-item>
-        <bk-container :col="12" style="margin-top: 24px">
+        <bk-container :col="12">
           <bk-row>
             <bk-col :span="6">
               <div class="content" style="margin-right: 12px;">

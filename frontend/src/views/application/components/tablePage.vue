@@ -777,7 +777,8 @@ export default {
         title,
         confirmFn: async () => {
           try {
-            const res = await this.getFieldList(id);
+            const res = await this.getSheetPage(id);
+            console.log(res);
             const fields = res.map((item) => {
               const { choice, id, key, type } = item;
               if (key === 'id') {
@@ -890,19 +891,19 @@ export default {
       const BASE_URL = `${window.SITE_URL}api/engine/data/generate_export_template/${paramsStr}`;
       window.open(BASE_URL);
     },
-    // async getSheetPage(id) {
-    //   const params = {
-    //     service_id: id,
-    //   };
-    //   try {
-    //     const result = await this.$store.dispatch('setting/getSheetPage', params);
-    //     return result.data;
-    //   } catch (e) {
-    //     console.log(e);
-    //   } finally {
-    //     this.editorLoading = false;
-    //   }
-    // },
+    async getSheetPage(id) {
+      const params = {
+        service_id: id,
+      };
+      try {
+        const result = await this.$store.dispatch('setting/getSheetPage', params);
+        return result.data;
+      } catch (e) {
+        console.log(e);
+      } finally {
+        this.editorLoading = false;
+      }
+    },
     async getEditFieldList(id) {
       try {
         const res = await this.$store.dispatch('application/getFormPageFields', {
