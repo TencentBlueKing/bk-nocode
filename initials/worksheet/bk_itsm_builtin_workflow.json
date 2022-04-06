@@ -330,5 +330,7 @@
         "state_id": "",
         "source": "TABLE"
     },
-    "notify": []
+    "notify": [],
+    "show_all_workflow": false,
+    "show_my_create_workflow": false
 }

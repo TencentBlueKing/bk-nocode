@@ -41,17 +41,13 @@ from nocode.base.constants import (
     FIRST_ORDER,
     DISPLAY_CHOICES,
     EMPTY_DICT,
+    PAGE_COMPONENT_TYPE_CHOICES,
+    PAGE_TYPE_CHOICES,
 )
 
 
 class Page(BaseMpttModel):
-    TYPE_CHOICES = [
-        ("FUNCTION", "功能卡片"),
-        ("LIST", "列表"),
-        ("SHEET", "表单"),
-        ("CHART", "图表"),
-        ("GROUP", "分组"),
-    ]
+
     key = models.CharField(verbose_name=_("页面关键字"), max_length=LEN_LONG)
     name = models.CharField(verbose_name=_("页面名称"), max_length=LEN_NORMAL)
     desc = models.CharField(_("页面描述"), max_length=LEN_LONG, null=True, blank=True)
@@ -68,7 +64,7 @@ class Page(BaseMpttModel):
         verbose_name=_("图标"), null=True, blank=True, max_length=LEN_MIDDLE
     )
     type = models.CharField(
-        verbose_name=_("页面类型"), choices=TYPE_CHOICES, max_length=LEN_SHORT
+        verbose_name=_("页面类型"), choices=PAGE_TYPE_CHOICES, max_length=LEN_SHORT
     )
     project_key = models.CharField(
         verbose_name=_("项目"),
@@ -83,6 +79,10 @@ class Page(BaseMpttModel):
     )
     display_role = models.CharField(
         _("可见范围"), max_length=LEN_LONG, default=EMPTY_STRING, null=True, blank=True
+    )
+
+    component_list = jsonfield.JSONField(
+        verbose_name=_("页面表层组件id列表"), default=EMPTY_LIST
     )
 
     change_flag = True
@@ -101,6 +101,7 @@ class Page(BaseMpttModel):
             "desc": self.desc,
             "display_type": self.display_type,
             "display_role": self.display_role,
+            "component_list": self.component_list,
         }
 
     def save(self, *args, **kwargs):
@@ -129,15 +130,11 @@ class Page(BaseMpttModel):
 
 
 class PageComponent(Model):
-    TYPE_CHOICES = [
-        ("FUNCTION", "功能组件"),
-        ("LIST", "列表组件"),
-        ("SHEET", "表单组件"),
-        ("CHART", "图表"),
-    ]
 
     type = models.CharField(
-        verbose_name=_("表单组件/列表组件/功能卡片"), choices=TYPE_CHOICES, max_length=LEN_SHORT
+        verbose_name=_("表单组件/列表组件/功能卡片"),
+        choices=PAGE_COMPONENT_TYPE_CHOICES,
+        max_length=LEN_SHORT,
     )
     value = models.CharField(verbose_name=_("组件绑定的值"), max_length=LEN_X_LONG)
     layout = models.JSONField(verbose_name=_("组件布局"), default=EMPTY_DICT)
