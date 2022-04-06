@@ -279,7 +279,7 @@ export default {
 }
 .bk-navigation {
   min-width: 1366px;
-
+  height: calc(100%-52px);
   /deep/ .bk-navigation-wrapper {
     .navigation-container {
       max-width: none !important;

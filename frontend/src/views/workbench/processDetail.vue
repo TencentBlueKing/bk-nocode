@@ -326,13 +326,13 @@ export default {
     position: relative;
     display: flex;
     margin: 24px;
-    height: 100%;
+    height:  calc(100% - 48px);
   }
 
   .process-container {
     position: relative;
     min-width: 832px;
-    height: calc(100% - 48px);
+    height: 100%;
     flex: 1;
     margin-right: 24px;
     background: #ffffff;
@@ -341,8 +341,8 @@ export default {
   }
 
   .right-container {
-    height: calc(100% - 48px);
-    width: 452px;
+    height: 100%;
+    min-width: 452px;
     background: #ffffff;
     box-shadow: 0 2px 4px 0 rgba(25, 25, 41, 0.05);
     border-radius: 2px;

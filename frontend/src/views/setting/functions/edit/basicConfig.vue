@@ -112,6 +112,7 @@ export default {
       if (val === 'DETAIL') {
         this.formData.worksheet_ids = [];
       }
+      this.$emit('select', val);
     },
     // 详情类型的功能只能绑定一个表单
     handleFormSelect(val) {
