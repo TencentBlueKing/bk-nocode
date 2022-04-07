@@ -8,6 +8,7 @@ const FunctionBasic = () => import('@/views/setting/functions/edit/basicConfig.v
 const FunctionFlow = () => import('@/views/setting/functions/edit/flowConfig.vue');
 const FunctionAdvanced = () => import('@/views/setting/functions/edit/advancedConfig.vue');
 const Page = () => import('@/views/setting/pages/index.vue');
+const CustomPage = () => import('@/views/setting/pages/edit/index.vue');
 const PermissionTemplate = () => import('@/views/setting/permission/index.vue');
 export default [
   {
@@ -33,6 +34,15 @@ export default [
           appId: route.params.appId,
           formId: route.params.formId,
           version: route.params.version,
+        }),
+      },
+      {
+        path: ':appId/customPage/',
+        name: 'customPage',
+        component: CustomPage,
+        props: route => ({
+          appId: route.params.appId,
+          pageId: route.params.pageId,
         }),
       },
       {
