@@ -75,6 +75,7 @@ export const SETTING = {
       name: '页面管理',
       icon: 'custom-icon-font icon-page-manage',
       path: '/pages/',
+      subRoutes: ['customPage'],
     },
     {
       id: 'permissionTemplate',

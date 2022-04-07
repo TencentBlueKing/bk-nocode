@@ -1,0 +1,95 @@
+<template>
+  <div class="quick-entrance">
+    <div class="img-container">
+      <img :src="base64String+page.config.path" v-if="page.config.path">
+      <div v-else class="no-img"></div>
+    </div>
+    <div class="text-container">
+      <span class="title" v-bk-overflow-tips="{ width: 140 }">{{page.config.name}}</span>
+      <span class="desc" v-bk-overflow-tips="{ width: 140 }" v-if="page.config.desc">{{page.config.desc}}</span>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'QuickEntrance',
+  props: {
+    src: [String],
+    title: [String],
+    desc: [String],
+    page: {
+      type: Object,
+      default: () => ({}),
+    },
+  },
+  data() {
+    return {
+      base64String: 'data:image/jpeg;base64,',
+    };
+  },
+};
+</script>
+
+<style scoped lang="postcss">
+.quick-entrance {
+  width: 246px;
+  height: 92px;
+  background: #FFFFFF;
+  border-radius: 4px;
+  margin: 24px;
+  display: flex;
+  align-items: center;
+}
+
+.img-container {
+  width: 40px;
+  height: 40px;
+  background: #3A84FF;
+  border-radius: 4px;
+  margin-left: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    width: 18px;
+    height: 18px;
+    background: #FFFFFF;
+  }
+  .no-img {
+    width: 18px;
+    height: 18px;
+    background: #FFFFFF;
+  }
+}
+
+.text-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 40px;
+  margin-left: 12px;
+  .title {
+    font-weight: 500;
+    font-size: 16px;
+    color: #313238;
+    display: inline-block;
+    width: 140px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .desc {
+    font-weight: 400;
+    font-size: 14px;
+    color: #979BA5;
+    display: inline-block;
+    width: 140px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+}
+</style>

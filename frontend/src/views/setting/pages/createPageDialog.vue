@@ -88,9 +88,9 @@ export default {
       },
       typeList: [
         {
-          type: 'FUNCTION',
-          name: '功能卡片',
-          desc: '搭建应用功能的快捷入口',
+          type: 'CUSTOM',
+          name: '自定义页面',
+          desc: '搭建一个应用首页/数据展示页',
           bgColor: '#e1ecff',
           iconColor: '#3a84ff',
         },
