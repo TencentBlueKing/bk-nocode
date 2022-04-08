@@ -19,6 +19,11 @@ export const COMPONENT_TYPES = [
     name: '快捷入口',
     comp: 'QuickEntrance',
   },
+  {
+    type: 'LINK',
+    name: '超链接卡片',
+    comp: 'QuickEntrance',
+  },
 ];
 
 export const  PAGE_TYPE_MAP = {
@@ -26,4 +31,5 @@ export const  PAGE_TYPE_MAP = {
   QUICKENTRANCE: 'FUNCTION_GROUP',
   RICHTEXT: 'RICHTEXT',
   TAB: 'TAB',
+  LINK: 'LINK',
 };

@@ -11,7 +11,7 @@
 <script>
 import pageItem from './edit/pageItem.vue';
 const LAYOUT_MAP = {
-  COL_3: 'half-row',
+  COL_3: 'quarter-row',
   COL_6: 'half-row',
   COL_9: 'three-fourths-row',
 };
@@ -24,9 +24,7 @@ export default {
     pageList: {
       type: Array,
       default: () => ({}),
-      appId: String,
-      appName: String,
-      version: String,
+
     },
   },
   data() {
@@ -41,7 +39,6 @@ export default {
 <style scoped lang="postcss">
 .custom-page-container {
   padding: 20px;
-  width: 760px;
 }
 .page-item{
   width: 100%;

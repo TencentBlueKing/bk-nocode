@@ -514,8 +514,6 @@ export default {
   .custom-page {
     width: 100%;
     height: calc(100% - 104px);
-    margin: 24px;
-    background: #ffffff;
     border-radius: 2px;
   }
 

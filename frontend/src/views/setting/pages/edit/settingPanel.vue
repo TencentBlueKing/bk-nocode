@@ -34,7 +34,6 @@ export default {
   watch: {
     page: {
       handler(val) {
-        console.log(val);
         this.configData = cloneDeep(val);
       },
       deep: true,
@@ -50,6 +49,7 @@ export default {
   height: calc(100% - 56px);
   background: #ffffff;
   z-index: 1;
+  flex-shrink: 0;
 }
 
 .panel-title {

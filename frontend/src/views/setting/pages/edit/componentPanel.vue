@@ -81,6 +81,7 @@ export default {
   background: #fcfcfc;
   z-index: 1;
   box-shadow: 1px 0 0 0 #DCDEE5;
+  flex-shrink: 0;
 }
 
 .panel-title {

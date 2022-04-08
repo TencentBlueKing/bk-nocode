@@ -53,7 +53,7 @@ export default {
   },
   props: {
     appId: String,
-    pageId: String,
+    pageId: [String, Number],
   },
   data() {
     return {
@@ -100,7 +100,6 @@ export default {
       }
     },
     handleAddComp(page, index) {
-      console.log(page, index);
       this.isEdit = true;
       this.pageList.splice(index, 0, page);
       this.crtPage = page;

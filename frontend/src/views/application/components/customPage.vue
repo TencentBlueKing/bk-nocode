@@ -11,7 +11,7 @@
 <script>
 import pageItem from '@/views/setting/pages/edit/pageItem.vue';
 const LAYOUT_MAP = {
-  COL_3: 'half-row',
+  COL_3: 'quarter-row',
   COL_6: 'half-row',
   COL_9: 'three-fourths-row',
 };
@@ -25,6 +25,9 @@ export default {
       type: Array,
       default: () => ([]),
     },
+    appId: String,
+    appName: String,
+    version: String,
   },
   data() {
     return {
@@ -33,21 +36,34 @@ export default {
   },
   methods: {
     handleClick(page) {
-      console.log(page);
-      const { id, page_id, value } = page;
-      this.$router.push({
-        name: 'commonCreateTicket',
-        params: {
-          appId: this.appId,
-          version: this.version,
-          pageId: page_id,
-          funcId: value,
-          actionId: id,
-        },
-        query: {
-          componentId: id,
-        },
-      });
+      const { id, page_id, value, type } = page;
+      switch (type) {
+        case 'FUNCTION_GROUP':
+          this.$router.push({
+            name: 'commonCreateTicket',
+            params: {
+              appId: this.appId,
+              version: this.version,
+              pageId: page_id,
+              funcId: value,
+              actionId: id,
+            },
+            query: {
+              componentId: id,
+            },
+          });
+          break;
+        case 'LINK':
+          this.goToLink(value);
+          break;
+      }
+    },
+    goToLink(val) {
+      let url = val;
+      if (url.indexOf('http') !== 0) {
+        url = `http://${url}`;
+      }
+      window.open(url, '_blank');
     },
   },
 };
@@ -55,8 +71,7 @@ export default {
 
 <style scoped lang="postcss">
 .custom-page-container {
-  padding: 20px;
-  width: 760px;
+  padding:0 20px;
 }
 .page-item{
   width: 100%;
