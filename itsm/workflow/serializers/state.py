@@ -173,6 +173,40 @@ class StateSerializer(serializers.ModelSerializer):
                     ],
                 }
 
+            if validated_data.get("type", "") == "DATA-QUERY":
+                GlobalVariable.objects.get_or_create(
+                    key="data_query_result_%s" % instance.id,
+                    name="数据是否存在",
+                    type="STRING",
+                    is_valid=True,
+                    state_id=instance.id,
+                    flow_id=instance.workflow_id,
+                )
+
+                validated_data["variables"] = {
+                    "inputs": [],
+                    "outputs": [
+                        {
+                            "source": "global",
+                            "name": "数据存在状态",
+                            "key": "data_query_result_%s" % instance.id,
+                            "ref_path": "",
+                            "type": "bool",
+                        }
+                    ],
+                }
+
+                field_list = validated_data["extras"]["field_list"]
+                # 创建全局变量
+                from itsm.workflow.handler.worksheet_fields_handler import (
+                    WorkSheetFieldModelHandler,
+                )
+
+                WorkSheetFieldModelHandler().create_global_field_from_worksheet(
+                    worksheet_field_ids=field_list,
+                    state=instance,
+                )
+
             if validated_data.get("type", "") == "TASK-SOPS":
                 GlobalVariable.objects.get_or_create(
                     key="sops_result_%s" % instance.id,

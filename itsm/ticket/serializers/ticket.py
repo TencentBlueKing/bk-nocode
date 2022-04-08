@@ -133,6 +133,7 @@ class StatusSerializer(serializers.ModelSerializer):
     delivers_type = serializers.ChoiceField(choices=PROCESSOR_CHOICES, required=False)
     can_deliver = serializers.BooleanField(required=False)
     can_terminate = serializers.BooleanField(required=False)
+    meta = serializers.JSONField(required=False)
 
     contexts = JSONField(initial={})
     query_params = JSONField(initial={})

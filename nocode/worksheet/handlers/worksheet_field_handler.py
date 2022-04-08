@@ -28,6 +28,8 @@ import string
 import uuid
 
 from django.db import transaction
+from django_celery_beat.models import PeriodicTask
+
 from nocode.base.base_handler import APIModel
 from nocode.worksheet.exceptions import (
     WorkSheetFieldDoesNotExist,
@@ -149,7 +151,23 @@ class WorkSheetFieldBatchModelHandler:
         instance.save()
 
     def delete(self, remove_ids):
-        WorkSheetField.objects.filter(id__in=remove_ids).delete()
+        fields = WorkSheetField.objects.filter(id__in=remove_ids)
+        auto_number_fields = fields.filter(type="AUTO-NUMBER")
+        if auto_number_fields.exists():
+            # 清除定时任务
+            can_reset_items = [
+                item
+                for item in auto_number_fields
+                if not item.meta["config"][0]["period_type"].isdigit()
+            ]
+            for item in can_reset_items:
+                key = "{}_{}_{}".format(item.worksheet_id, item.id, item.key)
+                PeriodicTask.objects.filter(
+                    name=key,
+                    task="nocode.data_engine.core.utils.value_reset",
+                    enabled=True,
+                ).delete()
+        fields.delete()
 
     def batch_save(self, data, context):
 

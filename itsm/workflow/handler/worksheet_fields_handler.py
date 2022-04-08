@@ -5,7 +5,7 @@ import string
 import uuid
 
 from common.log import logger
-from itsm.workflow.models import Field
+from itsm.workflow.models import Field, GlobalVariable
 
 from itsm.workflow.signals.handlers import state_change_project_change
 from nocode.base.basic import ignore_fields_type
@@ -18,7 +18,7 @@ class WorkSheetFieldModelHandler(WorkSheetFieldModelHandler):
     def retrieve(self, worksheet_field_id):
         return self.filter(pk=worksheet_field_id).first()
 
-    def copy_fields_from_worksheet_field(self, worksheet_field_ids, state, service):
+    def _create_fields_struct(self, worksheet_field_ids):
         # 获取filed信息
         if isinstance(worksheet_field_ids, list):
             fields = [
@@ -59,9 +59,11 @@ class WorkSheetFieldModelHandler(WorkSheetFieldModelHandler):
                 ).instance
                 data_struct[item.worksheet_id]["key"] = worksheet.key
                 data_struct[item.worksheet_id]["name"] = worksheet.name
+        return data_struct
+
+    def _create_workflow_fields(self, data_struct, state, service):
 
         field_ids = []
-        failed_fields = []
         logger.info("创建新增字段id列表：{field_ids}".format(field_ids=field_ids))
         for data in data_struct.values():
             for item in data["items"]:
@@ -118,6 +120,71 @@ class WorkSheetFieldModelHandler(WorkSheetFieldModelHandler):
                     logger.info("新增流程字段id：{field}".format(field=field.id))
                     field_ids.append(field.id)
 
+        return field_ids
+
+    def _create_global_field(self, data_struct, state):
+        global_field_ids = []
+        for data in data_struct.values():
+            for item in data["items"]:
+                worksheet_id = item.pop("worksheet_id")
+                worksheet_key = data["key"]
+                worksheet_name = data["name"]
+                field_key = item.pop("key")
+
+                key = uuid.uuid3(uuid.uuid1(), uuid.uuid4().hex).hex
+                if key[0].isdigit():
+                    # 开头为数字，重新生成
+                    first_letter = random.choice(string.ascii_letters)
+                    key = first_letter + key[1:]
+
+                if item["type"] not in GlobalVariable.TYPE_CHOICES:
+                    item["type"] = "STRING"
+
+                if isinstance(item["meta"], str):
+                    item["meta"] = json.loads(item["meta"])
+                item["meta"].update(
+                    {
+                        "worksheet": {
+                            "id": worksheet_id,
+                            "key": worksheet_key,
+                            "name": worksheet_name,
+                            "field_key": field_key,
+                        },
+                    }
+                )
+                global_field_data = {
+                    "key": key,
+                    "name": item["name"],
+                    "type": item["type"],
+                    "state_id": state.id,
+                    "flow_id": state.workflow_id,
+                    "meta": item["meta"],
+                }
+                fields_object = GlobalVariable.objects.filter(
+                    state_id=state.id, is_deleted=False
+                ).values("id", "meta")
+                exist_flag = None
+                for field in fields_object:
+                    if field["meta"].get("worksheet"):
+                        if field["meta"]["worksheet"]["field_key"] == field_key:
+                            exist_flag = True
+                            break
+                if exist_flag:
+                    continue
+                else:
+                    # 默认值联动规则中有不可修改选
+                    field = GlobalVariable.objects.create(**global_field_data)
+                    logger.info("新增流程全局字段id：{field}".format(field=field.id))
+                    global_field_ids.append(field.id)
+        return global_field_ids
+
+    def copy_fields_from_worksheet_field(self, worksheet_field_ids, state, service):
+        logger.info("表单导入字段id列表：{field_ids}".format(field_ids=worksheet_field_ids))
+
+        data_struct = self._create_fields_struct(worksheet_field_ids)
+
+        field_ids = self._create_workflow_fields(data_struct, state, service)
+
         logger.info(
             "节点{state}原始绑定字段：{fields}".format(state=state.id, fields=state.fields)
         )
@@ -135,4 +202,10 @@ class WorkSheetFieldModelHandler(WorkSheetFieldModelHandler):
         logger.info(
             "节点{state}保存设置后，字段列表：{fields}".format(state=state.id, fields=state.fields)
         )
-        return field_ids, failed_fields
+        return field_ids
+
+    def create_global_field_from_worksheet(self, worksheet_field_ids, state):
+        logger.info("表单导入字段id列表：{field_ids}".format(field_ids=worksheet_field_ids))
+        data_struct = self._create_fields_struct(worksheet_field_ids)
+        global_fields_ids = self._create_global_field(data_struct, state)
+        return global_fields_ids
