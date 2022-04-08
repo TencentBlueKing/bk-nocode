@@ -10,7 +10,6 @@
       </div>
     </transition>
     <div class="field-container">
-      <div class="mask"></div>
       <page-item :page="page"></page-item>
     </div>
     <transition name="slide-left">
@@ -25,7 +24,7 @@
 <script>
 import pageItem from './pageItem.vue';
 const LAYOUT_MAP = {
-  COL_3: 'half-row',
+  COL_3: 'quarter-row',
   COL_6: 'half-row',
   COL_9: 'three-fourths-row',
 };
@@ -53,7 +52,7 @@ export default {
 .page-element {
   position: relative;
   display: inline-block;
-  padding: 12px 40px;
+  padding: 6px;
   width: 100%;
   min-height: 86px;
   border: 1px solid transparent;
@@ -104,7 +103,7 @@ export default {
 
 .drag-icon-wrapper {
   position: absolute;
-  left: 12px;
+  left: 4px;
   top: 0;
   bottom: 0;
   display: flex;

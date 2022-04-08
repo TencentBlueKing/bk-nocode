@@ -7,23 +7,24 @@
       :group="{ name: 'form', pull: true, put: ['menu', 'half-row-field'] }"
       @add="add"
       @end="end">
-      <page-element
-        v-for="(page,index) in pageList"
-        :page="page"
-        :class="{ actived: selectedIndex === index }"
-        :key="`${page.type}_${index}`"
-        @action="handleFormAction($event, index)">
-      </page-element>
+        <page-element
+          v-for="(page,index) in pageList"
+          :page="page"
+          :class="{ 'actived': selectedIndex=== index }"
+          :key="`${page.type}_${index}`"
+          @action="handleFormAction($event, index)">
+        </page-element>
       <span class="tip" v-if="pageList.length===0">拖拽组件到这里</span>
     </draggable>
   </div>
 </template>
 
 <script>
-import {  PAGE_TYPE_MAP }  from '@/constants/comps.js';
+import { PAGE_TYPE_MAP } from '@/constants/comps.js';
 import pageElement from './pageElement.vue';
 import cloneDeep from 'lodash.clonedeep';
 import draggable from 'vuedraggable';
+
 export default {
   name: 'PagePanel',
   components: {
@@ -57,11 +58,12 @@ export default {
   methods: {
     add(e) {
       const { type } = e.item.dataset;
-      const  config = this.getConfigSetting(type);
+      const config = this.getConfigSetting(type);
       const pageConfig = {
         type: PAGE_TYPE_MAP[type],
         ...config,
       };
+      console.log(e.newIndex);
       const index = this.pageList.length === 0 ? 0 : e.newIndex;
       this.$emit('add', pageConfig, index);
       this.selectedIndex = index;
@@ -88,7 +90,11 @@ export default {
     },
     getConfigSetting(type) {
       let config;
-      switch (type) {
+      let curType = type;
+      if (['QUICKENTRANCE', 'LINK'].includes(type)) {
+        curType = 'QUICKENTRANCE';
+      }
+      switch (curType) {
         case 'LINKGROUP':
           config = {
             config: { name: '分组名称' },
@@ -111,9 +117,12 @@ export default {
               path: '',
             },
             children: [],
-            layout: { lineLayout: '' },
+            layout: { lineLayout: 'COL_12' },
             value: '',
           };
+          if (type === 'LINK') {
+            delete config.children;
+          }
           break;
       }
       return config;
@@ -124,21 +133,25 @@ export default {
 
 <style scoped lang="postcss">
 @import "../../../../css/scroller.css";
+
 .page-panel {
   margin: 24px 24px 0 24px;
-  height: calc(100% - 56px);
-  width: 100%;
+  height: calc(100% - 80px);
+  width: calc(100% - 608px);
+  //width: 100%;
   flex: 1;
   @mixin scroller;
 }
-.edit-panel{
+
+.edit-panel {
   height: 69px;
   background: #ffffff;
   box-shadow: 0 2px 4px 0 rgba(25, 25, 41, 0.05);
   border-radius: 2px;
   border: 1px dashed #C4C6CC;
 }
-.tip{
+
+.tip {
   font-size: 14px;
   color: #313238;
   text-align: center;
@@ -149,17 +162,28 @@ export default {
 .page-container {
   height: 100%;
   overflow: auto;
+  @mixin scroller;
   &.hover {
     outline: 2px dashed #1768ef;
     border-radius: 4px;
   }
+
   &.add-first-comp {
     background: rgba(23, 104, 239, 0.1);
   }
 }
+
+.element-wrapper{
+  overflow-x: auto;
+  width: calc(100vw - 476px );
+}
 .page-element {
   &.actived {
     border: 1px dashed #3a84ff;
+  }
+
+  /deep/ .quick-entrance {
+    margin: 0;
   }
 }
 </style>

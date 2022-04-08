@@ -21,7 +21,7 @@
         </bk-select>
       </bk-form-item>
       <bk-form-item
-        v-if="type==='FUNCTION_GROUP'"
+        v-if="isQuickEntrance"
         label="入口名称">
         <bk-input v-model.trim="pageData.config.name" @change="change">
         </bk-input>
@@ -43,7 +43,13 @@
         </bk-select>
       </bk-form-item>
       <bk-form-item
-        v-if="type==='FUNCTION_GROUP'"
+        v-if="type==='LINK'"
+        label="链接名称">
+        <bk-input v-model.trim="pageData.value" @change="change">
+        </bk-input>
+      </bk-form-item>
+      <bk-form-item
+        v-if="isQuickEntrance"
         label="logo">
         <div class="upload">
           选择文件
@@ -58,7 +64,7 @@
         </div>
       </bk-form-item>
       <bk-form-item
-        v-if="type==='FUNCTION_GROUP'"
+        v-if="isQuickEntrance"
         label="入口描述">
         <bk-input
           placeholder="请输入描述信息"
@@ -125,6 +131,11 @@ export default {
         ],
       },
     };
+  },
+  computed: {
+    isQuickEntrance() {
+      return ['FUNCTION_GROUP', 'LINK'].includes(this.type);
+    },
   },
   watch: {
     page(val) {

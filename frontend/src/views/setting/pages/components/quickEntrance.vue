@@ -2,7 +2,7 @@
   <div class="quick-entrance">
     <div class="img-container">
       <img :src="base64String+page.config.path" v-if="page.config.path">
-      <div v-else class="no-img"></div>
+      <img :src="defaultImg" v-else>
     </div>
     <div class="text-container">
       <span class="title" v-bk-overflow-tips="{ width: 140 }">{{page.config.name}}</span>
@@ -26,6 +26,7 @@ export default {
   data() {
     return {
       base64String: 'data:image/jpeg;base64,',
+      defaultImg: require('@/assets/images/s-marker-logo.svg'),
     };
   },
 };
@@ -33,11 +34,11 @@ export default {
 
 <style scoped lang="postcss">
 .quick-entrance {
-  width: 246px;
+  min-width: 246px;
   height: 92px;
   background: #FFFFFF;
   border-radius: 4px;
-  margin: 24px;
+  margin: 24px 12px 0 0;
   display: flex;
   align-items: center;
 }
@@ -53,8 +54,8 @@ export default {
   justify-content: center;
 
   img {
-    width: 18px;
-    height: 18px;
+    width: 25px;
+    height: 25px;
     background: #FFFFFF;
   }
   .no-img {
