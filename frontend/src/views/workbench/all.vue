@@ -4,16 +4,29 @@
       <div class="workbench-all-container">
         <div class="header-search">
           <bk-button :theme="'primary'" :title="'导出'" @click="handleExport"> 导出</bk-button>
-          <bk-input
-            class="search-width"
-            :placeholder="'请输入编码'"
-            :left-icon="'bk-icon icon-search'"
-            clearable
-            v-model="keyword"
-            @change="handleChange"
-            @enter="handlerSearch"
-            @right-icon-click="handlerSearch">
-          </bk-input>
+          <div class="option-area">
+            <bk-input
+              class="search-width"
+              :placeholder="'请输入编码'"
+              :left-icon="'bk-icon icon-search'"
+              clearable
+              v-model="keyword"
+              @change="handleChange"
+              @enter="handlerSearch"
+              @right-icon-click="handlerSearch">
+            </bk-input>
+            <bk-select
+              v-model="project_key"
+              ext-cls="search-width"
+              :placeholder="'请选择应用'"
+              @selected="handlerSearch"
+              @clear="() => initData()"
+              searchable
+              clearable
+            >
+              <bk-option v-for="option in appList" :key="option.key" :id="option.key" :name="option.name"></bk-option>
+            </bk-select>
+          </div>
         </div>
         <div class="workbench-all-table">
           <bk-table
@@ -120,9 +133,9 @@ export default {
       window.open(BASE_URL);
     },
     handlerSearch() {
-      const searchParams = {
-        keyword: this.keyword,
-      };
+      const searchParams = {};
+      this.keyword ? searchParams.keyword = this.keyword : '';
+      this.project_key ? searchParams.project_key = this.project_key : '';
       this.pagination.current = 1;
       this.initData(searchParams);
     },
@@ -147,6 +160,9 @@ export default {
         view_type: '',
         ...searchParams,
       };
+      console.log(this.project_key);
+      this.project_key ? params.project_key = this.project_key : '';
+      this.keyword ? params.keyword = this.keyword : '';
       this.tableLoading = true;
       const res = await this.$store.dispatch('workbench/getList', { params });
       if (res.result) {
@@ -205,8 +221,13 @@ export default {
 
     .search-width {
       width: 240px;
+      margin-right: 16px;
     }
   }
+
+  .option-area{
+    display: flex;
+  },
 
   .status {
     width: 8px;

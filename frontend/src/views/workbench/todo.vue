@@ -4,16 +4,29 @@
       <div class="workbench-todo-container">
         <div class="header-search">
           <bk-button :theme="'primary'" :title="'导出'" @click="handleExport"> 导出</bk-button>
-          <bk-input
-            class="search-width"
-            :placeholder="'请输入编码'"
-            :left-icon="'bk-icon icon-search'"
-            clearable
-            v-model="keyword"
-            @change="handleChange"
-            @enter="handlerSearch"
-            @right-icon-click="handlerSearch">
-          </bk-input>
+          <div class="option-area">
+            <bk-input
+              class="search-width"
+              :placeholder="'请输入编码'"
+              :left-icon="'bk-icon icon-search'"
+              clearable
+              v-model="keyword"
+              @change="handleChange"
+              @enter="handlerSearch"
+              @right-icon-click="handlerSearch">
+            </bk-input>
+            <bk-select
+              v-model="project_key"
+              ext-cls="search-width"
+              :placeholder="'请选择应用'"
+              @selected="handlerSearch"
+              @clear="() => initData()"
+              searchable
+              clearable
+            >
+              <bk-option v-for="option in appList" :key="option.key" :id="option.key" :name="option.name"></bk-option>
+            </bk-select>
+          </div>
         </div>
         <div class="workbench-todo-table">
           <bk-table
@@ -33,10 +46,14 @@
                 <column-sn :row="row"></column-sn>
               </template>
             </bk-table-column>
-            <bk-table-column v-for="field in columnList" :key="field.id" :label="field.label" :show-overflow-tooltip="true">
+            <bk-table-column
+              v-for="field in columnList"
+              :key="field.id"
+              :label="field.label"
+              :show-overflow-tooltip="true">
               <template slot-scope="{ row }">
                 <span v-if="field.id==='current_steps'">
-                  {{ row.current_steps[0]&&row.current_steps[0].name|| '--' }}
+                  {{ row.current_steps[0] && row.current_steps[0].name || '--' }}
                 </span>
                 <span v-else>{{ row[field.id] || '--' }}</span>
               </template>
@@ -48,12 +65,12 @@
               :filter-method="statusFilterMethod"
               :filter-multiple="true">
               <template slot-scope="{ row }">
-                  <div>
+                <div>
                     <span :class="['status',statusMap[row.current_status]]"
                           v-if="!['RUNNING','QUEUEING'].includes(row.current_status)"></span>
-                    <bk-spin size="mini" v-else></bk-spin>
-                    <span>{{row.current_status_display||'--'}}</span>
-                  </div>
+                  <bk-spin size="mini" v-else></bk-spin>
+                  <span>{{ row.current_status_display || '--' }}</span>
+                </div>
               </template>
             </bk-table-column>
             <bk-table-column type="setting">
@@ -74,7 +91,7 @@ import PageWrapper from '@/components/pageWrapper.vue';
 import ColumnSn from './components/columnSn.vue';
 import { errorHandler } from '../../utils/errorHandler';
 import { getQuery } from '../../utils/util';
-import  status  from './mixin/status.js';
+import status from './mixin/status.js';
 
 
 export default {
@@ -124,9 +141,9 @@ export default {
       }
     },
     handlerSearch() {
-      const searchParams = {
-        keyword: this.keyword,
-      };
+      const searchParams = {};
+      this.project_key ? searchParams.project_key = this.project_key : '';
+      this.keyword ? searchParams.keyword = this.keyword : '';
       this.pagination.current = 1;
       this.initData(searchParams);
     },
@@ -145,6 +162,8 @@ export default {
         view_type: 'my_todo',
         ...searchParams,
       };
+      this.project_key ? params.project_key = this.project_key : '';
+      this.keyword ? params.keyword = this.keyword : '';
       this.tableLoading = true;
       const res = await this.$store.dispatch('workbench/getList', { params });
       if (res.result) {
@@ -176,7 +195,7 @@ export default {
   }
 
   .custom-table {
-    /deep/ .bk-table-body-wrapper{
+    /deep/ .bk-table-body-wrapper {
       @mixin scroller;
     }
   }
@@ -197,26 +216,34 @@ export default {
 
     .search-width {
       width: 240px;
+      margin-right: 16px;
     }
   }
-  .status{
+
+  .option-area{
+   display: flex;
+  },
+  .status {
     width: 8px;
     height: 8px;
     border-radius: 50%;
     display: inline-block;
     margin-right: 8px;
   }
-  .wait-status{
+
+  .wait-status {
     background: #FFE8C3;
     border: 1px solid #FF9C01;
   }
-  .finish-status{
+
+  .finish-status {
     background: #E5F6EA;
     border: 1px solid #3FC06D;
   }
- .fail-status{
-   background: #FFE6E6;
-   border: 1px solid #EA3636;
+
+  .fail-status {
+    background: #FFE6E6;
+    border: 1px solid #EA3636;
   }
 }
 </style>
