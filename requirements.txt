@@ -114,4 +114,4 @@ opentelemetry-instrumentation-redis==0.25b2
 opentelemetry-instrumentation-logging==0.25b2
 opentelemetry-instrumentation-requests==0.25b2
 
-bamboo-pipeline
+bamboo-pipeline==3.14.1
