@@ -39,7 +39,7 @@
       <div class="workbench-todo-table">
         <bk-table
           ref="ticketList"
-          v-bkloading="{ isLoading: tableLoading }"
+          v-bkloading="{ isLoading: tableLoading, zIndex: 9999 }"
           ext-cls="custom-table"
           :data="tableList"
           :size="size"
@@ -342,6 +342,7 @@ export default {
 
 .table-link {
   margin-right: 8px;
+
   /deep/ span {
     font-size: 12px;
   }

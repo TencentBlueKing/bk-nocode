@@ -23,8 +23,12 @@
                     {{ approvalInfo.result ? '通过' : '拒绝' }}
                 </span>
       </bk-form-item>
-
-      <bk-form-item label="备注" :label-width="140" :required="!approvalInfo.result" property="approvalNotice">
+      <bk-form-item
+        label="备注"
+        :label-width="140"
+        :required="!approvalInfo.result"
+        property="approvalNotice"
+        error-display-type="normal">
         <bk-input type="textarea" :row="4" :maxlength="200" v-model="formData.approvalNotice"></bk-input>
       </bk-form-item>
     </bk-form>
