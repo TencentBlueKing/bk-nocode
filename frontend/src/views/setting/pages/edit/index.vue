@@ -139,7 +139,9 @@ export default {
       try {
         this.pageComponentSaving = true;
         const res = await this.$store.dispatch('setting/batchSaveComponent', params);
-        if (res.data.result) {
+        console.log(res.result);
+        if (res.result) {
+          console.log(12312);
           this.$bkMessage({
             message: '保存成功',
             theme: 'success',

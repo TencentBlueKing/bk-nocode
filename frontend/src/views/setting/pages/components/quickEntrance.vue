@@ -34,7 +34,6 @@ export default {
 
 <style scoped lang="postcss">
 .quick-entrance {
-  min-width: 246px;
   height: 92px;
   background: #FFFFFF;
   border-radius: 4px;
@@ -46,22 +45,16 @@ export default {
 .img-container {
   width: 40px;
   height: 40px;
-  background: #3A84FF;
   border-radius: 4px;
   margin-left: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 
   img {
-    width: 25px;
-    height: 25px;
-    background: #FFFFFF;
-  }
-  .no-img {
-    width: 18px;
-    height: 18px;
-    background: #FFFFFF;
+    width: 100%;
+    height: 100%;
   }
 }
 
@@ -71,12 +64,14 @@ export default {
   justify-content: center;
   height: 40px;
   margin-left: 12px;
+  width:calc(100% - 80px) ;
   .title {
     font-weight: 500;
     font-size: 16px;
     color: #313238;
     display: inline-block;
-    width: 140px;
+    min-width: 140px;
+    //max-width: ;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
