@@ -70,8 +70,6 @@ export default {
     font-size: 16px;
     color: #313238;
     display: inline-block;
-    min-width: 140px;
-    //max-width: ;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -82,7 +80,6 @@ export default {
     font-size: 14px;
     color: #979BA5;
     display: inline-block;
-    width: 140px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
