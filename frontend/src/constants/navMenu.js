@@ -45,6 +45,12 @@ export const WORKBENCH = {
           path: '/workbench/all/',
           subRoutes: ['processDetail'],
         },
+        {
+          id: 'approval',
+          name: '待我审批',
+          path: '/workbench/approval/',
+          subRoutes: ['processDetail'],
+        },
       ],
     },
   ],

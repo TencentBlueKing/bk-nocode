@@ -4,6 +4,7 @@ const Todo = () => import('@/views/workbench/todo.vue');
 const Attention = () => import('@/views/workbench/attention.vue');
 const Created = () => import('@/views/workbench/created.vue');
 const All = () => import('@/views/workbench/all.vue');
+const Approval = () => import('@/views/workbench/approval.vue');
 // 开发画页面用
 const ProcessDetail = () => import('@/views/workbench/processDetail.vue');
 
@@ -37,6 +38,11 @@ export default [
         path: 'all/',
         name: 'all',
         component: All,
+      },
+      {
+        path: 'approval/',
+        name: 'approval',
+        component: Approval,
       },
       {
         path: 'processDetail/:id',

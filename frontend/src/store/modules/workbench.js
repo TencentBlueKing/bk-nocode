@@ -70,5 +70,9 @@ export default {
     newAssignDeliver({ }, { params, id }) {
       return ajax.post(`ticket/receipts/${id}/operate/`, params).then(response => response.data);
     },
+    // 批量处理单据
+    batchApproval({ }, params) {
+      return ajax.post('ticket/receipts/batch_approval/', params).then(response => response.data);
+    },
   },
 };
