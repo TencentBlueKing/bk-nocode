@@ -11,7 +11,8 @@
           :page-list="pageList"
           @select="handleSelectField"
           @copy="handleCopyField"
-          @delete="handleDeleteField">
+          @delete="handleDeleteField"
+          @changeOrder="handleFieldOrderChange">
         </page-panel>
         <!--设置区域-->
         <setting-panel :page="crtPage" @update="handleUpdate"></setting-panel>
@@ -67,7 +68,7 @@ export default {
   },
   async created() {
     if (this.pageId) {
-      await  this.getPageComponent();
+      await this.getPageComponent();
     }
   },
   methods: {
@@ -124,6 +125,14 @@ export default {
       if (this.crtIndex === index) {
         this.crtIndex = -1;
       }
+    },
+    // 拖拽字段顺序
+    handleFieldOrderChange(newIndex, oldIndex) {
+      this.isEdit = true;
+      const field = this.pageList.splice(oldIndex, 1);
+      this.pageList.splice(newIndex, 0, field[0]);
+      this.crtIndex = newIndex;
+      this.crtPage = cloneDeep(this.pageList[newIndex]);
     },
     handleUpdate(val) {
       this.isEdit = true;
