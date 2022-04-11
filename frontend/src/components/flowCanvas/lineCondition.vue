@@ -81,6 +81,9 @@ const HIDDEN_ARR = ['ticket_service_type',
   'ticket_current_status_display',
   'ticket_bk_biz_id',
   'ticket_sops_task_summary',
+  'ticket_title',
+  'ticket_sn',
+  'ticket_ticket_url',
   'ticket_all_task_processors'];
 
 export default {
