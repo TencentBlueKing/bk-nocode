@@ -77,8 +77,7 @@ export default {
         const res = await this.$store.dispatch('application/getOpenFormPageFields', {
           token: this.token,
         });
-        console.log(res.data);
-        this.fieldList = res.data.filter(item => item.type !== 'AUTO-NUMBER');
+        this.fieldList = res.data;
       } catch (e) {
         console.error(e);
       } finally {
@@ -115,7 +114,7 @@ export default {
     async submit() {
       // 校验多值类型的表单配置值的数目范围后，用户填写的值数目是否范围内
       let formValNumRangeValid = true;
-      this.fieldList.some(field => {
+      this.fieldList.some((field) => {
         const fieldVal = this.formValue[field.key];
         if ('num_range' in field) {
           let msg = '';

@@ -69,7 +69,10 @@
           </bk-table-column>
           <bk-table-column label="操作" :width="120" fixed="right">
             <template slot-scope="props">
-              <bk-button :text="true" @click="onEditFunc(props.row)">
+              <bk-button
+                :text="true"
+                @click="onEditFunc(props.row)"
+                :disabled="['IMPORT','EXPORT'].includes(props.row.type)">
                 {{ props.row.is_builtin ? '查看' : '编辑' }}
               </bk-button>
               <bk-button

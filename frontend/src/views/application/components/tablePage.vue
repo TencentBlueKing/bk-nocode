@@ -917,7 +917,7 @@ export default {
             source: 'optionList',
           },
         });
-        return  res.data.filter(item => item.type !== 'AUTO-NUMBER');
+        return  res.data;
       } catch (e) {
         console.error(e);
       } finally {
