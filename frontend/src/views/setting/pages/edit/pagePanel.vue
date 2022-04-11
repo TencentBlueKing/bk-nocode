@@ -70,7 +70,8 @@ export default {
     },
     // 排序
     end(e) {
-      console.log(e);
+      this.$emit('changeOrder', e.newIndex, e.oldIndex);
+      this.selectedIndex = e.newIndex;
     },
     handleFormAction(type, index) {
       const page = cloneDeep(this.pageList[index]);

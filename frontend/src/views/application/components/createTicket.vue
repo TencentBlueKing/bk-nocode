@@ -140,7 +140,7 @@ export default {
             source: this.actionType,
           },
         });
-        this.fieldList = res.data.filter(item => item.type !== 'AUTO-NUMBER');
+        this.fieldList = res.data;
         this.formValue = this.getFormValue();
       } catch (e) {
         console.error(e);

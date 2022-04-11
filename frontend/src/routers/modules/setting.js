@@ -37,7 +37,7 @@ export default [
         }),
       },
       {
-        path: ':appId/customPage/',
+        path: ':appId/customPage/:pageId?/',
         name: 'customPage',
         component: CustomPage,
         props: route => ({

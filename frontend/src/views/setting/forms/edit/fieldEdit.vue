@@ -280,6 +280,7 @@
         v-if="fieldData.type!=='FORMULA'"
         :show.sync="numberRuleDialogShow"
         :fields="list"
+        :cur-id="value.id"
         :rules="fieldData.meta.config"
         @confirm="handleRuleConfirm">
       </number-rule-dialog>
