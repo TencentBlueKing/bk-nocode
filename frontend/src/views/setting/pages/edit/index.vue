@@ -138,12 +138,14 @@ export default {
       };
       try {
         this.pageComponentSaving = true;
-        await this.$store.dispatch('setting/batchSaveComponent', params);
-        this.$bkMessage({
-          message: '保存成功',
-          theme: 'success',
-        });
-        this.isEdit = false;
+        const res = await this.$store.dispatch('setting/batchSaveComponent', params);
+        if (res.data.result) {
+          this.$bkMessage({
+            message: '保存成功',
+            theme: 'success',
+          });
+          this.isEdit = false;
+        }
       } catch (e) {
         console.log(e);
       } finally {
