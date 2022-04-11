@@ -28,6 +28,12 @@ export const WORKBENCH = {
           subRoutes: ['processDetail'],
         },
         {
+          id: 'approval',
+          name: '待我审批',
+          path: '/workbench/approval/',
+          subRoutes: ['processDetail'],
+        },
+        {
           id: 'created',
           name: '我发起的',
           path: '/workbench/created/',
@@ -43,12 +49,6 @@ export const WORKBENCH = {
           id: 'all',
           name: '全部流程',
           path: '/workbench/all/',
-          subRoutes: ['processDetail'],
-        },
-        {
-          id: 'approval',
-          name: '待我审批',
-          path: '/workbench/approval/',
           subRoutes: ['processDetail'],
         },
       ],
