@@ -36,6 +36,7 @@ from rest_framework.response import Response
 
 from common.log import logger
 from itsm.component.drf.pagination import CustomPageNumberPagination
+from nocode.base.constants import SELECT_FIELDS_TYPE
 from nocode.data_engine.core.constants import DAY, MONTH, YEAR
 from nocode.data_engine.core.managers import DataManager
 
@@ -403,6 +404,23 @@ class WorkSheetDataHandler(BaseDataHandler):
 
         return queryset
 
+    def selected_type_field_escape(self, manager, fields, queryset):
+        select_fields = {}
+        for item in manager.fields:
+            if item["key"] in fields and item["type"] in SELECT_FIELDS_TYPE:
+                select_value = {}
+                for value in item["choice"]:
+                    select_value.setdefault(value["key"], value["name"])
+                select_fields.setdefault(f"contents__{item['key']}", select_value)
+
+        if select_fields:
+            for item in queryset:
+                for key, value in item.items():
+                    if not select_fields.get(key):
+                        continue
+                    item[key] = select_fields[key][value]
+        return queryset
+
     def data(self, conditions, fields, need_page):
         manager = DataManager(self.worksheet_id)
         keys = self.get_keys(fields)
@@ -413,6 +431,8 @@ class WorkSheetDataHandler(BaseDataHandler):
 
         # 只针对单一字段数据查询的时候后做过滤
         queryset = self.queryset_unrepeated_not_null(fields, queryset)
+        # 选择类型字段转义
+        queryset = self.selected_type_field_escape(manager, fields, queryset)
 
         if need_page:
             pagination = CustomPageNumberPagination()
