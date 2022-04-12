@@ -107,7 +107,7 @@ export default {
     conditionField(item, list) {
       for (let i = 0; i < list.length; i++) {
         // 缺一个条件判断 todo
-        if (fields.show_conditions.connector){
+        if (list[i].show_conditions.connector){
           list[i].showFeild = false;
           continue;
         }
