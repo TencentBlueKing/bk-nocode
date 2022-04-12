@@ -161,7 +161,7 @@ class PermitHandler:
         for component in components:
             if component["type"] == "LIST":
                 data.extend(self.get_list_component_data(component))
-            if component["type"] == "FUNCTION":
+            if component["type"] in ["FUNCTION", "LINK"]:
                 data.append(
                     {
                         "id": component["id"],

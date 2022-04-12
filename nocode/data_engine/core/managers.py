@@ -191,12 +191,6 @@ class DataManager:
                 obj.contents.update(data)
                 obj.save()
 
-            # 生成评分
-            data = self.add_auto_grade(validated_data)
-            if data:
-                obj.contents.update(data)
-                obj.save()
-
             # 存在公式控件，数值计算
             sys_time_fields = {
                 "create_at": obj.create_at,
@@ -236,7 +230,7 @@ class DataManager:
     def generate_number(self, field, validated_data):
         return NumberGeneratorDispatcher(
             field, validated_data=validated_data
-        ).generate_number()
+        ).generate_number(self.fields)
 
     def get_auto_number_fields(self):
         return [field for field in self.fields if field["type"] == "AUTO-NUMBER"]
