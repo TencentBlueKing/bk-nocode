@@ -29,6 +29,8 @@ import json
 from django.conf import settings
 from django_celery_beat.models import PeriodicTask, CrontabSchedule
 
+from nocode.base.constants import SELECT_FIELDS_TYPE
+
 logger = logging.getLogger("celery")
 
 
@@ -39,7 +41,7 @@ class BaseGenerator:
         self.field = field
         self.config = config
 
-    def generate_number(self):
+    def generate_number(self, *args):
         pass
 
 
@@ -57,7 +59,7 @@ class DateGenerator(BaseGenerator):
         }
         super(DateGenerator, self).__init__(field, config, *args, **kwargs)
 
-    def generate_number(self):
+    def generate_number(self, *args):
         now = datetime.datetime.now()
         if self.config["value"] == "YYYY-MM-DD":
             return self.format_map["YYYY-MM-DD"].format(now.year, now.month, now.day)
@@ -183,7 +185,7 @@ class NumberGenerator(BaseGenerator):
                 except Exception as e:
                     logger.error(f"create PeriodicTask failed: {e}")
 
-    def generate_number(self):
+    def generate_number(self, *args):
         key = "{}_{}_{}".format(
             self.field["worksheet_id"], self.field["id"], self.field["key"]
         )
@@ -217,11 +219,34 @@ class ConstGenerator(BaseGenerator):
         self.validated_data = kwargs.get("validated_data", {})
         super(ConstGenerator, self).__init__(field, config, *args, **kwargs)
 
-    def generate_number(self):
+    def field_of_custom(self, item, select_value, select_fields):
+        for value in item["choice"]:
+            select_value.setdefault(value["key"], value["name"])
+        select_fields.setdefault(f"{item['key']}", select_value)
+        return select_fields
+
+    def selected_type_field_escape(self, fields):
+        select_fields = {}
+        for item in fields:
+            if item["type"] in SELECT_FIELDS_TYPE and item["source_type"] == "CUSTOM":
+                select_value = {}
+                # 自定义数据
+                self.field_of_custom(item, select_value, select_fields)
+        return select_fields
+
+    def generate_number(self, fields):
         if self.config["type"] == "const":
             return self.config.get("value", "")
         if self.config["type"] == "field":
-            return self.validated_data.get(self.config["value"], "")
+            field_key = self.config["value"]
+            select_fields = self.selected_type_field_escape(fields)
+            if field_key in select_fields:
+                value_key = self.validated_data.get(field_key)
+                key_list = value_key.split(",")
+                value_list = [select_fields[field_key].get(key) for key in key_list]
+                return ",".join(value_list)
+
+            return self.validated_data.get(field_key, "")
 
 
 class NumberGeneratorDispatcher:
@@ -241,7 +266,7 @@ class NumberGeneratorDispatcher:
         self.filed = filed
         self.validated_data = validated_data
 
-    def generate_number(self):
+    def generate_number(self, fields):
         """
         {
             "config": [
@@ -274,7 +299,7 @@ class NumberGeneratorDispatcher:
         for config in self.configs:
             n = self.GENERATE_MAP[config["type"]](
                 self.filed, config, validated_data=self.validated_data
-            ).generate_number()
+            ).generate_number(fields)
             number.append(n)
 
         return "-".join(number)
