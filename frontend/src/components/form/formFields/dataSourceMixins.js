@@ -11,9 +11,11 @@ export default {
     return {
       sourceDataLoading: false, // 数据源loading
       sourceData: [], // 表单数据源数据
+      isOpenApi: '',
     };
   },
   created() {
+    this.isOpenApi = sessionStorage.getItem('isOpenApi');
     this.setSourceData();
   },
   methods: {
@@ -68,7 +70,11 @@ export default {
             conditions,
           };
         }
-        const resp = await this.$store.dispatch('setting/getWorksheetData', params);
+        let action = 'getWorksheetData';
+        if (this.isOpenApi) {
+          action = 'getOpenApiWorksheetData';
+        }
+        const resp = await this.$store.dispatch(`setting/${action}`, params);
         this.sourceData = resp.data.map((item) => {
           const val = item[field];
           return { key: val, name: val };

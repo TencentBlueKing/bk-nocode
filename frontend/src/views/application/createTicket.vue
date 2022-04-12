@@ -69,6 +69,10 @@ export default {
   },
   created() {
     this.getFieldList();
+    sessionStorage.setItem('isOpenApi', true);
+  },
+  beforeDestroy() {
+    sessionStorage.setItem('isOpenApi', false);
   },
   methods: {
     async getFieldList() {

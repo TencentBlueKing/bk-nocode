@@ -119,6 +119,7 @@ export default {
     },
   },
   created() {
+    sessionStorage.setItem('isOpenApi', false);
     if (typeof this.funcId === 'number') {
       this.getFieldList();
       this.getBuiltInService();
@@ -307,6 +308,7 @@ export default {
           } else if (type === 2 || type === 3) {
             let res;
             let validateFlag;
+            const expressions = [];
             for (let j = 0; j < conditions.length;j++) {
               const field = conditions[j].id;
               // 当前表单字段
@@ -317,24 +319,33 @@ export default {
               if (isHaveRelationFields) {
                 curKey = item.find(it => it.meta.worksheet.field_key === conditions[j].relationCurrentValue).key;
               }
-              // const curKey = `${conditions[j].relationCurrentValue}`;
-              const params = this.getConditionParams({
+              expressions.push({
                 key: field,
                 value: conditions[j].type === 'variable' ? $event[curKey] : conditions[j].relationCurrentValue,
-                token: item[i].token,
-                fields: [item[i].meta.data_config.value],
+                type: 'const',
+                condition: '==',
               });
-              try {
-                res = await this.$store.dispatch('setting/getWorksheetData', params);
-                if (res.data && res.data.length > 0) {
-                  validateFlag = true;
-                } else {
-                  validateFlag = false;
-                  break;
-                }
-              } catch (e) {
-                console.error(e);
+              // const curKey = `${conditions[j].relationCurrentValue}`;
+              // const params = this.getConditionParams({
+              //   key: field,
+              //   value: conditions[j].type === 'variable' ? $event[curKey] : conditions[j].relationCurrentValue,
+              //   token: item[i].token,
+              //   fields: [item[i].meta.data_config.value],
+              // });
+            }
+            const params = this.getConditionParams({
+              expressions,
+              token: item[i].token,
+              fields: [item[i].meta.data_config.value] });
+            try {
+              res = await this.$store.dispatch('setting/getWorksheetData', params);
+              if (res.data && res.data.length > 0) {
+                validateFlag = true;
+              } else {
+                validateFlag = false;
               }
+            } catch (e) {
+              console.error(e);
             }
             validateFlag
               ? this.$set(this.formValue, item[i].key, this.getValue(item[i], res))
@@ -351,20 +362,13 @@ export default {
       return res.data[0][item.meta.data_config.value];
     },
     getConditionParams(info) {
-      const   { key, value, token, fields } = info;
+      const   { expressions, token, fields } = info;
       const params = {
         token,
         fields,
         conditions: {
           connector: 'and',
-          expressions: [
-            {
-              key,
-              value,
-              type: 'const',
-              condition: '==',
-            },
-          ],
+          expressions,
         },
       };
       return params;

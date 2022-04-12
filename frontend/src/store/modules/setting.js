@@ -413,6 +413,10 @@ export default {
     getWorksheetData({}, params) {
       return ajax.post('/engine/data/worksheet_data/', params).then(response => response.data);
     },
+    // 外链根据条件查询表单数据
+    getOpenApiWorksheetData({}, params) {
+      return ajax.post('/openapi/data_instance/worksheet_data/', params).then(response => response.data);
+    },
     //  获取对某个应用授权的应用
     getProjectGranted({}, params) {
       return ajax.get('/project/project_white/get_project_granted_by/', { params }).then(response => response.data);
