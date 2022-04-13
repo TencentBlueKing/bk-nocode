@@ -12,7 +12,8 @@
           @select="handleSelectField"
           @copy="handleCopyField"
           @delete="handleDeleteField"
-          @changeOrder="handleFieldOrderChange">
+          @changeOrder="handleFieldOrderChange"
+          @change="handleValChange">
         </page-panel>
         <!--设置区域-->
         <setting-panel :page="crtPage" @update="handleUpdate"></setting-panel>
@@ -138,6 +139,11 @@ export default {
       this.isEdit = true;
       this.crtPage = val;
       this.pageList.splice(this.crtIndex, 1, val);
+    },
+    handleValChange(val) {
+      if (this.crtIndex !== -1) {
+        this.pageList[this.crtIndex].config.content = val;
+      }
     },
     async handleSave() {
       const components = this.pageList.map(item => ({ ...item, page_id: this.pageId }));

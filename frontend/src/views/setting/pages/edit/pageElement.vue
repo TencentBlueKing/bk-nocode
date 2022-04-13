@@ -10,7 +10,7 @@
       </div>
     </transition>
     <div class="field-container">
-      <page-item :page="page"></page-item>
+      <page-item :page="page" @change="$emit('change', $event)"></page-item>
     </div>
     <transition name="slide-left">
       <div v-show="isHover" class="actions-area">
@@ -124,8 +124,7 @@ export default {
   width: 36px;
   background: #fcfcfc;
   border-left: 1px solid #dcdee5;
-  z-index: 2;
-
+  z-index: 99;
   i {
     padding: 6px 0;
     width: 100%;
