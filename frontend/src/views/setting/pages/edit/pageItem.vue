@@ -3,6 +3,7 @@
     <component
       :is="fieldComp"
       :page="page"
+      :preview="editor"
       @change="$emit('change', $event)">
     </component>
   </div>

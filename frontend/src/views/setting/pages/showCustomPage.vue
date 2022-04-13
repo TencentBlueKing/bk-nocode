@@ -3,7 +3,7 @@
       <div v-for="(page,index) in pageList"
            :key="`${page.type}_${index}`"
            :class="['page-element',layoutMap[page.layout.lineLayout]]">
-          <page-item :page="page" :editor="false"></page-item>
+          <page-item :page="page" :editor="true"></page-item>
       </div>
   </div>
 </template>
@@ -24,7 +24,6 @@ export default {
     pageList: {
       type: Array,
       default: () => ({}),
-
     },
   },
   data() {

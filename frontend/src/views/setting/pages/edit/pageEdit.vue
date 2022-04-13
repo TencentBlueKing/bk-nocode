@@ -27,7 +27,7 @@
         </bk-input>
       </bk-form-item>
       <bk-form-item
-        v-if="type==='FUNCTION_GROUP'"
+        v-if="type==='FUNCTION'"
         label="功能绑定">
         <bk-select
           v-model="pageData.value"
@@ -134,7 +134,7 @@ export default {
   },
   computed: {
     isQuickEntrance() {
-      return ['FUNCTION_GROUP', 'LINK'].includes(this.type);
+      return ['FUNCTION_GROUP', 'LINK', 'FUNCTION'].includes(this.type);
     },
   },
   watch: {
