@@ -31,6 +31,7 @@ __copyright__ = "Copyright © 2012-2020 Tencent BlueKing. All Rights Reserved."
 
 from django.apps import AppConfig
 from django.db.models.signals import post_migrate, post_save, pre_save
+
 from itsm.trigger.signal import post_action_finish
 
 
@@ -46,13 +47,26 @@ class TicketConfig(AppConfig):
 
     def ready(self):
         from itsm.ticket.models import Ticket
-        from itsm.ticket.handlers import before_ticket_status_updated, after_ticket_created, create_trigger_action_log
+        from itsm.ticket.handlers import (
+            before_ticket_status_updated,
+            after_ticket_created,
+            create_trigger_action_log,
+        )
 
         # 耗时数据迁移初始化方案：在启动celery的时候，下放到celery中，确保可以重入
         # if sys.argv[1] == 'celery' and sys.argv[2] == 'worker':
         #     print 'app[%s] ready in celery worker' % self.name
         #     from itsm.ticket.tasks import auto_comment
         #     auto_comment.delay()
+
+        from bamboo_engine.validator import api
+        from pipeline.core.flow import FlowNodeClsFactory
+
+        from itsm.ticket.handlers import TicketEndEvent
+
+        FlowNodeClsFactory.register_node(TicketEndEvent.__name__, TicketEndEvent)
+        api.add_sink_type(TicketEndEvent.__name__)
+
         post_migrate.connect(app_ready_handler, sender=self)
         post_save.connect(after_ticket_created, sender=Ticket)
         pre_save.connect(before_ticket_status_updated, sender=Ticket)

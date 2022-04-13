@@ -68,6 +68,7 @@ export default {
       type: Array,
       default: () => [],
     },
+    curId: [String, Number],
   },
   data() {
     return {
@@ -78,7 +79,7 @@ export default {
   },
   computed: {
     ruleList() {
-      return this.autoNumberRules.filter(item => {
+      return this.autoNumberRules.filter((item) => {
         if (item.type !== 'number') {
           if (item.type === 'datetime') {
             return !this.listData.some(data => data.type === 'datetime');
@@ -88,7 +89,7 @@ export default {
       });
     },
     fieldList() {
-      return this.fields.filter(item => item.key);
+      return this.fields.filter(item => item.key).filter(item => item.id !== this.curId);
     },
   },
   watch: {

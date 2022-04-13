@@ -252,9 +252,6 @@
               :value="imageConfig.imgList.val"
               :field="imageConfig.imgList.fields">
             </custom-table>
-            <!--            <viewer :images="imageConfig.imgList" v-else>-->
-            <!--              <img v-for="(img, index) in imageConfig.imgList" class="image-item" :key="index" :src="img.path">-->
-            <!--            </viewer>-->
           </bk-form-item>
         </bk-form>
       </div>
@@ -781,6 +778,7 @@ export default {
         confirmFn: async () => {
           try {
             const res = await this.getSheetPage(id);
+            console.log(res);
             const fields = res.map((item) => {
               const { choice, id, key, type } = item;
               if (key === 'id') {
@@ -835,7 +833,7 @@ export default {
       this.editorLoading = true;
       const value = {};
       const editorValue = await this.getTotalValue(id, row);
-      const editorData = await this.getSheetPage(id);
+      const editorData = await this.getEditFieldList(id);
       const tempEditData = [];
       const tempKeyList = this.editFiledsList.map(item => item.key);
       editorData.forEach((item) => {
@@ -902,6 +900,26 @@ export default {
         return result.data;
       } catch (e) {
         console.log(e);
+      } finally {
+        this.editorLoading = false;
+      }
+    },
+    async getEditFieldList(id) {
+      try {
+        const res = await this.$store.dispatch('application/getFormPageFields', {
+          type: this.page.type,
+          paths: {
+            project_key: this.appId,
+            page_id: this.page.id,
+            version_number: this.version,
+            page_component_id: this.componentId,
+            service_id: id,
+            source: 'optionList',
+          },
+        });
+        return  res.data;
+      } catch (e) {
+        console.error(e);
       } finally {
         this.editorLoading = false;
       }
@@ -1164,7 +1182,7 @@ export default {
 
   .function-btn {
     display: flex;
-
+    align-items: flex-end;
     .bk-dropdown-list {
       a.disabled {
         color: #cccccc;
@@ -1220,7 +1238,7 @@ export default {
     align-items: center;
     justify-content: center;
     border: 1px solid #c4c6cc;
-    height: 26px;
+    height: 32px;
     border-radius: 2px;
     padding: 0 15px;
     color: #63656e;

@@ -33,12 +33,21 @@
       :actions-perm-map="actionsPermMap"
       @isFinishLoading="onLoadingIsFinish">
     </table-page>
+    <custom-page
+      v-else
+      :page-list="pageConfig"
+      :app-id="appId"
+      :app-name="appName"
+      :version="version"
+    >
+    </custom-page>
   </div>
 </template>
 <script>
 import FunctionCardPage from './components/functionCardPage.vue';
 import TablePage from './components/tablePage.vue';
 import CreateTicket from './components/createTicket.vue';
+import CustomPage from './components/customPage.vue';
 
 export default {
   name: 'PageContent',
@@ -46,6 +55,7 @@ export default {
     FunctionCardPage,
     TablePage,
     CreateTicket,
+    CustomPage,
   },
   props: {
     appId: String,

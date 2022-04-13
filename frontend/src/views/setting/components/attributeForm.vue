@@ -54,8 +54,11 @@
           </bk-option>
         </bk-select>
       </bk-form-item>
-      <bk-form-item label="数据筛选" v-show="configData.option==='TABLE'">
-        <div class="rule-config" @click="handleRuleConfig">配置规则</div>
+      <bk-form-item label="数据筛选" v-show="configData.option==='TABLE'" ext-cls="data-filter">
+        <div class="data-switch">
+          <bk-switcher v-model="isDataFilter" size="small" theme="primary" @change="handleChangeStatus"></bk-switcher>
+        </div>
+        <div class="rule-config" @click="handleRuleConfig" v-if="isDataFilter">配置规则</div>
       </bk-form-item>
     </bk-form>
     <bk-dialog
@@ -125,6 +128,7 @@ import { getFieldConditionsInTablePage } from '@/utils/form.js';
 import FieldValue from '@/components/form/fieldValue.vue';
 import { FIELDS_FILTER_CONFIG } from '@/constants/forms.js';
 import { TIME_RANGE } from '@/constants/sysField.js';
+
 export default {
   name: 'AttributeForm',
   components: {
@@ -175,6 +179,7 @@ export default {
           trigger: 'blur',
         }],
       },
+      isDataFilter: '',
       buttonDetail: {},
       dialog: {
         visible: false,
@@ -205,6 +210,7 @@ export default {
     },
     conditions(val) {
       this.localVal = cloneDeep(val);
+      !val.connector ?  this.isDataFilter = false : this.isDataFilter = true;
     },
     timeRange(val) {
       this.localTimeRange = cloneDeep(val);
@@ -215,6 +221,7 @@ export default {
     Bus.$on('selectFunction', (val) => {
       this.configData = { ...val };
     });
+    !this.conditions.connector ?  this.isDataFilter = false : this.isDataFilter = true;
   },
   beforeDestroy() {
     Bus.$off('selectFunction');
@@ -299,9 +306,13 @@ export default {
       Bus.$emit('sendTimeRange', val);
     },
     handleCancel() {
-      this.localVal = { connector: '', expressions: [{ condition: '', key: '', value: '', type: 'const' }] };
-      Bus.$emit('sendConfigRules', {});
       this.dialog.visible = false;
+    },
+    handleChangeStatus(val) {
+      if (!val) {
+        this.localVal = { connector: '', expressions: [{ condition: '', key: '', value: '', type: 'const' }] };
+        Bus.$emit('sendConfigRules', {});
+      }
     },
     handleSelectField(expression) {
       expression.condition = '';
@@ -341,9 +352,11 @@ export default {
     i {
       color: #c4c6cc;
       cursor: pointer;
+
       &:hover {
         color: #979ba5;
       }
+
       &.disabled {
         color: #dcdee5;
         cursor: not-allowed;
@@ -383,5 +396,13 @@ export default {
   max-height: 512px;
   overflow: auto;
   @mixin scroller;
+}
+.data-filter{
+  position: relative;
+  .data-switch{
+    position: absolute;
+    right: 0;
+    top: -32px;
+  }
 }
 </style>

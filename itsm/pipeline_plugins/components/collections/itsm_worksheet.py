@@ -271,7 +271,7 @@ class DataProcessingService(Service):
         ticket = Ticket._objects.get(id=ticket_id)
         state_id = data.inputs.state_id
         state = ticket.flow.get_state(state_id)
-        ticket.do_before_enter_state(state_id, by_flow=self.by_flow)
+        ticket.do_before_enter_state(state_id)
         current_node = ticket.node_status.get(state_id=state_id)
         action_map = {"ADD": "新增", "EDIT": "更新", "DELETE": "删除"}
 

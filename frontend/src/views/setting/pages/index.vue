@@ -21,7 +21,10 @@
             @createPage="handleCreatePage">
           </page-empty>
           <div v-else v-bkloading="{ isLoading: pageComponentLoading, opacity: 1 }" class="page-content-container">
-            <div class="center-page">
+            <div class="custom-page" v-if="crtPage.type==='CUSTOM'">
+              <show-custom-page :page-list="pageComponent"> </show-custom-page>
+            </div>
+            <div class="center-page" v-if="['FUNCTION','SHEET','LIST'].includes(crtPage.type)">
               <function-page
                 v-if="crtPage.type === 'FUNCTION'"
                 :cards="pageComponent"
@@ -36,16 +39,16 @@
                 :list="pageComponent[0]">
               </list-page>
             </div>
-            <div class="right-setting">
+            <div class="right-setting" v-if="['FUNCTION','SHEET','LIST'].includes(crtPage.type)">
               <attribute-config
-                v-if="['FUNCTION', 'SHEET'].includes(crtPage.type)"
+                v-if="['FUNCTION','SHEET'].includes(crtPage.type)"
                 :app-id="appId"
                 :page="crtPage"
                 :value="attrData"
                 @change="handleAttrChange">
               </attribute-config>
               <right-setting
-                v-else
+                v-else-if="crtPage.type==='LIST'"
                 :is-show-work-sheet="isShowWorkSheet"
                 :type="crtPage.type"
                 :work-sheet-id="workSheetId"
@@ -53,29 +56,40 @@
                 :conditions="conditions"
                 :time-range="timeRange"
                 :list-id="attrData.listId"
-                @select="getTableFileds"
-              >
+                @select="getTableFileds">
               </right-setting>
             </div>
             <div class="bottom-container">
-              <bk-button
-                class="btn-save"
-                theme="primary"
-                title="保存"
-                :disabled="pageComponentLoading"
-                :loading="pageComponentSaving"
-                @click="handleSave">
-                保存
-              </bk-button>
-              <bk-button
-                :theme="'default'"
-                type="submit"
-                :title="'基础按钮'"
-                :disabled="pageComponentSaving"
-                @click="handleRest"
-                class="btn-rest">
-                重置
-              </bk-button>
+              <template v-if="['FUNCTION','SHEET','LIST'].includes(crtPage.type)">
+                <bk-button
+                  class="btn-save"
+                  theme="primary"
+                  title="保存"
+                  :disabled="pageComponentLoading"
+                  :loading="pageComponentSaving"
+                  @click="handleSave">
+                  保存
+                </bk-button>
+                <bk-button
+                  :theme="'default'"
+                  type="submit"
+                  :title="'基础按钮'"
+                  :disabled="pageComponentSaving"
+                  @click="handleRest"
+                  class="btn-rest">
+                  重置
+                </bk-button>
+              </template>
+              <template v-else>
+                <bk-button
+                  class="btn-save"
+                  theme="primary"
+                  title="编辑页面"
+                  :disabled="pageComponentLoading"
+                  @click="handleEditPage">
+                  编辑页面
+                </bk-button>
+              </template>
             </div>
           </div>
         </template>
@@ -102,6 +116,7 @@ import PageEmpty from './pageEmpty.vue';
 import listPage from '../components/listPage.vue';
 import CreatePageDialog from './createPageDialog.vue';
 import AttributeConfig from './attributeConfig.vue';
+import showCustomPage from './showCustomPage.vue';
 import cloneDeep from 'lodash.clonedeep';
 
 export default {
@@ -110,12 +125,13 @@ export default {
     PageTree,
     pageWrapper,
     rightSetting,
-    functionPage,
     sheetPage,
     listPage,
     PageEmpty,
     CreatePageDialog,
     AttributeConfig,
+    showCustomPage,
+    functionPage,
   },
   props: {
     appId: String,
@@ -215,7 +231,10 @@ export default {
               });
             }
             if (!config.conditions) {
-              this.$set(this.pageComponent[0].config, 'conditions', { connector: '', expressions: [{ condition: '', key: '', value: '', type: 'const' }] });
+              this.$set(this.pageComponent[0].config, 'conditions', {
+                connector: '',
+                expressions: [{ condition: '', key: '', value: '', type: 'const' }],
+              });
             }
             if (!config.time_range) {
               this.$set(this.pageComponent[0].config, 'time_range', 'all');
@@ -446,6 +465,9 @@ export default {
         this.getPageComponent();
       }
     },
+    handleEditPage() {
+      this.$router.push({ name: 'customPage', params: { appId: this.appId, pageId: this.crtPage.id } });
+    },
     async getTableFileds(val) {
       if (val) {
         this.listLoading = true;
@@ -487,6 +509,12 @@ export default {
   .center-page {
     width: calc(100% - 320px);
     height: calc(100% - 56px);
+  }
+
+  .custom-page {
+    width: 100%;
+    height: calc(100% - 104px);
+    border-radius: 2px;
   }
 
   .right-setting {

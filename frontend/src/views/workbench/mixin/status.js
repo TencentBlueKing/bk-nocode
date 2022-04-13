@@ -53,7 +53,12 @@ export default {
        FINISHED: 'finish-status',
        FAILED: 'fail-status',
      },
+     project_key:'',
+     appList:[]
    }
+  },
+  created() {
+    this.getAppList()
   },
   methods: {
     statusFilterMethod(value, row, column) {
@@ -62,6 +67,17 @@ export default {
     },
     fixedFields(id){
       return id==='sn'?'left':''
-    }
+    },
+    async getAppList() {
+      try {
+        const params = {
+          show_type: 'manager_center',
+        };
+        const res = await this.$store.dispatch('setting/getAllApp', params);
+        this.appList = res.data.filter(item => item.publish_status !== 'UNRELEASED');
+      } catch (e) {
+        console.error(e);
+      }
+    },
   },
 };

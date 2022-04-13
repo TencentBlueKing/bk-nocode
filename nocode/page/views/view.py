@@ -178,9 +178,19 @@ class PageComponentViewSet(ModelViewSet):
         serializer = PageComponentListSerializer(data={"page_id": page_id})
         serializer.is_valid(raise_exception=True)
 
-        self.queryset = self.queryset.filter(
-            page_id=serializer.validated_data["page_id"]
-        )
+        page = Page.objects.get(id=page_id)
+        component_list = page.component_list
+        if component_list:
+            ordering = "FIELD(`id`, {})".format(
+                ",".join(["'{}'".format(v) for v in component_list])
+            )
+            self.queryset = self.queryset.filter(
+                page_id=serializer.validated_data["page_id"]
+            ).extra(select={"ordering": ordering}, order_by=["ordering"])
+        else:
+            self.queryset = self.queryset.filter(
+                page_id=serializer.validated_data["page_id"]
+            )
         return super(PageComponentViewSet, self).list(request, *args, **kwargs)
 
     @swagger_auto_schema(

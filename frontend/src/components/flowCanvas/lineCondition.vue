@@ -76,6 +76,16 @@ import { CONDITION_RELATIONS } from '@/constants/forms.js';
 import { getFieldConditions } from '@/utils/form.js';
 import FieldValue from '@/components/form/fieldValue.vue';
 
+const HIDDEN_ARR = ['ticket_service_type',
+  'ticket_current_status',
+  'ticket_current_status_display',
+  'ticket_bk_biz_id',
+  'ticket_sops_task_summary',
+  'ticket_title',
+  'ticket_sn',
+  'ticket_ticket_url',
+  'ticket_all_task_processors'];
+
 export default {
   name: 'LineCondition',
   components: {
@@ -115,7 +125,7 @@ export default {
       try {
         this.fieldListLoading = true;
         const res = await this.$store.dispatch('setting/getLineVars', this.lineId);
-        this.fieldList = res.data;
+        this.fieldList = res.data.filter(item => !HIDDEN_ARR.includes(item.key));
       } catch (e) {
         console.error(e);
       } finally {
@@ -184,7 +194,7 @@ export default {
       this.validateItem(this.conditionData.expressions[conIndex]);
     },
     validateItem(exp) {
-      const invalid = exp.expressions.some(item => {
+      const invalid = exp.expressions.some((item) => {
         const { key, condition, value } = item;
         return key === '' || condition === '' || (Array.isArray(value) ? value.length === 0 : value === '');
       });
@@ -198,7 +208,7 @@ export default {
       const data = {};
       const { expressions, type } = this.conditionData;
       data.type = type;
-      data.expressions = expressions.map(exp => {
+      data.expressions = expressions.map((exp) => {
         const { type, expressions } = exp;
         return { type, expressions };
       });

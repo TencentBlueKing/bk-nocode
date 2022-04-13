@@ -40,26 +40,32 @@ class ItsmService(ItsmBaseService):
         if super(ItsmService, self).execute(data, parent_data):
             return True
 
-        logger.info("itsm_approve execute: data={}, parent_data={}".format(data.inputs, parent_data.inputs))
+        logger.info(
+            "itsm_approve execute: data={}, parent_data={}".format(
+                data.inputs, parent_data.inputs
+            )
+        )
 
         ticket_id = parent_data.inputs.ticket_id
         state_id = data.inputs.state_id
 
         # 节点信息准备
         ticket = Ticket._objects.get(id=ticket_id)
-        ticket.do_before_enter_state(state_id, by_flow=self.by_flow)
+        ticket.do_before_enter_state(state_id)
 
         return True
 
     def schedule(self, data, parent_data, callback_data=None):
         """
-            注意：只能手动回调一次
-            True/None -> 下一个节点
-            False-> 失败在当前节点
+        注意：只能手动回调一次
+        True/None -> 下一个节点
+        False-> 失败在当前节点
         """
 
         logger.info(
-            "schedule: data={}, parent_data={}, callback_data={}".format(data.inputs, parent_data.inputs, callback_data)
+            "schedule: data={}, parent_data={}, callback_data={}".format(
+                data.inputs, parent_data.inputs, callback_data
+            )
         )
 
         # 扩展多种操作的事情
@@ -74,9 +80,13 @@ class ItsmService(ItsmBaseService):
         ticket.do_in_state(state_id, fields, operator, source)
 
         # 输出字段变量和基础模型变量到pipeline
-        logger.info("\n-------  itsm_approve add table fields to pipeline data  ----------\n")
+        logger.info(
+            "\n-------  itsm_approve add table fields to pipeline data  ----------\n"
+        )
         for field in ticket.get_output_fields(state_id):
-            logger.info('set_output: "params_{}" = {}'.format(field["key"], field["value"]))
+            logger.info(
+                'set_output: "params_{}" = {}'.format(field["key"], field["value"])
+            )
             data.set_outputs("params_%s" % field["key"], field["value"])
 
         ticket.do_before_exit_state(state_id, operator)

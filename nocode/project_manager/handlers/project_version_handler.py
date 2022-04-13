@@ -50,6 +50,7 @@ class ProjectVersionModelHandler(APIModel):
         self.version_number = version_number
         self.log_handler = log_handler
         self.obj = None
+        self.single_page = None
 
     def _get_instance(self):
         try:
@@ -112,11 +113,24 @@ class ProjectVersionModelHandler(APIModel):
     def get_project_config(self):
         return self.instance.project_config
 
-    def get_page(self, page_id=None):
-        return self.instance.page
+    def get_page(self, page_id=None, page=None, return_page=None):
+        pages = self.instance.page if not page else page
+        page = None
+        if page_id:
+            for item in pages:
+                if item["id"] == int(page_id):
+                    self.single_page = item
+                    return
+                if item["children"]:
+                    self.get_page(
+                        page_id=page_id, page=item["children"], return_page=page
+                    )
+        return pages if not page_id else self.single_page
 
     def get_page_component(self, page_id):
         components = self.instance.page_component.get(page_id)
+        page = self.get_page(page_id=page_id)
+        component_list = page.get("component_list", [])
 
         def get_children_in_container(component_data, data_struct):
             if component_data["type"] in ["FUNCTION_GROUP", "LINK_GROUP"]:
@@ -132,7 +146,7 @@ class ProjectVersionModelHandler(APIModel):
         # 重新构造组件数据结构
         data_struct = {}
         for item in components:
-            data_struct.setdefault(item["id"], item)
+            data_struct.setdefault(int(item["id"]), item)
         return_components = []
         for item in components:
             if item["type"] not in ["FUNCTION_GROUP", "LINK_GROUP", "TAB"]:
@@ -151,7 +165,11 @@ class ProjectVersionModelHandler(APIModel):
 
             item = get_children_in_container(item, data_struct)
             return_components.append(item)
-        return return_components
+        return (
+            [data_struct[item] for item in component_list]
+            if component_list
+            else return_components
+        )
 
     def get_worksheet(self):
         return self.instance.worksheet

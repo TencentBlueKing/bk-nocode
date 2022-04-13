@@ -36,6 +36,7 @@ from rest_framework.response import Response
 
 from common.log import logger
 from itsm.component.drf.pagination import CustomPageNumberPagination
+from nocode.base.constants import SELECT_FIELDS_TYPE
 from nocode.data_engine.core.constants import DAY, MONTH, YEAR
 from nocode.data_engine.core.managers import DataManager
 
@@ -237,19 +238,30 @@ class ListComponentDataHandler(BaseDataHandler):
             fields = [row + 1]
             for index, key in enumerate(keys):
                 if key in key_map:
-                    choices = key_map.get(key).get("choice", [])
-                    try:
-                        choice_keys = values.get(key, "--").split(",")
-                    except Exception:
-                        fields.append("")
-                        continue
+                    field = key_map.get(key)
 
-                    choice_map = {item["key"]: item["name"] for item in choices}
-                    value = ""
-                    for choice_key in choice_keys:
-                        value += choice_map.get(choice_key, "") + ","
-                    value = value.strip(",")
-                    fields.append(value)
+                    if field["type"] in ["SELECT", "MULTISELECT", "CHECKBOX", "RADIO"]:
+                        choices = field.get("choice", [])
+
+                        # 如果配置了数据源，优先使用数据源
+                        if "data_config" in field.get("meta"):
+                            value = values.get(key, "--")
+                        elif choices:
+                            try:
+                                choice_keys = values.get(key, "--").split(",")
+                            except Exception:
+                                fields.append("")
+                                continue
+
+                            choice_map = {item["key"]: item["name"] for item in choices}
+                            value = ""
+                            for choice_key in choice_keys:
+                                value += choice_map.get(choice_key, "") + ","
+                            value = value.strip(",")
+                        else:
+                            value = values.get(key, "--")
+
+                        fields.append(value)
                 else:
                     fields.append(values.get(key, "--"))
             writer.writerow(fields)
@@ -377,19 +389,36 @@ class WorkSheetDataHandler(BaseDataHandler):
         self.worksheet_id = worksheet_id
         self.request = request
 
-    def queryset_unrepeated(self, fields, queryset):
+    def queryset_unrepeated_not_null(self, fields, queryset):
         if len(fields) == 1 and queryset:
             key = "contents__{}".format(fields[0])
             exist_value = []
             new_queryset = []
             for item in queryset:
-                if item[key] in exist_value:
+                if item[key] in exist_value or not item[key]:
                     continue
                 else:
                     exist_value.append(item[key])
                     new_queryset.append(item)
             queryset = new_queryset
 
+        return queryset
+
+    def selected_type_field_escape(self, manager, fields, queryset):
+        select_fields = {}
+        for item in manager.fields:
+            if item["key"] in fields and item["type"] in SELECT_FIELDS_TYPE:
+                select_value = {}
+                for value in item["choice"]:
+                    select_value.setdefault(value["key"], value["name"])
+                select_fields.setdefault(f"contents__{item['key']}", select_value)
+
+        if select_fields:
+            for item in queryset:
+                for key, value in item.items():
+                    if not select_fields.get(key):
+                        continue
+                    item[key] = select_fields[key][value]
         return queryset
 
     def data(self, conditions, fields, need_page):
@@ -401,7 +430,9 @@ class WorkSheetDataHandler(BaseDataHandler):
         queryset = manager.get_queryset().filter(filters).values(*keys)
 
         # 只针对单一字段数据查询的时候后做过滤
-        queryset = self.queryset_unrepeated(fields, queryset)
+        queryset = self.queryset_unrepeated_not_null(fields, queryset)
+        # 选择类型字段转义
+        queryset = self.selected_type_field_escape(manager, fields, queryset)
 
         if need_page:
             pagination = CustomPageNumberPagination()

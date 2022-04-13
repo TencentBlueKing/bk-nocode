@@ -279,11 +279,17 @@ class TicketModelViewSet(ModelViewSet):
         instance.do_after_create(
             data["fields"], request.data.get("from_ticket_id", None)
         )
-        start_pipeline.apply_async([instance])
+        if instance.service_instance.is_builtin:
+            instance.start_builtin_ticket()
+        else:
+            start_pipeline.apply_async([instance])
         return Response(
             {"sn": instance.sn, "id": instance.id, "ticket_url": instance.pc_ticket_url}
         )
 
+    @swagger_auto_schema(
+        operation_summary="待我审批，我发起，待我处理的单据计数",
+    )
     @action(detail=False, methods=["GET"])
     def total_count(self, request, *args, **kwargs):
         my_todo_queryset = Ticket.objects.get_todo_tickets(

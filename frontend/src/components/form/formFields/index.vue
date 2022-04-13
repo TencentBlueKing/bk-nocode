@@ -6,7 +6,8 @@
       :field="field"
       :use-fixed-data-source="useFixedDataSource"
       :value="localValue[field.key]"
-      @change="handleChange(field.key, $event)"></field-form-item>
+      @change="handleChange(field.key, $event)">
+    </field-form-item>
   </div>
 </template>
 <script>

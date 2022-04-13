@@ -103,9 +103,6 @@ class ConditionTransfer(object):
         ), "Dismatch Type of 'Connector'"
         # 检测 conditions.expressions 的构造
         expressions = self.conditions.get(EXPRESSION_KEYWORD, None)
-        assert isinstance(expressions, list) and len(
-            expressions
-        ), "Expressions cannot be empty"
         # 检测 conditions.expressions 的每个条件的构造
         for expression in expressions:
             assert len(expression) == len(

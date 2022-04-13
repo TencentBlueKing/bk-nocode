@@ -33,5 +33,10 @@ export default {
   },
 };
 </script>
-
+<style scoped lang="postcss">
+#nocode-app-container{
+  overflow-y: hidden;
+  height: 100vh;
+}
+</style>
 

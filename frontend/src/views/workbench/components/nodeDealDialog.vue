@@ -87,10 +87,7 @@
             class="deal-person"
             form-type="vertical"
             :shortcut="true"
-            :value="{
-                        type: deliverInfo.type,
-                          value: deliverInfo.value
-             }"
+            :value="{ type: deliverInfo.type,value: deliverInfo.value }"
             :node-info="nodeInfo"
             :specify-id-list="deliverInfo.specifyIdList"
             :exclude-role-type-list="deliverInfo.excludeTypeList"
