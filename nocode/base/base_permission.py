@@ -120,7 +120,7 @@ class BasePermission(object):
             )
         ]
         request = MultiActionRequest(
-            settings.APP_CODE, subject, actions, resources, None
+            BK_IAM_SYSTEM_ID, subject, actions, resources, None
         )
         try:
             auth_actions = self._iam.resource_multi_actions_allowed(request)
@@ -152,7 +152,7 @@ class BasePermission(object):
         actions = [Action(action) for action in apply_actions]
         resources = []
         request = MultiActionRequest(
-            settings.APP_CODE, subject, actions, resources, None
+            BK_IAM_SYSTEM_ID, subject, actions, resources, None
         )
         try:
             auth_actions = self._iam.resource_multi_actions_allowed(request)
@@ -186,7 +186,7 @@ class BasePermission(object):
             )
         ]
         request = MultiActionRequest(
-            settings.APP_CODE, subject, actions, resources, None
+            BK_IAM_SYSTEM_ID, subject, actions, resources, None
         )
         try:
             auth_actions = self._iam.resource_multi_actions_allowed(request)
@@ -224,7 +224,7 @@ class BasePermission(object):
             )
         ]
         request = MultiActionRequest(
-            settings.APP_CODE, subject, actions, resources, None
+            BK_IAM_SYSTEM_ID, subject, actions, resources, None
         )
         try:
             auth_actions = self._iam.resource_multi_actions_allowed(request)

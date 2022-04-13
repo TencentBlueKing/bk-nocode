@@ -73,7 +73,7 @@ class PermitHandler:
             )
         ]
         request = MultiActionRequest(
-            settings.APP_CODE, subject, actions, resources, None
+            BK_IAM_SYSTEM_ID, subject, actions, resources, None
         )
         try:
             auth_actions = self._iam.resource_multi_actions_allowed(request)
@@ -129,7 +129,7 @@ class PermitHandler:
             auth_actions = {str(resource["id"]): actions_result for resource in data}
             return self.build_response(apply_actions[0], auth_actions=auth_actions)
 
-        request = MultiActionRequest(settings.APP_CODE, subject, actions, [], None)
+        request = MultiActionRequest(BK_IAM_SYSTEM_ID, subject, actions, [], None)
         try:
             auth_actions = self._iam.batch_resource_multi_actions_allowed(
                 request, resources
@@ -206,7 +206,7 @@ class PermitHandler:
             for resource in data
         ]
 
-        request = MultiActionRequest(settings.APP_CODE, subject, actions, [], None)
+        request = MultiActionRequest(BK_IAM_SYSTEM_ID, subject, actions, [], None)
         try:
             auth_actions = self._iam.batch_resource_multi_actions_allowed(
                 request, resources
