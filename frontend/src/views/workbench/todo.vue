@@ -115,7 +115,8 @@ export default {
       size: 'small',
     };
   },
-  created() {
+  async created() {
+    await this.$store.dispatch('common/getTodoCount');
     this.defaultTableHeight = document.documentElement.clientHeight - 104 - 48 - 80 - 24;
   },
   mounted() {
