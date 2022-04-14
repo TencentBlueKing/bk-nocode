@@ -9,7 +9,7 @@
       @end="end">
       <field-element
         v-for="(item, index) in fields"
-        :key="`${item.type}_${index}`"
+        :key="curKey(item,index)"
         :class="{ actived: selectedIndex === index }"
         :field="item"
         @action="handleFormAction($event, index)">
@@ -145,6 +145,15 @@ export default {
       }
       return [];
     },
+    // 生成key 以重新刷新组件选择项 原因:数据源组件 type 设置数据源key不会发生改变
+    curKey(field, index) {
+      const  isChangeKey = ['SELECT', 'INPUTSELECT', 'MULTISELECT', 'CHECKBOX', 'RADIO'].includes(field.type);
+      if (isChangeKey && field.source_type === 'CUSTOM') {
+        const key = field.choice.map(item => item.key + item.name).toString();
+        return `${key}_${index}`;
+      }
+      return `${field.type}_${index}`;
+    },
   },
 };
 </script>
@@ -156,29 +165,36 @@ export default {
   box-shadow: 0 2px 4px 0 rgba(25, 25, 41, 0.05);
   border-radius: 2px;
 }
+
 .fields-container {
   padding: 35px 0;
   height: 100%;
   overflow: auto;
+
   &.hover {
     outline: 2px dashed #1768ef;
     border-radius: 4px;
   }
+
   &.add-first-field {
     background: rgba(23, 104, 239, 0.1);
   }
 }
+
 .field-element {
   &.actived {
     border: 1px dashed #3a84ff;
   }
 }
+
 /deep/ .fields-empty {
   padding-top: 100px;
+
   .bk-exception-img {
     width: 300px;
     height: auto;
   }
+
   .bk-exception-text {
     font-size: 20px;
     color: #63656e;
@@ -194,6 +210,7 @@ export default {
     font-size: 0;
     border-top: 2px solid #1768ef;
   }
+
   .field-item.sortable-ghost {
     border-top: 2px solid #1768ef;
   }

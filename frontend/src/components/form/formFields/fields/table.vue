@@ -1,6 +1,6 @@
 <template>
   <div class="table">
-    <bk-table :data="val" size="small">
+    <bk-table :data="val" size="small" :outer-border="isHaveBorder" :max-height="maxHeight">
       <template v-for="col in field.choice">
         <bk-table-column :label="col.name" :key="col.key">
           <template slot-scope="props">
@@ -41,6 +41,11 @@ export default {
       type: Boolean,
       default: false,
     },
+    isHaveBorder: {
+      type: Boolean,
+      default: true,
+    },
+    maxHeight: [String, Number],
   },
   data() {
     return {
@@ -59,7 +64,7 @@ export default {
       const val = cloneDeep(value);
       if (val.length === 0) {
         const valItem = {};
-        this.field.choice.forEach(col => {
+        this.field.choice.forEach((col) => {
           valItem[col.key] = '';
         });
         val.push(valItem);
@@ -68,7 +73,7 @@ export default {
     },
     handleAddItem(index) {
       const valItem = {};
-      this.field.choice.forEach(col => {
+      this.field.choice.forEach((col) => {
         valItem[col.key] = '';
       });
       this.val.splice(index + 1, 0, valItem);
