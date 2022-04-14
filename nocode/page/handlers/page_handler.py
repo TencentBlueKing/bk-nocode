@@ -460,7 +460,7 @@ class PageComponentHandler(APIModel):
                 actions.append(component_info)
 
         if page_type == "CUSTOM":
-            page_components = page_components.filter(type__in=["FUNCTION", "LINK"])
+            page_components = page_components.filter(type__in=["FUNCTION"])
             for item in page_components:
                 component_info = dict()
                 component_info.setdefault("id", item.id)
