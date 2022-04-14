@@ -240,20 +240,37 @@
       :mask-close="false"
       header-position="left"
       :show-footer="false"
-      width="640"
-      title="查看详情">
+      width="960"
+      title="表格详情">
+      <label class="label">{{ imageConfig.label }}</label>
+
       <div class="img-wrapper">
-        <bk-form :label-width="150" ext-cls="custom-form">
-          <bk-form-item :label="`${imageConfig.label}:`">
-            <span v-if="imageConfig.type === 'RICHTEXT'" v-html="imageConfig.imgList" style="overflow: hidden"></span>
-            <custom-table
-              v-else-if="imageConfig.type === 'TABLE'"
-              :view-mode="true"
-              :value="imageConfig.imgList.val"
-              :field="imageConfig.imgList.fields">
-            </custom-table>
-          </bk-form-item>
-        </bk-form>
+        <span v-if="imageConfig.type === 'RICHTEXT'" v-html="imageConfig.imgList" style="overflow: hidden"></span>
+        <custom-table
+          class="custom-table"
+          v-if="imageConfig.type === 'TABLE'"
+          :view-mode="true"
+          :max-height="400"
+          :is-have-border="false"
+          :value="imageConfig.imgList.val
+          .slice((pagingConfig.current - 1) * pagingConfig.limit, pagingConfig.current * pagingConfig.limit)"
+          :field="imageConfig.imgList.fields">
+        </custom-table>
+        <div style="padding: 15px" v-if="imageConfig.type === 'TABLE'">
+          <bk-pagination
+            size="small"
+            show-total-count
+            :current.sync="pagingConfig.current"
+            :limit="pagingConfig.limit"
+            :count="pagingConfig.count"
+            :location="pagingConfig.location"
+            :align="pagingConfig.align"
+            :show-limit="pagingConfig.showLimit"
+            :limit-list="pagingConfig.limitList"
+            @change="handleDetailChange"
+            @limit-change="handleDetailLimitChange">
+          </bk-pagination>
+        </div>
       </div>
     </bk-dialog>
     <bk-dialog
@@ -380,6 +397,15 @@ export default {
         imageVisible: false,
         label: '',
         type: '',
+      },
+      pagingConfig: {
+        current: 1,
+        limit: 10,
+        count: 0,
+        location: 'left',
+        align: 'right',
+        showLimit: true,
+        limitList: [10, 20, 30],
       },
       importConfig: {
         visible: false,
@@ -619,6 +645,12 @@ export default {
       this.pagination.limit = limit;
       this.pagination.current = 1;
       this.getTableList();
+    },
+    handleDetailChange(page) {
+      this.pagingConfig.current = page;
+    },
+    handleDetailLimitChange(limit) {
+      this.pagingConfig.limit = limit;
     },
     handleSettingChange({ fields }) {
       this.fields = fields;
@@ -917,7 +949,7 @@ export default {
             source: 'optionList',
           },
         });
-        return  res.data;
+        return res.data;
       } catch (e) {
         console.error(e);
       } finally {
@@ -1099,9 +1131,9 @@ export default {
         this.imageConfig.imgList = {};
         this.imageConfig.imgList.fields = fields;
         this.imageConfig.imgList.val = row[column.property];
+        this.pagingConfig.count = row[column.property].length;
       } else {
-        this.imageConfig.imgList = type === 'IMAGE'
-          ? row[column.property].map(item => ({ path: `${window.location.origin}${window.SITE_URL}${item}` })) : row[column.property];
+        this.imageConfig.imgList = row[column.property];
       }
       this.imageConfig.label = column.label;
       this.imageConfig.imageVisible = true;
@@ -1183,6 +1215,7 @@ export default {
   .function-btn {
     display: flex;
     align-items: flex-end;
+
     .bk-dropdown-list {
       a.disabled {
         color: #cccccc;
@@ -1197,10 +1230,6 @@ export default {
 
   .table-border {
     margin-top: 16px;
-
-    /deep/ .bk-table th {
-      background: yellow !important;
-    }
   }
 
   .search-icon {
@@ -1438,6 +1467,27 @@ export default {
     height: 27px;
     width: 27px;
   }
+}
+
+.img-wrapper {
+  padding: 13px 16px 0 16px;
+  height: 500px;
+  .custom-table {
+    overflow: auto;
+    /deep/ .bk-table-body-wrapper {
+      @mixin scroller;
+    }
+  }
+
+}
+
+.label {
+  padding-left: 16px;
+  width: 90px;
+  height: 22px;
+  font-size: 14px;
+  color: #313238;
+  line-height: 22px;
 }
 
 </style>

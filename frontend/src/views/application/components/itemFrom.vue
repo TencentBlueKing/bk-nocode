@@ -1,5 +1,5 @@
 <template>
-  <bk-form :label-width="150" ext-cls="custom-form">
+  <bk-form :label-width="150" ext-cls="custom-detail-form">
     <bk-form-item v-for="item in localVal" :label="`${item.name}:`" :key="item.id">
       <span v-if="dataSourceField.includes(item.type)">
         {{ transformFields(item) }}
@@ -175,7 +175,7 @@ export default {
 </script>
 
 <style scoped lang="postcss">
-.custom-form {
+.custom-detail-form {
   margin-top: 24px;
 
   /deep/ .bk-label-text {
