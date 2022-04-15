@@ -487,6 +487,7 @@ export default {
 </script>
 
 <style lang="postcss" scoped>
+@import "../../../css/scroller.css";
 .page-container {
   display: flex;
   height: 100%;
@@ -515,6 +516,8 @@ export default {
     width: 100%;
     height: calc(100% - 104px);
     border-radius: 2px;
+    overflow: auto;
+    @mixin scroller;
   }
 
   .right-setting {

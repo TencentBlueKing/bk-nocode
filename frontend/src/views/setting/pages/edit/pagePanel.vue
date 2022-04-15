@@ -12,7 +12,8 @@
           :page="page"
           :class="{ 'actived': selectedIndex=== index }"
           :key="`${page.type}_${index}`"
-          @action="handleFormAction($event, index)">
+          @action="handleFormAction($event, index)"
+          @change="$emit('change', $event)">
         </page-element>
       <span class="tip" v-if="pageList.length===0">拖拽组件到这里</span>
     </draggable>
@@ -63,7 +64,6 @@ export default {
         type: PAGE_TYPE_MAP[type],
         ...config,
       };
-      console.log(e.newIndex);
       const index = this.pageList.length === 0 ? 0 : e.newIndex;
       this.$emit('add', pageConfig, index);
       this.selectedIndex = index;
@@ -92,6 +92,7 @@ export default {
     getConfigSetting(type) {
       let config;
       let curType = type;
+      console.log(type);
       if (['QUICKENTRANCE', 'LINK'].includes(type)) {
         curType = 'QUICKENTRANCE';
       }
@@ -117,13 +118,18 @@ export default {
               component_order: [],
               path: '',
             },
-            children: [],
             layout: { lineLayout: 'COL_12' },
             value: '',
           };
-          if (type === 'LINK') {
-            delete config.children;
-          }
+          break;
+        case 'RICHTEXT':
+          config = {
+            config: {
+              content: '',
+            },
+            layout: { lineLayout: 'COL_12' },
+            value: '',
+          };
           break;
       }
       return config;

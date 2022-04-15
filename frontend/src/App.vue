@@ -23,8 +23,9 @@ export default {
     Navigator,
     PermissionModal,
   },
-  created() {
-    this.$store.dispatch('permission/getPermMeta');
+  async created() {
+    await this.$store.dispatch('permission/getPermMeta');
+    await this.$store.dispatch('common/getTodoCount',);
   },
   mounted() {
     bus.$on('showPermissionModal', (data) => {

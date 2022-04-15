@@ -33,7 +33,7 @@ from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_GET
 from mako.template import Template
 
-from itsm.project.models import UserProjectAccessRecord
+from itsm.project.models import UserProjectAccessRecord, Project
 from common.log import logger
 from config.default import FRONTEND_URL
 from itsm.role.models import BKUserRole, UserRole
@@ -51,6 +51,19 @@ class HttpResponseIndexRedirect(HttpResponseRedirect):
 def index(request):
     """首页"""
     from adapter.core import TITLE, DOC_URL, LOGIN_URL
+
+    # 处理app跳转逻辑
+    app = request.GET.get("app", None)
+    if app is not None:
+        try:
+            project = Project.objects.get(key=app)
+        except Project.DoesNotExist:
+            return HttpResponseIndexRedirect("/app/list")
+        if project.publish_status not in ["RELEASED", "RELEASING"]:
+            HttpResponseIndexRedirect("/app/list")
+        version_number = project.version_number
+        app_url = "/app/{}/{}/".format(app, version_number)
+        return HttpResponseIndexRedirect(app_url)
 
     # 如果发现不是woa过来的域名
     if (
