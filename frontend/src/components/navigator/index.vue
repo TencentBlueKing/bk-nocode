@@ -19,23 +19,29 @@
           </router-link>
         </li>
       </ul>
-      <bk-popover
-        theme="navigation-popover"
-        :arrow="false"
-        offset="0, 7"
-        :tippy-options="{ animateFill: false, hideOnClick: false }">
-        <div class="user-name">
-          <span>{{ userName }}</span>
-          <i class="bk-icon icon-angle-down"></i>
+      <div class="header-content">
+        <div class="todo" v-if="realTodoCount.length>0" @click="goToMyTodo">
+          <i class="custom-icon-font icon-bell"></i>
+          <span>{{ realTodoCount }}</span>
         </div>
-        <template slot="content">
-          <ul class="nav-operate-list">
-            <li class="operate-item">
-              <span data-test-id="navigation-span-logout" @click="onLogOut">退出登录</span>
-            </li>
-          </ul>
-        </template>
-      </bk-popover>
+        <bk-popover
+          theme="navigation-popover"
+          :arrow="false"
+          offset="0, 7"
+          :tippy-options="{ animateFill: false, hideOnClick: false }">
+          <div class="user-name">
+            <span>{{ userName }}</span>
+            <i class="bk-icon icon-angle-down"></i>
+          </div>
+          <template slot="content">
+            <ul class="nav-operate-list">
+              <li class="operate-item">
+                <span data-test-id="navigation-span-logout" @click="onLogOut">退出登录</span>
+              </li>
+            </ul>
+          </template>
+        </bk-popover>
+      </div>
     </template>
     <template v-if="sideMenuList.length > 0" slot="menu">
       <bk-navigation-menu
@@ -72,6 +78,7 @@
               :icon="child.icon"
               @click="changeNav(child)">
               <span>{{ child.name }}</span>
+              <span v-if="child.id==='todo'">{{`(${$store.state.common.todoCount})`}}</span>
             </bk-navigation-menu-item>
           </div>
         </bk-navigation-menu-item>
@@ -105,6 +112,9 @@ export default {
   computed: {
     showAppSelector() {
       return this.activeEntry === 'settingHome';
+    },
+    realTodoCount() {
+      return this.$store.state.common.todoCount > 99 ? '99+' : this.$store.state.common.todoCount;
     },
   },
   watch: {
@@ -188,6 +198,9 @@ export default {
       }
       this.changeNav(menu);
     },
+    goToMyTodo() {
+      this.$router.push({ name: 'todo' });
+    },
     changeNav(menu) {
       const params = { ...this.$route.params };
       const query = {};
@@ -242,10 +255,12 @@ export default {
   color: #fff;
   font-size: 14px;
   cursor: pointer;
-  i{
+
+  i {
     font-size: 20px;
     color: rgba(255, 255, 255, 0.5);
   }
+
   &:hover {
     color: #ffffff;
   }
@@ -257,6 +272,7 @@ export default {
   height: 44px;
   box-shadow: 0px 4px 8px 0px rgba(32, 41, 53, 0.1);
   border: 1px solid #EAEBF0;
+
   .operate-item {
     width: 118px;
     height: 34px;
@@ -265,21 +281,26 @@ export default {
     line-height: 34px;
     cursor: pointer;
     font-size: 14px;
+
     > a {
       color: #63656e;
     }
+
     &:hover {
       background-color: #eaf3ff;
       color: #3a84ff;
+
       > a {
         color: #3a84ff;
       }
     }
   }
 }
+
 .bk-navigation {
   min-width: 1366px;
-  height: calc(100%-52px);
+  height: calc(100% - 52px);
+
   /deep/ .bk-navigation-wrapper {
     .navigation-container {
       max-width: none !important;
@@ -290,13 +311,47 @@ export default {
       padding: 0;
     }
   }
-  /deep/ .header-right{
+
+  /deep/ .header-right {
     justify-content: space-between;
   }
 }
 
 .bk-navigation.with-app-selector /deep/ .nav-slider-list {
   padding-top: 0px;
+}
+
+.todo {
+  width: 20px;
+  height: 20px;
+  margin-right: 26px;
+  position: relative;
+  i{
+    line-height: 20px;
+    color: #96A2B9;
+    font-size: 20px;
+    &:hover{
+      color:#3a84ff ;
+      cursor: pointer;
+    }
+  }
+  span{
+    position: absolute;
+    top: -7px;
+    right: -17px;
+    width: 26px;
+    height: 16px;
+    background: #EA3636;
+    border-radius: 8px;
+    line-height: 16px;
+    font-size: 12px;
+    color: #FFFFFF;
+    text-align: center;
+  }
+}
+.header-content{
+  display: flex;
+  align-items: center;
 }
 </style>
 <style>

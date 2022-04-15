@@ -45,7 +45,6 @@ export default {
   methods: {
     onEditorChange() {
       const value = this.$refs.editor.invoke('getHTML');
-      console.log(value);
       this.$emit('change', value);
     },
   },
