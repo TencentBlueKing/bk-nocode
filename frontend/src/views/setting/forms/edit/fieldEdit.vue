@@ -144,7 +144,11 @@
       <bk-form-item
         v-if="fieldProps.fieldsShowDefaultValue.includes(fieldData.type) && fieldData.source_type === 'CUSTOM'"
         label="默认值">
-        <default-value :key="fieldData.type" :field="defaultData" @change="handleDefaultValChange"></default-value>
+        <default-value
+          :key="fieldData.type"
+          :field="defaultData"
+          @change="handleDefaultValChange"
+          @changeMember="handleMemberDefaultValChange"></default-value>
       </bk-form-item>
       <bk-form-item
         v-if="fieldProps.fieldsShowConfigValue.includes(fieldData.type) && fieldData.source_type === 'CUSTOM'"
@@ -284,16 +288,16 @@
         :rules="fieldData.meta.config"
         @confirm="handleRuleConfirm">
       </number-rule-dialog>
-    <!--     配置自定义计算公式-->
-    <div v-else-if="fieldData.type==='FORMULA'">
-      <config-formula-dialog
-        :show.sync="configFormulaDialogShow"
-        :fields="list"
-        :value="fieldData.meta.config.value"
-        :bind-fields="fieldData.meta.config.fields"
-        @confirm="handleFormulaConfirm">
-      </config-formula-dialog>
-    </div>
+      <!--     配置自定义计算公式-->
+      <div v-else-if="fieldData.type==='FORMULA'">
+        <config-formula-dialog
+          :show.sync="configFormulaDialogShow"
+          :fields="list"
+          :value="fieldData.meta.config.value"
+          :bind-fields="fieldData.meta.config.fields"
+          @confirm="handleFormulaConfirm">
+        </config-formula-dialog>
+      </div>
     </div>
   </div>
 </template>
@@ -485,17 +489,18 @@ export default {
       }
     },
     getDefaultData() {
-      const { type, default: defaultVal, choice } = this.value;
+      const { type, default: defaultVal, choice, meta } = this.value;
       let dftVal;
-      if (['MULTISELECT', 'CHECKBOX', 'MEMBER', 'MEMBERS'].includes(type)) {
+      if (['MULTISELECT', 'CHECKBOX', 'MEMBERS', 'MEMBER'].includes(type)) {
         dftVal = defaultVal ? defaultVal.split(',') : [];
-      } else {
+      }  else {
         dftVal = cloneDeep(defaultVal);
       }
       return {
         type,
         choice,
         value: dftVal,
+        meta,
         multiple: ['MULTISELECT', 'CHECKBOX'].includes(type),
       };
     },
@@ -513,6 +518,15 @@ export default {
       this.fieldData.default = ['MULTISELECT', 'CHECKBOX', 'MEMBER', 'MEMBERS'].includes(this.fieldData.type)
         ? val.join(',')
         : cloneDeep(val);
+      this.change();
+    },
+    handleMemberDefaultValChange(val) {
+      this.$set(this.fieldData.meta, 'defaultType', val);
+      if (val === 'currentUser') {
+        this.fieldData.default = window.username;
+      } else {
+        this.fieldData.default = '';
+      }
       this.change();
     },
     handleSetDefaultValue(val) {
@@ -626,7 +640,6 @@ export default {
       return isNaN(val) && (!isNaN(Date.parse(val)) || !isNaN(Date.parse(`${val}`)));
     },
     handleSelectTime(type, val) {
-      console.log('handleSelectTime');
       if (type === 'start' && val === 'custom') {
         this.datePickerIsShow.startTimeIsshow = true;
         this.fieldData.meta.config.start_time = '';
