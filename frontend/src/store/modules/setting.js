@@ -57,6 +57,9 @@ export default {
     deleteApp({}, params) {
       return ajax.delete(`/project/projects/${params.key}/`).then(response => response.data);
     },
+    exportApp({}, params) {
+      return ajax.get('/project/manager/export/', { params }).then(response => response.data);
+    },
     // 下架应用
     shelvesApp({}, params) {
       return ajax.put(`/project/projects/${params.key}/`, params).then(response => response.data);

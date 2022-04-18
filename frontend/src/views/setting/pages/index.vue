@@ -1,6 +1,11 @@
 <template>
   <section>
     <page-wrapper title="页面管理">
+      <template slot="header">
+        <bk-button :theme="'primary'" :title="'应用发布'" @click="onReleaseClick">
+          应用发布
+        </bk-button>
+      </template>
       <div class="page-container" v-bkloading="{ isLoading: pageListLoading }">
         <div class="left-setting">
           <page-tree
@@ -22,7 +27,11 @@
           </page-empty>
           <div v-else v-bkloading="{ isLoading: pageComponentLoading, opacity: 1 }" class="page-content-container">
             <div class="custom-page" v-if="crtPage.type==='CUSTOM'">
-              <show-custom-page :page-list="pageComponent"> </show-custom-page>
+              <show-custom-page
+                :page-list="pageComponent"
+                :page-id="crtPage.id"
+                :app-id="appId">
+              </show-custom-page>
             </div>
             <div class="center-page" v-if="['FUNCTION','SHEET','LIST'].includes(crtPage.type)">
               <function-page
@@ -59,8 +68,7 @@
                 @select="getTableFileds">
               </right-setting>
             </div>
-            <div class="bottom-container">
-              <template v-if="['FUNCTION','SHEET','LIST'].includes(crtPage.type)">
+            <div class="bottom-container" v-if="['FUNCTION','SHEET','LIST'].includes(crtPage.type)">
                 <bk-button
                   class="btn-save"
                   theme="primary"
@@ -79,17 +87,6 @@
                   class="btn-rest">
                   重置
                 </bk-button>
-              </template>
-              <template v-else>
-                <bk-button
-                  class="btn-save"
-                  theme="primary"
-                  title="编辑页面"
-                  :disabled="pageComponentLoading"
-                  @click="handleEditPage">
-                  编辑页面
-                </bk-button>
-              </template>
             </div>
           </div>
         </template>
@@ -118,6 +115,7 @@ import CreatePageDialog from './createPageDialog.vue';
 import AttributeConfig from './attributeConfig.vue';
 import showCustomPage from './showCustomPage.vue';
 import cloneDeep from 'lodash.clonedeep';
+import release from '../mixin/release';
 
 export default {
   name: 'PageDesign',
@@ -133,6 +131,7 @@ export default {
     showCustomPage,
     functionPage,
   },
+  mixins: [release],
   props: {
     appId: String,
   },
@@ -465,9 +464,6 @@ export default {
         this.getPageComponent();
       }
     },
-    handleEditPage() {
-      this.$router.push({ name: 'customPage', params: { appId: this.appId, pageId: this.crtPage.id } });
-    },
     async getTableFileds(val) {
       if (val) {
         this.listLoading = true;
@@ -488,6 +484,7 @@ export default {
 
 <style lang="postcss" scoped>
 @import "../../../css/scroller.css";
+@import "../../../css/header-wrapper.css";
 .page-container {
   display: flex;
   height: 100%;
@@ -514,7 +511,7 @@ export default {
 
   .custom-page {
     width: 100%;
-    height: calc(100% - 104px);
+    height: 100%;
     border-radius: 2px;
     overflow: auto;
     @mixin scroller;

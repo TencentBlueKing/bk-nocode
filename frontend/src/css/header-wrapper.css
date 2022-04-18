@@ -1,0 +1,10 @@
+/deep/ .page-header-container {
+  .title-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
+  .header-extend-area{
+    margin: 0 16px 0 auto;
+  }
+}

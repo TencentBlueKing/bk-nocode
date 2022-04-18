@@ -1,6 +1,11 @@
 <template>
   <section class="forms-list-page">
     <page-wrapper title="表单管理">
+      <template slot="header">
+        <bk-button :theme="'primary'" :title="'应用发布'" @click="onReleaseClick">
+          应用发布
+        </bk-button>
+      </template>
       <div class="list-table">
         <div class="operate-area">
           <bk-button theme="primary" icon="plus" @click="onCreateForm">新建</bk-button>
@@ -87,10 +92,12 @@
 </template>
 <script>
 import PageWrapper from '@/components/pageWrapper.vue';
+import release from '../mixin/release';
 
 export default {
   name: 'FormList',
   components: { PageWrapper },
+  mixins: [release],
   props: {
     appId: {
       type: String,
@@ -283,6 +290,7 @@ export default {
 };
 </script>
 <style lang="postcss" scoped>
+@import "../../../css/header-wrapper.css";
 @import "../../../css/scroller.css";
 .list-table {
   margin: 24px;

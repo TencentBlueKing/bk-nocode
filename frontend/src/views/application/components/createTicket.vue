@@ -155,6 +155,9 @@ export default {
         if ('default' in item) {
           if (['MULTISELECT', 'CHECKBOX', 'MEMBER', 'MEMBERS', 'TABLE', 'IMAGE'].includes(item.type)) {
             value[item.key] = item.default ? item.default.split(',') : [];
+          } else if (item.type === 'DATETIME' && item.default === 'curTime') {
+            console.log(this.$dayjs(new Date()).format('YYYY-MM-DD HH:mm:ss'));
+            value[item.key] = this.$dayjs(new Date()).format('YYYY-MM-DD HH:mm:ss');
           } else {
             value[item.key] = item.default;
           }

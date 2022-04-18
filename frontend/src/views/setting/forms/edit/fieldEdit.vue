@@ -675,7 +675,13 @@ export default {
       this.$emit('change', this.fieldData);
     },
     handleSelectType(val) {
-      val === 'defaultValue' ? this.fieldData.meta = {} : this.fieldData.default = '';
+      if (val === 'defaultValue') {
+        this.fieldData.meta = {};
+      } else if (val === 'curTime') {
+        this.fieldData.default = 'curTime';
+      } else {
+        this.fieldData.default = '';
+      }
       this.change();
     },
     // 值数目可选范围最小个数变更

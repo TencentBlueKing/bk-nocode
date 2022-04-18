@@ -54,7 +54,7 @@
       <div v-if="editingApp" class="app-edit-content">
         <bk-form ref="appForm" form-type="vertical" :model="editingApp" :rules="appFormRules">
           <bk-form-item label="应用名称" property="name" :required="true" :error-display-type="'normal'">
-            <bk-input placeholer="请输入应用名称" v-model.trim="editingApp.name"></bk-input>
+            <bk-input placeholer="请输入应用名称" v-model.trim="editingApp.name" @change="debounceChange"></bk-input>
           </bk-form-item>
           <bk-form-item label="应用颜色">
             <ul class="color-wrap">
@@ -91,6 +91,7 @@ import pinyin from 'pinyin';
 import permission from '@/components/permission/mixins.js';
 import AppCard from './components/appCard.vue';
 import { appColors } from '@/constants/colors.js';
+import { debounce, getQuery } from '@/utils/util';
 
 export default {
   name: 'AppList',
@@ -141,6 +142,7 @@ export default {
   created() {
     this.getCreateAppPerm();
     this.getAppList();
+    this.debounceChange = debounce(this.handleAppNameChange, 500);
   },
   beforeDestroy() {
     Object.keys(this.appReleasingTimer).forEach((key) => {
@@ -326,6 +328,9 @@ export default {
           }
           this.$router.push({ name: 'appPageContent', params: { appId: key, version: version_number } });
           break;
+        case 'export':
+          this.exportApp(app);
+          break;
       }
     },
     getBgColor(color) {
@@ -373,6 +378,21 @@ export default {
     onEditAppCancel() {
       this.appEditDialogShow = false;
       this.editingApp = null;
+    },
+    // 自动填充key
+    handleAppNameChange(val) {
+      this.editingApp.key = pinyin(val, {
+        style: pinyin.STYLE_NORMAL,
+        heteronym: false,
+      }).join('')
+        .toUpperCase();
+    },
+    exportApp(app) {
+      const params = {
+        project_key: app.key,
+      };
+      console.log(getQuery(params));
+      window.open(`${window.location.origin}${window.SITE_URL}api/project/manager/export/${getQuery(params)}`);
     },
   },
 };
