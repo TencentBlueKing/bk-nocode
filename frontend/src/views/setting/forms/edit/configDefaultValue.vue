@@ -234,6 +234,9 @@ export default {
       }, {
         id: 'linkageRules',
         name: '联动规则',
+      }, {
+        id: 'curTime',
+        name: '此刻',
       }],
       currentFieldList: cloneDeep(this.fieldList).filter(item => FIELDS_CONDITION_VALUE.includes(item.type) && item.id),
       formData: {
@@ -291,6 +294,9 @@ export default {
   },
   created() {
     this.initData(cloneDeep(this.value));
+    if (this.field.type === 'DATETIME' && this.field.value === 'curTime') {
+      this.defaultValue = 'curTime';
+    }
   },
   methods: {
     async initData(localValue) {
