@@ -66,7 +66,7 @@ export default {
     return {
       savePending: false,
       formData: {
-        name: '',
+        name: '默认页面',
         type: '',
         group: this.group,
       },
@@ -123,13 +123,6 @@ export default {
   },
   methods: {
     createPageConfirm() {
-      // if (this.formData.type === '') {
-      //   this.$bkMessage({
-      //     theme: 'error',
-      //     message: '请选择页面类型',
-      //   });
-      //   return;
-      // }
       this.savePending = true;
       this.$refs.pageForm
         .validate()
@@ -168,7 +161,7 @@ export default {
     },
     resetForm() {
       this.formData = {
-        name: '',
+        name: '默认页面',
         type: '',
         group: undefined,
       };
