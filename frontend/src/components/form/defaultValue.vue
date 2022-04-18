@@ -24,7 +24,8 @@
       <bk-option v-for="choice in typeList" :key="choice.id" :id="choice.id" :name="choice.name"></bk-option>
     </bk-select>
     <field-item
-      v-if="['MEMBERS','RICHTEXT', 'DESC'].includes(field.type)||(defaultValue==='default'&&'MEMBER'===field.type)"
+      v-if="['MEMBERS','RICHTEXT', 'DESC','STRING', 'TEXT', 'INT', 'DATE', 'DATETIME'].includes(field.type)
+      ||(defaultValue==='default'&&'MEMBER'===field.type)"
       :field="field"
       :use-fixed-data-source="true"
       :value="field.value"
