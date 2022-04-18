@@ -34,7 +34,6 @@ from itsm.component.constants import (
     ADD_STATE,
     UPDATE_STATE,
     DELETE_STATE,
-    VALUE_FROM_FIELD,
     SYSTEM_OPERATE,
     INCREMENT,
     REDUCTION,
@@ -43,7 +42,11 @@ from itsm.component.constants import (
     FIELD_INCREMENT,
     FIELD_REDUCTION,
     LEADER,
+    DEPARTMENT,
+    PARAMS_TYPE,
 )
+from itsm.component.esb.esbclient import client_backend
+from itsm.component.exceptions import ComponentCallError
 from itsm.ticket.models import (
     Ticket,
     get_user_leader,
@@ -137,6 +140,34 @@ class StateExtraManager:
             )
             return ""
 
+    def get_member_department(self, key):
+        try:
+            field_inst = self.field_queryset.filter(key=key).first()
+            if field_inst.type != "MEMBER":
+                logger.info(
+                    "[DataProcessingService][get_member_department] 获取人员所属组织, 当前字段非人员选择器字段"
+                )
+                return ""
+            # 获取人员的从属组织
+            username = field_inst.value
+            res = client_backend.usermanage.list_profile_departments(
+                {
+                    "id": username,
+                }
+            )
+            department_list = []
+            for item in res:
+                department_list.append(item["full_name"])
+            return ",".join(department_list)
+
+        except Exception or ComponentCallError as e:
+            logger.info(
+                "[DataProcessingService][get_member_department] 获取人员所属组织, 发生异常, error={}".format(
+                    e
+                )
+            )
+            return ""
+
     def make_mapping(
         self,
     ):
@@ -158,15 +189,12 @@ class StateExtraManager:
             if mi["type"] in [INCREMENT, REDUCTION]:
                 continue
             # 从引用变量中取值
-            elif mi["type"] in [
-                VALUE_FROM_FIELD,
-                FIELD_INCREMENT,
-                FIELD_REDUCTION,
-                LEADER,
-            ]:
+            elif mi["type"] in PARAMS_TYPE:
                 params = re.findall(r"\${param_(.*?)}", mi["value"])
                 if mi["type"] == LEADER:
                     value = self.get_leader(params[0])
+                elif mi["type"] == DEPARTMENT:
+                    value = self.get_member_department(params[0])
                 else:
                     value = self.get_field_value(params[0])
 
