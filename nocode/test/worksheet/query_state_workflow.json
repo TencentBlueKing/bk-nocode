@@ -1,0 +1,344 @@
+{
+    "is_deleted": false,
+    "name": "",
+    "desc": "",
+    "flow_type": "other",
+    "is_enabled": true,
+    "is_revocable": true,
+    "revoke_config": {
+        "type": 2,
+        "state": 0
+    },
+    "is_draft": false,
+    "is_builtin": false,
+    "is_task_needed": false,
+    "owners": ",admin,",
+    "notify_rule": "NONE",
+    "notify_freq": 0,
+    "is_biz_needed": false,
+    "is_iam_used": false,
+    "is_supervise_needed": false,
+    "supervise_type": "EMPTY",
+    "supervisor": "",
+    "engine_version": "PIPELINE_V1",
+    "version_number": "",
+    "table": {
+        "id": 1,
+        "is_deleted": false,
+        "name": "\u9ed8\u8ba4",
+        "desc": "\u9ed8\u8ba4\u57fa\u7840\u6a21\u578b",
+        "version": "EMPTY",
+        "fields": [],
+        "fields_order": [],
+        "field_key_order": []
+    },
+    "task_schemas": [],
+    "creator": "admin",
+    "updated_by": "admin",
+    "workflow_id": 1,
+    "version_message": "",
+    "states": {
+        "1": {
+            "workflow": 1,
+            "id": 1,
+            "key": 1,
+            "name": "start",
+            "desc": "",
+            "distribute_type": "PROCESS",
+            "axis": {
+                "x": 150,
+                "y": 150
+            },
+            "is_builtin": true,
+            "variables": {
+                "inputs": [],
+                "outputs": []
+            },
+            "tag": "DEFAULT",
+            "processors_type": "OPEN",
+            "processors": "",
+            "assignors": "",
+            "assignors_type": "EMPTY",
+            "delivers": "",
+            "delivers_type": "EMPTY",
+            "can_deliver": false,
+            "extras": {},
+            "is_draft": false,
+            "is_terminable": false,
+            "fields": [],
+            "type": "START",
+            "api_instance_id": 0,
+            "is_sequential": false,
+            "finish_condition": {},
+            "is_multi": false,
+            "creator": null,
+            "create_at": "2021-09-29 10:18:10",
+            "updated_by": null,
+            "update_at": "2021-09-29 10:18:10",
+            "end_at": null,
+            "is_first_state": false
+        },
+        "2": {
+            "workflow": 1,
+            "id": 2,
+            "key": 1,
+            "name": "数据源节点",
+            "desc": "",
+            "distribute_type": "PROCESS",
+            "axis": {
+                "x": 285,
+                "y": 150
+            },
+            "is_builtin": true,
+            "variables": {
+                "inputs": [],
+                "outputs": []
+            },
+            "tag": "DEFAULT",
+            "processors_type": "OPEN",
+            "processors": "",
+            "assignors": "",
+            "assignors_type": "EMPTY",
+            "delivers": "",
+            "delivers_type": "EMPTY",
+            "can_deliver": false,
+            "extras": {},
+            "is_draft": false,
+            "is_terminable": false,
+            "fields": [],
+            "type": "NORMAL",
+            "api_instance_id": 0,
+            "is_sequential": false,
+            "finish_condition": {},
+            "is_multi": false,
+            "creator": null,
+            "create_at": "2021-09-29 10:18:11",
+            "updated_by": null,
+            "update_at": "2021-09-29 10:18:11",
+            "end_at": null,
+            "is_first_state": true
+        },
+        "3": {
+            "workflow": 1,
+            "id": 3,
+            "key": 1,
+            "name": "end",
+            "desc": "",
+            "distribute_type": "PROCESS",
+            "axis": {
+                "x": 1115,
+                "y": 140
+            },
+            "is_builtin": true,
+            "variables": {
+                "inputs": [],
+                "outputs": []
+            },
+            "tag": "DEFAULT",
+            "processors_type": "OPEN",
+            "processors": "",
+            "assignors": "",
+            "assignors_type": "EMPTY",
+            "delivers": "",
+            "delivers_type": "EMPTY",
+            "can_deliver": false,
+            "extras": {},
+            "is_draft": false,
+            "is_terminable": false,
+            "fields": [],
+            "type": "END",
+            "api_instance_id": 0,
+            "is_sequential": false,
+            "finish_condition": {},
+            "is_multi": false,
+            "creator": null,
+            "create_at": "2021-09-29 10:18:11",
+            "updated_by": null,
+            "update_at": "2021-09-29 10:18:54",
+            "end_at": null,
+            "is_first_state": false
+        },
+        "4": {
+            "workflow": 1,
+            "id": 4,
+            "key": 1,
+            "name": "数据查询",
+            "desc": "",
+            "distribute_type": "PROCESS",
+            "axis": {
+                "x": 710,
+                "y": 140
+            },
+            "is_builtin": false,
+            "variables": {
+                "inputs": [],
+                    "outputs": [
+                        {
+                            "source": "global",
+                            "name": "数据存在状态",
+                            "key": "data_query_result_4",
+                            "ref_path": "",
+                            "type": "bool"
+                        }
+                    ]
+            },
+            "tag": "DEFAULT",
+            "processors_type": "PERSON",
+            "processors": "admin",
+            "assignors": "",
+            "assignors_type": "EMPTY",
+            "delivers": "",
+            "delivers_type": "EMPTY",
+            "can_deliver": false,
+            "extras": {},
+            "is_draft": false,
+            "is_terminable": false,
+            "fields": [],
+            "type": "DATA-QUERY",
+            "api_instance_id": 0,
+            "is_sequential": false,
+            "finish_condition": {},
+            "is_multi": false,
+            "creator": null,
+            "create_at": "2021-09-29 10:18:59",
+            "updated_by": null,
+            "update_at": "2021-09-29 10:19:19",
+            "end_at": null,
+            "is_first_state": false
+        }
+    },
+    "transitions": {
+        "1": {
+            "workflow": 1,
+            "id": 1,
+            "from_state": 1,
+            "to_state": 2,
+            "name": "",
+            "axis": {
+                "start": "Right",
+                "end": "Left"
+            },
+            "condition": {
+                "expressions": [
+                    {
+                        "type": "and",
+                        "expressions": [
+                            {
+                                "key": "G_INT_1",
+                                "condition": "==",
+                                "value": 1
+                            }
+                        ]
+                    }
+                ],
+                "type": "and"
+            },
+            "condition_type": "default",
+            "creator": "system",
+            "create_at": "2021-09-29 10:18:11",
+            "updated_by": "system",
+            "update_at": "2021-09-29 10:18:11",
+            "end_at": null
+        },
+        "2": {
+            "workflow": 1,
+            "id": 2,
+            "from_state": 2,
+            "to_state": 4,
+            "name": "",
+            "axis": {
+                "start": "Right",
+                "end": "Left"
+            },
+            "condition": {
+                "expressions": [
+                    {
+                        "type": "and",
+                        "expressions": [
+                            {
+                                "key": "G_INT_1",
+                                "condition": "==",
+                                "value": 1
+                            }
+                        ]
+                    }
+                ],
+                "type": "and"
+            },
+            "condition_type": "default",
+            "creator": "admin",
+            "create_at": "2021-09-29 10:19:02",
+            "updated_by": "admin",
+            "update_at": "2021-09-29 10:19:02",
+            "end_at": null
+        },
+        "3": {
+            "workflow": 1,
+            "id": 3,
+            "from_state": 4,
+            "to_state": 3,
+            "name": "",
+            "axis": {
+                "start": "Right",
+                "end": "Left"
+            },
+            "condition": {
+                "expressions": [
+                    {
+                        "type": "and",
+                        "expressions": [
+                            {
+                                "key": "G_INT_1",
+                                "condition": "==",
+                                "value": 1
+                            }
+                        ]
+                    }
+                ],
+                "type": "and"
+            },
+            "condition_type": "default",
+            "creator": "admin",
+            "create_at": "2021-09-29 10:19:04",
+            "updated_by": "admin",
+            "update_at": "2021-09-29 10:19:04",
+            "end_at": null
+        }
+    },
+    "triggers": [],
+    "fields": {
+        "id": 1,
+        "is_deleted": false,
+        "is_builtin": false,
+        "is_readonly": false,
+        "is_valid": true,
+        "display": true,
+        "source_type": "CUSTOM",
+        "source_uri": "",
+        "api_instance_id": 0,
+        "kv_relation": {},
+        "type": "STRING",
+        "key": "title",
+        "name": "标题",
+        "layout": "",
+        "validate_type": "",
+        "show_type": 1,
+        "show_conditions": {},
+        "regex": "EMPTY",
+        "regex_config": {},
+        "custom_regex": "",
+        "desc": "",
+        "tips": "",
+        "is_tips": false,
+        "default": "",
+        "choice": [],
+        "related_fields": {},
+        "meta": {},
+        "workflow_id": 1,
+        "state_id": "",
+        "source": "TABLE"
+    },
+    "notify": [],
+    "show_all_workflow": false,
+    "show_my_create_workflow": false
+}

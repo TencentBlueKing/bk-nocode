@@ -5,9 +5,6 @@ from django.test import TestCase, override_settings
 from blueapps.core.celery.celery import app
 
 from itsm.component.constants import OPERATE_CATALOG
-from itsm.pipeline_plugins.components.collections.itsm_worksheet import (
-    DataProcessingService,
-)
 from itsm.project.handler.project_handler import ProjectHandler
 from itsm.project.models import ProjectConfig, Project
 from itsm.service.models import Service
@@ -27,7 +24,6 @@ from nocode.test.data_engine.params import CREATE_PROJECT_DATA, WORKSHEET_DATA
 from nocode.utils.worksheet_tool import ServiceMigrate
 from nocode.worksheet.handlers.moudule_handler import ServiceHandler, DjangoHandler
 from nocode.worksheet.models import WorkSheet
-from pipeline.core.data.base import DataObject
 
 
 class PipelineTest(TestCase):
@@ -213,18 +209,6 @@ class PipelineTest(TestCase):
         service = Service.objects.get(
             project_key=CREATE_PROJECT_DATA["key"], name="test_新增"
         )
-        ticket_id = self.create_ticket(service)
-        data_process_state = self.data_process_state(service)
-        excute_data = DataObject(
-            inputs={"state_id": data_process_state, "_loop": 0}, outputs={"_loop": 0}
-        )
-        excute_parent_data = DataObject(
-            inputs={"ticket_id": ticket_id}, outputs={"is_first_execute": False}
-        )
-
-        auto_service = DataProcessingService(name="itsm")
-        auto_service._runtime_attrs = {"by_flow": 1}
-        result = auto_service.execute(excute_data, excute_parent_data)
-        self.assertEqual(result, True)
+        self.create_ticket(service)
         queryset = self.manager.get_queryset()
-        self.assertEqual(len(queryset), 1)
+        self.assertEqual(len(queryset), 2)

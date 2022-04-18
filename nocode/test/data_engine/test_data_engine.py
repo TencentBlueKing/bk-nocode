@@ -8,9 +8,6 @@ from django.db import connection
 from django.test import TestCase, override_settings
 
 from itsm.component.constants import OPERATE_CATALOG
-from itsm.pipeline_plugins.components.collections.itsm_worksheet import (
-    DataProcessingService,
-)
 from itsm.project.handler.project_handler import ProjectHandler
 from itsm.project.models import Project, ProjectConfig
 from itsm.service.models import Service
@@ -25,7 +22,6 @@ from nocode.test.data_engine.params import (
 from nocode.utils.worksheet_tool import ServiceMigrate
 from nocode.worksheet.handlers.moudule_handler import ServiceHandler, DjangoHandler
 from nocode.worksheet.models import WorkSheet, WorkSheetField
-from pipeline.core.data.base import DataObject
 
 
 class TicketDataEngine(TestCase):
@@ -209,21 +205,8 @@ class TicketDataEngine(TestCase):
     def test_list_component_data(self):
         page = Page.objects.get(name="page2", type="LIST")
 
-        data_process_state = self.data_process_state(self.service)
         for i in range(3):
-            ticket_id = self.create_ticket()
-            excute_data = DataObject(
-                inputs={"state_id": data_process_state, "_loop": 0},
-                outputs={"_loop": 0},
-            )
-            excute_parent_data = DataObject(
-                inputs={"ticket_id": ticket_id}, outputs={"is_first_execute": False}
-            )
-
-            auto_service = DataProcessingService(name="itsm")
-            auto_service._runtime_attrs = {"by_flow": 1}
-            result = auto_service.execute(excute_data, excute_parent_data)
-            self.assertEqual(result, True)
+            self.create_ticket()
         manage = DataManager(self.worksheet.id)
         queryset = manage.get_queryset()
         self.assertEqual(len(queryset), 3)

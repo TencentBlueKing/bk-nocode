@@ -59,7 +59,7 @@ class TestProjectManager(TestCase):
             ServiceCatalog.objects.filter(project_key=CREATE_PROJECT_DATA["key"])
         )
 
-        self.assertEqual(service_catalog, 7)
+        self.assertEqual(service_catalog, 8)
 
         self.assertEqual(
             ProjectConfig.objects.filter(

@@ -78,7 +78,6 @@ class DataQueryService(Service):
             for item in workflow_global_fields
         ]
         TicketGlobalVariable.objects.bulk_create(fields)
-
         return TicketGlobalVariable.objects.filter(
             state_id=state_id,
             ticket_id=ticket_id,
@@ -98,11 +97,13 @@ class DataQueryService(Service):
         ticket_global_fields = self.ticket_global_fields_create(
             workflow_global_fields, state_id, ticket_id
         )
-
+        print(workflow_global_fields.values("key"))
+        print(ticket_global_fields.values("key"))
         flag_field = TicketGlobalVariable.objects.get(
             key=f"data_query_result_{state_id}",
             name="数据是否存在",
             ticket_id=ticket_id,
+            state_id=state_id,
         )
 
         # 单一数据查询默认查第一条
@@ -119,7 +120,7 @@ class DataQueryService(Service):
                 item.value = query_data[item.key]
             if item.key == f"data_query_result_{state_id}":
                 item.value = "true"
-            item.save()
+        ticket_global_fields.bulk_update(ticket_global_fields, fields=["value"])
 
         data.set_outputs("query_data", query_data)
         return True
