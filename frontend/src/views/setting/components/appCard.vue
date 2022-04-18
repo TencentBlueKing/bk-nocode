@@ -27,6 +27,12 @@
               下架
             </div>
             <div class="action-item" @click="$emit('handleClick', app, 'edit')">设置</div>
+            <div
+              class="action-item"
+              v-if="['CHANGED', 'RELEASED'].includes(app.publish_status)"
+              @click="$emit('handleClick', app, 'export')">
+              导出
+            </div>
             <div class="action-item" @click="$emit('handleClick', app, 'delete')">删除</div>
           </div>
         </bk-popover>

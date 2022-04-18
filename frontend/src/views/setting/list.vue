@@ -91,7 +91,7 @@ import pinyin from 'pinyin';
 import permission from '@/components/permission/mixins.js';
 import AppCard from './components/appCard.vue';
 import { appColors } from '@/constants/colors.js';
-import { debounce } from '@/utils/util';
+import { debounce, getQuery } from '@/utils/util';
 
 export default {
   name: 'AppList',
@@ -328,6 +328,9 @@ export default {
           }
           this.$router.push({ name: 'appPageContent', params: { appId: key, version: version_number } });
           break;
+        case 'export':
+          this.exportApp(app);
+          break;
       }
     },
     getBgColor(color) {
@@ -383,6 +386,13 @@ export default {
         heteronym: false,
       }).join('')
         .toUpperCase();
+    },
+    exportApp(app) {
+      const params = {
+        project_key: app.key,
+      };
+      console.log(getQuery(params));
+      window.open(`${window.location.origin}${window.SITE_URL}api/project/manager/export/${getQuery(params)}`);
     },
   },
 };
