@@ -81,7 +81,8 @@
             ref="memberPermission"
             :organization-list="organizationList"
             :loading="sidesliderLoading"
-            :value="currentUserGroup.users"></member-permission>
+            :value="currentUserGroup.users">
+          </member-permission>
         </template>
       </div>
       <div slot="footer" class="king-slider-footer">

@@ -1,15 +1,24 @@
 <template>
-  <div class="custom-page-container">
+  <div :class="['custom-page-container',{ 'exception-container': !pageList.length }]">
+    <template v-if="pageList.length>0">
       <div v-for="(page,index) in pageList"
            :key="`${page.type}_${index}`"
            :class="['page-element',layoutMap[page.layout.lineLayout]]">
-          <page-item :page="page" :editor="true"></page-item>
+        <page-item :page="page" :editor="true"></page-item>
       </div>
+    </template>
+    <div v-else>
+      <bk-exception class="fields-empty" type="empty" scene="part">
+        暂无内容，请去
+        <span @click="handleEditPage">编辑页面</span>
+      </bk-exception>
+    </div>
   </div>
 </template>
 
 <script>
 import pageItem from './edit/pageItem.vue';
+
 const LAYOUT_MAP = {
   COL_3: 'quarter-row',
   COL_6: 'half-row',
@@ -25,11 +34,18 @@ export default {
       type: Array,
       default: () => ({}),
     },
+    appId: [String, Number],
+    pageId: [String, Number],
   },
   data() {
     return {
       layoutMap: LAYOUT_MAP,
     };
+  },
+  methods: {
+    handleEditPage() {
+      this.$router.push({ name: 'customPage', params: { appId: this.appId, pageId: this.pageId } });
+    },
   },
 
 };
@@ -39,9 +55,11 @@ export default {
 .custom-page-container {
   padding: 20px;
 }
-.page-item{
+
+.page-item {
   width: 100%;
 }
+
 .page-element {
   position: relative;
   display: inline-block;
@@ -63,5 +81,19 @@ export default {
 .three-fourths-row {
   width: 75%;
 }
-
+.exception-container{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+.fields-empty{
+  span{
+    color: #3a84ff;
+    &:hover{
+      cursor: pointer;
+    }
+  }
+}
 </style>
