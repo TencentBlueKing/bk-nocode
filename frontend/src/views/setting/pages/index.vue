@@ -1,6 +1,11 @@
 <template>
   <section>
     <page-wrapper title="页面管理">
+      <template slot="header">
+        <bk-button :theme="'primary'" :title="'应用发布'" @click="onReleaseClick">
+          应用发布
+        </bk-button>
+      </template>
       <div class="page-container" v-bkloading="{ isLoading: pageListLoading }">
         <div class="left-setting">
           <page-tree
@@ -118,6 +123,7 @@ import CreatePageDialog from './createPageDialog.vue';
 import AttributeConfig from './attributeConfig.vue';
 import showCustomPage from './showCustomPage.vue';
 import cloneDeep from 'lodash.clonedeep';
+import release from '../mixin/release';
 
 export default {
   name: 'PageDesign',
@@ -133,6 +139,7 @@ export default {
     showCustomPage,
     functionPage,
   },
+  mixins: [release],
   props: {
     appId: String,
   },
@@ -488,6 +495,7 @@ export default {
 
 <style lang="postcss" scoped>
 @import "../../../css/scroller.css";
+@import "../../../css/header-wrapper.css";
 .page-container {
   display: flex;
   height: 100%;

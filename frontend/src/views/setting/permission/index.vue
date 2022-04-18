@@ -1,6 +1,11 @@
 <template>
   <section>
     <page-wrapper title="权限管理" v-bkloading="{ isLoading: userGroupLoading }">
+      <template slot="header">
+        <bk-button :theme="'primary'" :title="'应用发布'" @click="onReleaseClick">
+          应用发布
+        </bk-button>
+      </template>
       <div class="list-table">
         <div class="operate-area">
           <bk-button theme="primary" icon="plus" @click="handleAddTemplate">新增用户组</bk-button>
@@ -93,6 +98,7 @@ import menuPermission from '../components/menuPermission.vue';
 import functionPermission from '../components/functionPermission.vue';
 import permissionCard from '../components/permissionCard.vue';
 import memberPermission from '../components/memberPermission.vue';
+import release from '../mixin/release';
 import cloneDeep from 'lodash.clonedeep';
 
 export default {
@@ -104,6 +110,7 @@ export default {
     PageWrapper,
     memberPermission,
   },
+  mixins: [release],
   props: {
     appId: String,
   },
@@ -558,7 +565,7 @@ export default {
 
 <style lang="postcss" scoped>
 @import '../../../css/scroller.css';
-
+@import "../../../css/header-wrapper.css";
 .setting-tab {
   background: #ffffff;
   margin: 24px;

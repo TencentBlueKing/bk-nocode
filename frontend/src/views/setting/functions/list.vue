@@ -1,6 +1,11 @@
 <template>
   <section class="function-list-page">
     <page-wrapper title="功能管理">
+      <template slot="header">
+        <bk-button :theme="'primary'" :title="'应用发布'" @click="onReleaseClick">
+          应用发布
+        </bk-button>
+      </template>
       <div class="list-table">
         <div class="operate-area">
           <bk-button theme="primary" icon="plus" @click="handleCreateFunction">新建</bk-button>
@@ -96,6 +101,7 @@ import searchItem from './searchItem.vue';
 import { errorHandler } from '@/utils/errorHandler';
 import searchTag from '../../application/components/searchTag.vue';
 import Bus from '@/utils/bus.js';
+import release from '../mixin/release';
 
 
 export default {
@@ -105,6 +111,7 @@ export default {
     searchItem,
     searchTag,
   },
+  mixins: [release],
   props: {
     appId: {
       type: String,
@@ -302,6 +309,7 @@ export default {
 </script>
 <style lang="postcss" scoped>
 @import '../../../css/scroller.css';
+@import "../../../css/header-wrapper.css";
 
 .page-main-wrapper {
   overflow: auto;
