@@ -1,5 +1,5 @@
 <template>
-  <div class="rich-text">
+  <div :class="['rich-text',{ 'show-rich-text': $route.name!=='customPage' }]">
     <rich-text-editor :value="val" :disabled="disabled" @change="change" :preview="preview"></rich-text-editor>
   </div>
 </template>
@@ -57,7 +57,9 @@ export default {
       margin: 0;
     }
   }
-
-
+}
+.show-rich-text{
+  background: #fff;
+  margin-top: 24px;
 }
 </style>

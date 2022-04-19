@@ -62,7 +62,7 @@ export default {
       }, {
         id: 'default', name: '选择用户',
       }],
-      defaultValue: this.field.meta.defaultType || '',
+      defaultValue: this.field.meta?.defaultType || '',
     };
   },
   computed: {
