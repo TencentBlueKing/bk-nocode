@@ -26,7 +26,6 @@ import random
 import string
 
 from common.log import logger
-from itsm.project.models import ProjectConfig
 from itsm.service.handler.service_handler import ServiceCatalogHandler
 from itsm.service.models import Service
 from itsm.workflow.models import Workflow
@@ -58,18 +57,13 @@ class ProjectImportHandler:
     def create_project(self, project_serializer):
         project_data = project_serializer.validated_data
         project_data["creator"] = self.request.user.username
+        self.project_key = project_data["key"]
         try:
             logger.info("正在导入应用")
-
             project_serializer.save()
-
         except Exception as e:
             logger.exception("应用初始化失败: {}, {}".format(project_data["key"], e))
             raise ProjectInitError()
-
-    def create_project_config(self, project_config_data):
-        project_config_data["project_key"] = self.project_key
-        ProjectConfig.objects.create(**project_config_data)
 
     def create_worksheet(self, worksheets):
         try:
@@ -82,8 +76,8 @@ class ProjectImportHandler:
                 db_name = "{0}_{1}".format(self.project_key, ws.key)
                 logger.info("正在准备初始化db表, db_name={}".format(db_name))
                 DjangoHandler(db_name).init_db()
-        except Exception:
-            logger.exception("表单初始化失败")
+        except Exception as e:
+            logger.exception("表单初始化失败,error: {}".format(e))
             raise WorkSheetInitError()
 
     def create_worksheet_filed(self, worksheet_field):
@@ -208,7 +202,6 @@ class ProjectImportHandler:
             service.bind_catalog(catalog_id)
 
     def import_project(self, project_serializer):
-
         worksheet = self.data.get("worksheet")
         worksheet_field = self.data.get("worksheet_field")
         page = self.data.get("page")
@@ -216,11 +209,19 @@ class ProjectImportHandler:
         service = self.data.get("service")
 
         self.create_project(project_serializer)
+        logger.info("初始化应用成功")
 
         self.create_worksheet(worksheet)
         self.create_worksheet_filed(worksheet_field)
+        logger.info("初始化表单成功")
+
         self.create_page(page)
         self.create_page_components(page_component)
+        logger.info("初始化页面成功")
+
         self.create_service(service)
         self.bind_service_catalogs()
+        logger.info("初始化功能成功")
+
         self.migrate_page_components()
+        logger.info("初始化迁移页面组件成功")
