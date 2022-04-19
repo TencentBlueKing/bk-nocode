@@ -183,6 +183,7 @@ class DataManager:
             obj = self.model()
             obj.contents = validated_data
             obj.creator = creator
+            obj.updated_by = creator
             obj.save()
 
             # 生成编号
