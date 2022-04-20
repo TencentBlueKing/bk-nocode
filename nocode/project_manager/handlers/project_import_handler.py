@@ -22,10 +22,12 @@ NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES
 WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
+import json
 import random
 import string
 
 from common.log import logger
+from itsm.project.serializers import ProjectSerializer
 from itsm.service.handler.service_handler import ServiceCatalogHandler
 from itsm.service.models import Service
 from itsm.workflow.models import Workflow
@@ -63,7 +65,7 @@ class ProjectImportHandler:
             project_serializer.save()
         except Exception as e:
             logger.exception("应用初始化失败: {}, {}".format(project_data["key"], e))
-            raise ProjectInitError()
+            raise ProjectInitError(e)
 
     def create_worksheet(self, worksheets):
         try:
@@ -201,15 +203,15 @@ class ProjectImportHandler:
             )
             service.bind_catalog(catalog_id)
 
-    def import_project(self, project_serializer):
+    def create_worksheet_page_service(self):
+        """
+        创建相应的表单,页面，功能
+        """
         worksheet = self.data.get("worksheet")
         worksheet_field = self.data.get("worksheet_field")
         page = self.data.get("page")
         page_component = self.data.get("page_component")
         service = self.data.get("service")
-
-        self.create_project(project_serializer)
-        logger.info("初始化应用成功")
 
         self.create_worksheet(worksheet)
         self.create_worksheet_filed(worksheet_field)
@@ -225,3 +227,33 @@ class ProjectImportHandler:
 
         self.migrate_page_components()
         logger.info("初始化迁移页面组件成功")
+
+    def import_project(self, project_serializer):
+        self.create_project(project_serializer)
+        logger.info("初始化应用成功")
+        self.create_worksheet_page_service()
+
+    def clone_project(self):
+        project_data = self.data.get("project")
+        project_config = self.data.get("project_config")
+
+        # 应用数据初始化
+        self.project_key = "".join(
+            [random.choice(string.ascii_letters) for _ in range(5)]
+        )
+        project_data["key"] = self.project_key
+        project_data["name"] = f"{project_data['name']}_{self.project_key}"
+        project_data["color"] = json.loads(project_data["color"])
+        # 应用设置初始化
+        project_config["workflow_prefix"] = self.project_key
+        project_config.pop("project_key", "")
+        # 构建应用数据
+        project_data.setdefault("project_config", project_config)
+
+        project_serializer = ProjectSerializer(
+            data=project_data, context={"request": self.request}
+        )
+        project_serializer.is_valid(raise_exception=True)
+
+        self.create_project(project_serializer)
+        self.create_worksheet_page_service()
