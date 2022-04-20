@@ -286,7 +286,7 @@ class AutoStateService(ItsmBaseService):
             return True
         # 更新单据状态
         ticket.do_before_enter_state(
-            state_id, api_instance_id=api_instance.id, retry=False, by_flow=self.by_flow
+            state_id, api_instance_id=api_instance.id, retry=False
         )
 
         all_variable_keys = [variable["key"] for variable in variables]
