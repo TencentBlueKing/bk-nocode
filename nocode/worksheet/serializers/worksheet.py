@@ -99,18 +99,18 @@ class WorkSheetSerializer(serializers.ModelSerializer):
 
         self.create_validate(project_key, key)
 
-        db_name = "{0}_{1}".format(project_key, key)
-
         with transaction.atomic():
             instance = super().create(validated_data)
             ServiceHandler(instance).init_service()
+
+        db_name = "{0}_{1}".format(project_key, instance.key)
 
         try:
             DjangoHandler(db_name).init_db()
         except Exception:
             logger.info(
                 "[WorkSheetSerializer]->[create] 工作表初始化失败，project_key={0},key={1}".format(
-                    project_key, key
+                    project_key, instance.key
                 )
             )
             raise CreateWorkSheetError()
