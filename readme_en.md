@@ -9,12 +9,7 @@
 
 [(English Documents Available)](readme_en.md)
 
-ITSM is the upper SaaS application based on Tencent Blueking product system. Cover different management activities or application scenarios in IT services through customizable process modules. Help enterprise users to standardize the internal management process, improve communication and management efficiency.
-
-ITSM is designed and developed based on the overall architecture of Tencent Blueking product system. Provides visualized process configuration services for users to meet their service management requirements. At the same time, the third-party connection capability is provided so that users can dispatch other platforms or service capabilities in the Tencent Blueking product system (configuration platform, standard operation and maintenance, ESB, etc.), and the connection with third-party services can also be realized according to users' own demands, reducing communication costs and improving circulation efficiency.
-
-The ITSM  uses Python as the development language and Django as the development framework. The front end uses Vue development page, through the front and back end separated development mode, while providing a beautiful and interactive interface, improve the overall development efficiency.
-
+Visual development platform **S-marker**, is a low code development platform for rapid design and development of applications. It provides visual table creation, data management, business process management, page design, authority control and other functions. Users can quickly develop department level lightweight applications through * * s-marker * * according to different business scenarios to realize rapid response to business needs. At the same time, through process management, it can quickly realize the connection with the third-party system. It not only has the ability to dispatch the basic platform services in the blue whale system (configuration platform, standard operation and maintenance, ESB, etc.), but also can connect the third-party services outside the blue whale system according to the needs of users, so as to reduce the communication cost, improve the circulation efficiency and open up the enterprise stock system.
 ## Overview
 
 - [Design Concept(In Chinese)](docs/overview/design.md)
@@ -24,10 +19,7 @@ The ITSM  uses Python as the development language and Django as the development 
 - [Code Directory (In Chinese)](docs/overview/code_structure.md)
 
 ## Feature
-ITSM is a methodology to help enterprises effectively manage the planning, development, implementation and operation of IT systems. ITSM is a process-oriented approach to sorting out core processes from complex IT management activities, such as incident management, problem management and configuration management, and to standardize and standardize these processes, clearly defining the objectives and scope of each process, costs and benefits, operational steps, critical success factors and performance indicators, the responsibilities and rights of the personnel involved, and the relationships between the processes. We are committed to providing high-quality, low-cost and high-efficiency IT services to help enterprises improve their management efficiency.
-
-ITSM is an upper layer SaaS application based on the Tencent Blueking product system. Through customizable process modules, it covers different management activities or application scenarios in IT services. It helps enterprise users standardize internal management processes and improve communication and management efficiency.
-
+Visual development platform **S-marker**, is a low code development platform for rapid design and development of applications. It provides visual table creation, data management, business process management, page design, authority control and other functions. Users can quickly develop department level lightweight applications through * * s-marker * * according to different business scenarios to realize rapid response to business needs. At the same time, through process management, it can quickly realize the connection with the third-party system. It not only has the ability to dispatch the basic platform services in the blue whale system (configuration platform, standard operation and maintenance, ESB, etc.), but also can connect the third-party services outside the blue whale system according to the needs of users, so as to reduce the communication cost, improve the circulation efficiency and open up the enterprise stock system.
 ## Getting started  
 - [Development Environment Deployment(In Chinese)](docs/install/dev_deploy.md)
 - [Production Source Code Deployment (In Chinese)](docs/install/source_code_deploy.md)

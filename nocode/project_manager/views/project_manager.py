@@ -149,3 +149,13 @@ class ProjectManagerViewSet(BaseApiViewSet):
         data = json.loads(request.FILES.get("file").read())
         ProjectImportHandler(data, request).import_project(project_serializer)
         return Response()
+
+    @swagger_auto_schema(
+        operation_summary="应用克隆", request_body=query.ProjectPublishSerializer()
+    )
+    @action(detail=False, methods=["post"])
+    def clone_project(self, request, *args, **kwargs):
+        project_key = self.validated_data["project_key"]
+        data = ProjectExportHandler(project_key).build_tag_data()
+        ProjectImportHandler(data, request).clone_project()
+        return Response()
