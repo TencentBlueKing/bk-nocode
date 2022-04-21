@@ -152,6 +152,7 @@ class StateSerializer(serializers.ModelSerializer):
                 validated_data["variables"].update(outputs=outputs)
 
             if validated_data.get("type", "") == "DATA-PROC":
+                self.extras_validate(validated_data["extras"])
                 GlobalVariable.objects.get_or_create(
                     key="data_proc_result_%s" % instance.id,
                     name="数据ID",
@@ -263,6 +264,28 @@ class StateSerializer(serializers.ModelSerializer):
             if workflow.is_builtin:
                 raise serializers.ValidationError(_("内置流程不允许增加节点"))
         return workflow
+
+    def extras_validate(self, extras):
+        # 获取所绑定表单必填字段
+        from itsm.workflow.handler.worksheet_fields_handler import (
+            WorkSheetFieldModelHandler,
+        )
+
+        data_manager = extras.get("dataManager")
+        if not data_manager:
+            raise serializers.ValidationError(_("数据处理节点需要配置相关设置项"))
+        worksheet_id = data_manager["worksheet_id"]
+        worksheet_required_fields = (
+            WorkSheetFieldModelHandler()
+            .get_fields_by_worksheet(worksheet_id=worksheet_id)
+            .filter(validate_type="REQUIRE")
+        ).values_list("key", flat=True)
+
+        current_set_fields = [item["key"] for item in data_manager["mapping"]]
+        required_flag = set(worksheet_required_fields) - set(current_set_fields)
+        if required_flag:
+            # 表单有必填项，映射没有表单必填项信息
+            raise serializers.ValidationError("表单中含有必填字段，请设置相关字段映射")
 
     def run_validation(self, data=empty):
 
