@@ -780,6 +780,7 @@ export default {
               pageId: this.page.id,
               funcId: value,
               actionId: this.btnId,
+              actionName: btn.name,
             },
             query: {
               actionType,

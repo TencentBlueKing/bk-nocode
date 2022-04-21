@@ -6,7 +6,7 @@
     </div>
     <page-wrapper
       class="page-content-area"
-      :title="crtPage.name"
+      :title="curName"
       :back-icon="$route.name === 'commonCreateTicket'"
       @back="updateUrl">
       <template v-if="crtPage.id">
@@ -36,7 +36,6 @@ export default {
     PageWrapper,
     PageNavi,
     ApplyPermPage,
-    ApplyPermPage,
   },
   mixins: [permission],
   props: {
@@ -57,6 +56,9 @@ export default {
     appName() {
       const appData = this.appList.find(item => item.key === this.appId);
       return appData ? appData.name : '';
+    },
+    curName() {
+      return `${this.crtPage.name}${this.$route.params.actionName ? `/${this.$route.params.actionName}` : ''}`;
     },
   },
   watch: {
