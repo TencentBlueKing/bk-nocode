@@ -45,20 +45,6 @@ export default {
       });
     },
   },
-  // beforeRouteLeave(to, from, next) {
-  //   if (this.$refs.createTicketComp.needLeaveConfirm) {
-  //     this.$bkInfo({
-  //       title: '此操作会导致您的编辑没有保存，确认吗？',
-  //       type: 'warning',
-  //       width: 500,
-  //       confirmFn: () => {
-  //         next();
-  //       },
-  //     });
-  //   } else {
-  //     next();
-  //   }
-  // },
 };
 </script>
 <style lang="postcss" scoped>
