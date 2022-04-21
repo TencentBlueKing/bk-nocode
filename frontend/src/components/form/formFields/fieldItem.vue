@@ -89,8 +89,7 @@ export default {
   margin-top: 24px;
   width: 100%;
   &.half-row {
-    width: calc(50% - 16px);
-    margin-right: 16px;
+    width: calc(50% - 8px);
   }
 }
 .field-label {
