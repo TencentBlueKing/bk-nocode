@@ -22,13 +22,13 @@ NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES
 WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
+import random
 import re
+import string
 from typing import AnyStr
 
 from django.db import transaction
 from django.utils.translation import ugettext as _
-from pypinyin import lazy_pinyin
-
 from rest_framework import serializers
 
 from common.log import logger
@@ -68,10 +68,9 @@ class WorkSheetSerializer(serializers.ModelSerializer):
             )
 
     def generate_key(self, validated_data):
-        name = validated_data["name"]
         project_key = validated_data["project_key"]
 
-        key = "_".join(lazy_pinyin(name))
+        key = "".join([random.choice(string.ascii_lowercase) for _ in range(6)])
 
         # 如果数据库中已经存在同名的key，则走版本控制
         if WorkSheet._objects.filter(key=key, project_key=project_key).exists():
