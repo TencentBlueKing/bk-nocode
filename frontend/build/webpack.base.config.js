@@ -71,4 +71,7 @@ module.exports = {
       path: require.resolve('path-browserify'),
     },
   },
+  cache: {
+    type: 'filesystem', // 使用文件缓存
+  },
 };
