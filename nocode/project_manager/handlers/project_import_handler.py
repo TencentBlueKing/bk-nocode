@@ -173,13 +173,24 @@ class ProjectImportHandler:
                     button["value"] = self.service_map[int(button["value"])]
 
                 new_fields = []
-                for filed in page_component.config.get("fields", []):
-                    new_fields.append(self.filed_map[filed])
+                for field in page_component.config.get("fields", []):
+                    if field in ["update_at", "create_at", "creator", "updated_by"]:
+                        new_fields.append(field)
+                        continue
+                    new_fields.append(self.filed_map[field])
 
                 page_component.config["fields"] = new_fields
 
                 new_search_fields = []
                 for search_filed in page_component.config.get("searchInfo", []):
+                    if search_filed in [
+                        "update_at",
+                        "create_at",
+                        "creator",
+                        "updated_by",
+                    ]:
+                        new_search_fields.append(search_filed)
+                        continue
                     new_search_fields.append(self.filed_map[search_filed])
 
                 page_component.config["searchInfo"] = new_search_fields
