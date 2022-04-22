@@ -177,6 +177,9 @@ class ProjectImportHandler:
                     if field in ["update_at", "create_at", "creator", "updated_by"]:
                         new_fields.append(field)
                         continue
+                    # 被导出的应用表单更新，但是列表设置没有更新
+                    if not self.filed_map.get(field):
+                        continue
                     new_fields.append(self.filed_map[field])
 
                 page_component.config["fields"] = new_fields
@@ -191,7 +194,10 @@ class ProjectImportHandler:
                     ]:
                         new_search_fields.append(search_filed)
                         continue
-                    new_search_fields.append(self.filed_map[search_filed])
+                    # 被导出的应用表单更新，但是列表设置没有更新
+                    if not self.filed_map.get(search_filed):
+                        continue
+                    new_fields.append(self.filed_map[search_filed])
 
                 page_component.config["searchInfo"] = new_search_fields
 
