@@ -35,6 +35,8 @@
           </bk-button>
           <span v-else>--</span>
       </span>
+      <span v-else-if="item.type === 'TEXT'" v-html="textTrans(item.val)">
+      </span>
       <span v-else>{{item.val}}</span>
     </bk-form-item>
   </bk-form>
@@ -143,6 +145,9 @@ export default {
       } catch (e) {
         console.error(e);
       }
+    },
+    textTrans(val) {
+      return val.replaceAll('\n', '</br>') || '--';
     },
     async setWorksheetData(item) {
       try {
