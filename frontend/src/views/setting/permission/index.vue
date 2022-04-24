@@ -2,9 +2,7 @@
   <section>
     <page-wrapper title="权限管理" v-bkloading="{ isLoading: userGroupLoading }">
       <template slot="header">
-        <bk-button :theme="'primary'" :title="'应用发布'" @click="onReleaseClick">
-          应用发布
-        </bk-button>
+        <bk-button :theme="'primary'" :title="'应用发布'" @click="onReleaseClick"> 应用发布 </bk-button>
       </template>
       <div class="list-table">
         <div class="operate-area">
@@ -38,11 +36,7 @@
       @confirm="onCreateTemplateConfirm"
       @cancel="onCreateTemplateCancel">
       <div class="form-basic-info">
-        <bk-form
-          form-type="vertical"
-          :rules="basicRules"
-          ref="roleForm"
-          :model="formBasic">
+        <bk-form form-type="vertical" :rules="basicRules" ref="roleForm" :model="formBasic">
           <bk-form-item label="用户组名称" property="name" :required="true" :error-display-type="'normal'">
             <bk-input v-model.trim="formBasic.name"></bk-input>
           </bk-form-item>
@@ -58,7 +52,7 @@
       :title="sidesliderTitle"
       ext-cls="custom-sidelider"
       :before-close="handleClose">
-      <div slot="content" v-bkloading="{ isLoading: sidesliderLoading }">
+      <div slot="content" style="height: 100%" v-bkloading="{ isLoading: sidesliderLoading }">
         <template v-if="sidesliderType === 'settingPermission'">
           <bk-tab :active.sync="active" style="margin-top: 20px" ext-cls="setting-tab" type="unborder-card">
             <bk-tab-panel name="menuPermission" label="菜单权限"></bk-tab-panel>
@@ -79,7 +73,7 @@
         <template v-if="sidesliderType === 'addMember'">
           <member-permission
             ref="memberPermission"
-            :organization-list="organizationList"
+            :full-org-list="organizationList"
             :loading="sidesliderLoading"
             :value="currentUserGroup.users">
           </member-permission>
@@ -103,7 +97,7 @@ import release from '../mixin/release';
 import cloneDeep from 'lodash.clonedeep';
 
 export default {
-  name: 'PermissionTemplate',
+  name: 'PermissionManage',
   components: {
     functionPermission,
     menuPermission,
@@ -199,6 +193,23 @@ export default {
           project_key: this.appId,
         };
         const res = await this.$store.dispatch('setting/getUserGroup', params);
+        res.data.items.forEach(group => {
+          // 新建用户组时接口返回users缺少members、departments字段
+          if (Object.keys(group.users).length === 0) {
+            Object.assign(group, { users: { members: [], departments: [] } });
+          }
+          const { departments, members } = group.users;
+          departments.forEach((item, index, arr) => {
+            if (['string', 'number'].includes(typeof item)) {
+              arr[index] = { id: item, name: item };
+            }
+          });
+          members.forEach((item, index, arr) => {
+            if (['string', 'number'].includes(typeof item)) {
+              arr[index] = { id: item, name: item };
+            }
+          });
+        });
         this.userGroupList = res.data.items;
       } catch (e) {
         console.log(e);
@@ -208,13 +219,12 @@ export default {
     },
     onCreateTemplateConfirm() {
       this.$refs.roleForm.validate().then(
-        async (validator) => {
+        async validator => {
           await this.addUserGroup();
           await this.getUserGroup();
           this.formBasic = { name: '', desc: '' };
         },
-        (validator) => {
-        }
+        validator => {}
       );
     },
     onCreateTemplateCancel() {
@@ -296,7 +306,7 @@ export default {
       const pageViewId = cloneDeep(page_view).map(el => el.id);
       const pageView = cloneDeep(page_view);
       if (type === 'GROUP') {
-        node.children.forEach((item) => {
+        node.children.forEach(item => {
           if (!pageViewId.includes(item.id)) {
             pageViewId.push(item.id);
             pageView.push({ id: item.id, name: item.name });
@@ -397,150 +407,21 @@ export default {
         this.sidesliderLoading = false;
       }
     },
-    handleCheckOrganizationNode(node, tree) {
-      const { checked } = node;
-      const { departments = [], members = [] } = this.currentUserGroup.users;
-      if (checked) {
-        // 选择是一个部门且不存在
-        if (node.async && !departments.includes(node.id)) {
-          // if (node.id === 1) {
-          //   this.currentUserGroup.users.departments = [1];
-          //   this.currentUserGroup.users.members = [];
-          // }
-          // console.log(node);
-          // // if (node.every(children => children.checked)) {
-          // //
-          // // }
-          // const { departmentsTree } = this.$store.state.setting;
-          // // 获取该节点所有的子节点
-          // // 这里有点问题
-          // const departmentIds = this.getOrganizationId(departmentsTree[0], node.id);
-          // //  获取改节点已选择的id
-          // const selectedIds  = this.getSelectedIds(tree[0]);
-          // console.log('selectedIds', selectedIds);
-          // console.log('departmentIds', departmentIds);
-          // if (this.getIntersection(departments, departmentIds)) {
-          //   this.currentUserGroup.users.departments.push(node.id);
-          //   this.currentUserGroup.users.departments = departments
-          //     .filter(department => !departmentIds.includes(department));
-          // }
-          // if (this.getIntersection(members, selectedIds)) {
-          //   this.currentUserGroup.users.members = members
-          //     .filter(member => !selectedIds.includes(member));
-          // }
-          // //  获取改节点已选择的id
-          // const selectedIds  = this.getSelectedIds(tree[0]);
-          // console.log('selectedIds', selectedIds);
-          // if (node) {
-          //
-          //   //   取并集 如果已选的节点全部位于某个部门下 取消所有勾选节点 并且选中部门
-          //
-          // }
-          departments.length > 0
-            ? this.currentUserGroup.users.departments.push(node.id)
-            : this.$set(this.currentUserGroup.users, 'departments', [node.id]);
-        } else if (!node.async && !members.includes(node.id)) {
-          // 选择是一个人员且 不存在
-          members.length > 0
-            ? this.currentUserGroup.users.members.push(node.id)
-            : this.$set(this.currentUserGroup.users, 'members', [node.id]);
-        }
-      } else {
-        const type = node.async ? 'departments' : 'members';
-        // 删除对应的id
-        this.currentUserGroup.users[type].splice(this.currentUserGroup.users[type].findIndex(item => node.id === item));
-        if (type === 'departments') {
-          this.setChildCanSelect(node);
-        }
-      }
-    },
-    getIntersection(arr1, arr2) {
-      const map = arr2.reduce((r, i) => ((r[i] = true), r), {});
-      return arr1.some(i => map[i]);
-    },
-    // 获取该节点所有的子节点
-    getOrganizationId(department, id, list = []) {
-      if (department.children) {
-        department.children.forEach((item) => {
-          // item.parent
-          if (item.parent && item.parent === id) {
-            list.push(item.id);
-          }
-          if (item.children) {
-            return this.getOrganizationId(item, item.id, list);
-          }
-        });
-      }
-      return list;
-    },
-    getSelectedIds(tree, list = []) {
-      if (tree.children) {
-        tree.children.forEach((item) => {
-          if (!item.async && item.checked) {
-            if ((this.currentUserGroup.users.members || []).includes(item.id)) {
-              list.push(...item.departments.map(el => el.id));
-            }
-          } else if (item.children) {
-            return this.getSelectedIds(item, list);
-          }
-        });
-      }
-      return list;
-    },
-    // 设置子节点可选
-    setChildCanSelect(node) {
-      if (node.children) {
-        node.children.forEach((item) => {
-          item.checked = false;
-          item.disabled = false;
-          if (item.children) {
-            return this.setChildCanSelect(item);
-          }
-        });
-      }
-    },
-    // 给组织架构树加上async异步请求  checked ,disabled
-    getNewTree(arr) {
-      return arr.map((v) => {
-        const item = {
-          async: true,
-          checked: false,
-          disabled: false,
-          ...v, // 这是创建的新对象 根据需要的键随意更改
-        };
-        if (v.children) item.children = this.getNewTree(v.children);
-        return item;
-      });
-    },
-
-    handleDelete(id, type) {
-      this.currentUserGroup.users[type].splice(
-        this.currentUserGroup.users[type].findIndex(item => item === id),
-        1
-      );
-    },
-    handleRest() {
-      this.currentUserGroup.users = { members: [], departments: [] };
-    },
     handleDeleteCard(tag, userGroup) {
       this.currentUserGroup = userGroup;
-      const { async } = tag;
       this.$bkInfo({
         type: 'warning',
-        subTitle: `确认删除${tag.name || tag.display_name}？`,
+        subTitle: `确认删除${tag.name}？`,
         confirmLoading: true,
         confirmFn: async () => {
           try {
-            if (async) {
-              this.currentUserGroup.users.departments.splice(
-                this.currentUserGroup.users.departments.findIndex(item => item.id === tag.id),
-                1
-              );
+            const { departments, members } = userGroup.users;
+            let index = departments.findIndex(item => item.id === tag.id);
+            if (index > -1) {
+              departments.splice(index, 1);
             } else {
-              this.currentUserGroup.users.members.splice(
-                this.currentUserGroup.users.members.findIndex(item => item === tag.username),
-                1
-              );
+              index = members.findIndex(item => item === tag.id);
+              members.splice(index, 1);
             }
             const params = { ...this.currentUserGroup };
             delete params.name;
@@ -566,7 +447,7 @@ export default {
 
 <style lang="postcss" scoped>
 @import '../../../css/scroller.css';
-@import "../../../css/header-wrapper.css";
+@import '../../../css/header-wrapper.css';
 .setting-tab {
   background: #ffffff;
   margin: 24px;
@@ -592,24 +473,6 @@ export default {
   }
 }
 
-.member-container {
-  margin: 24px;
-  width: 592px;
-  min-height: 437px;
-  background: #ffffff;
-  border: 1px solid #dcdee5;
-  display: flex;
-
-  .organization {
-    flex: 1;
-    border-right: 1px solid #dcdee5;
-  }
-
-  .check-member {
-    flex: 1;
-  }
-}
-
 /deep/ .custom-sidelider {
   .bk-sideslider-wrapper {
     @mixin scroller;
@@ -630,7 +493,7 @@ export default {
   display: flex;
   align-items: center;
   width: 640px;
-  height: 60px;
+  height: 52px;
   padding-left: 20px;
   background-color: #fff;
   border-top: 1px solid #dcdee5;

@@ -1,7 +1,7 @@
 <template>
   <div class="bk-select-tag width-limit-tag">
-    <span>{{ tag.display_name || tag.name }}</span>
-    <i class="bk-icon icon-close" @click="$emit('delete',tag)"></i>
+    <span v-bk-overflow-tips style="overflow: hidden">{{ tag.display_name || tag.name }}</span>
+    <i class="bk-icon icon-close" @click="$emit('delete', tag)"></i>
   </div>
 </template>
 
@@ -29,7 +29,7 @@ export default {
 </script>
 
 <style scoped lang="postcss">
-.bk-select-tag{
+.bk-select-tag {
   margin: 8px;
   height: 22px;
   line-height: 22px;
@@ -41,13 +41,13 @@ export default {
   border-radius: 2px;
   font-size: 12px;
 }
-.width-limit-tag{
+.width-limit-tag {
   display: inline-flex;
   max-width: 140px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  i{
+  i {
     font-size: 14px;
     cursor: pointer;
   }
