@@ -15,7 +15,14 @@ FIELD_INCREMENT = "field_increment"
 FIELD_REDUCTION = "field_reduction"
 
 SYSTEM = "system"
-
 APPROVER = "approver"
-
 LEADER = "leader"
+DEPARTMENT = "department"
+
+PARAMS_TYPE = [
+    VALUE_FROM_FIELD,
+    FIELD_INCREMENT,
+    FIELD_REDUCTION,
+    LEADER,
+    DEPARTMENT,
+]
