@@ -10,3 +10,10 @@ export const TIME_RANGE = [
   { id: 'current_week', name: '本周' },
   { id: 'current_month', name: '本月' },
   { id: 'current_year', name: '本年' }];
+
+// 排序规则
+export const SORT_LIST = [
+  { id: 'create_at', name: '根据创建时间规则正序' },
+  { id: '-create_at', name: '根据创建时间规则倒序' },
+  { id: 'update_at', name: '根据更新时间规则正序' },
+  { id: '-update_at', name: '根据更新时间规则倒序' }];

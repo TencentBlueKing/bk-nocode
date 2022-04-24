@@ -54,6 +54,16 @@
           </bk-option>
         </bk-select>
       </bk-form-item>
+      <bk-form-item label="排序规则" v-show="configData.option==='TABLE'">
+        <bk-select v-model="localSortBy" @selected="handleSelectSort">
+          <bk-option
+            v-for="list in sortList"
+            :key="list.id"
+            :id="list.id"
+            :name="list.name">
+          </bk-option>
+        </bk-select>
+      </bk-form-item>
       <bk-form-item label="数据筛选" v-show="configData.option==='TABLE'" ext-cls="data-filter">
         <div class="data-switch">
           <bk-switcher v-model="isDataFilter" size="small" theme="primary" @change="handleChangeStatus"></bk-switcher>
@@ -127,7 +137,8 @@ import cloneDeep from 'lodash.clonedeep';
 import { getFieldConditionsInTablePage } from '@/utils/form.js';
 import FieldValue from '@/components/form/fieldValue.vue';
 import { FIELDS_FILTER_CONFIG } from '@/constants/forms.js';
-import { TIME_RANGE } from '@/constants/sysField.js';
+import { TIME_RANGE, SORT_LIST } from '@/constants/sysField.js';
+
 
 export default {
   name: 'AttributeForm',
@@ -150,6 +161,7 @@ export default {
     workSheetId: [Number, String],
     showMode: [Number, String],
     timeRange: String,
+    sortBy: String,
     conditions: {
       type: Object,
       default: () => ({}),
@@ -165,7 +177,9 @@ export default {
         type: '',
         showMode: cloneDeep(this.showMode),
       },
+      sortList: SORT_LIST,
       localTimeRange: cloneDeep(this.timeRange),
+      localSortBy: cloneDeep(this.sortBy),
       timeRangeList: TIME_RANGE,
       dataPermission: [{
         id: 0, name: '全部可见',
@@ -214,6 +228,9 @@ export default {
     },
     timeRange(val) {
       this.localTimeRange = cloneDeep(val);
+    },
+    sortBy(val) {
+      this.localSortBy = cloneDeep(val);
     },
   },
   mounted() {
@@ -304,6 +321,9 @@ export default {
     },
     handleSelectTime(val) {
       Bus.$emit('sendTimeRange', val);
+    },
+    handleSelectSort(val) {
+      Bus.$emit('sendSortRule', val);
     },
     handleCancel() {
       this.dialog.visible = false;

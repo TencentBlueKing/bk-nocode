@@ -48,6 +48,9 @@ export default {
         project_config: projectConfig,
       }).then(response => response.data);
     },
+    importApp({}, params) {
+      return ajax.post('/project/manager/import_project/', params).then(response => response.data);
+    },
     getAppDetail({}, key) {
       return ajax.get(`/project/projects/${key}/`).then(response => response.data);
     },

@@ -58,7 +58,7 @@ export default {
       return appData ? appData.name : '';
     },
     curName() {
-      return `${this.crtPage.name}${this.$route.params.actionName ? `/${this.$route.params.actionName}` : ''}`;
+      return `${this.crtPage.name ?? ''}${this.$route.params.actionName ? `/${this.$route.params.actionName}` : ''}` ;
     },
   },
   watch: {
