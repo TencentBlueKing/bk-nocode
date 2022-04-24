@@ -210,7 +210,7 @@ export default {
 
     .bk-filter-btn {
       margin: 16px 0 0 16px;
-      padding-bottom: 0.5px;
+      padding-bottom: 2px;
     }
 
     .drag-container {

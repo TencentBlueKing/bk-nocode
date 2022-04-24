@@ -64,6 +64,7 @@
                 :show-mode="showMode"
                 :conditions="conditions"
                 :time-range="timeRange"
+                :ordering="ordering"
                 :list-id="attrData.listId"
                 @select="getTableFileds">
               </right-setting>
@@ -170,6 +171,7 @@ export default {
       showMode: '',
       conditions: {},
       timeRange: '',
+      ordering: '',
     };
   },
   computed: {
@@ -250,12 +252,16 @@ export default {
             if (!config.time_range) {
               this.$set(this.pageComponent[0].config, 'time_range', 'all');
             }
+            if (!config.ordering) {
+              this.$set(this.pageComponent[0].config, 'ordering', 'create_at');
+            }
             const { value } = list;
             this.listId = value;
             this.workSheetId = value || '';
             this.showMode = config.show_mode.mode || 0;
             this.conditions = config.conditions;
             this.timeRange = config.time_range || 'all';
+            this.ordering = config.ordering || 'create_at';
           }
         } else {
           if (this.crtPage.type === 'SHEET') {
@@ -275,6 +281,7 @@ export default {
                 sys_fields: [],
                 show_mode: { mode: 0 },
                 time_range: 'all',
+                ordering: 'create_at',
                 conditions: { connector: '', expressions: [{ condition: '', key: '', value: '', type: 'const' }] },
               },
             });
@@ -500,6 +507,7 @@ export default {
 <style lang="postcss" scoped>
 @import "../../../css/scroller.css";
 @import "../../../css/header-wrapper.css";
+
 .page-container {
   display: flex;
   height: 100%;
