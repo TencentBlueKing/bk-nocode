@@ -490,6 +490,7 @@ class ServiceMigrate(object):
             DETAIL_STATE,
             EXPORT_STATE,
             DELETE_STATE,
+            IMPORT_STATE,
         ):
             # 获取 workflow
             action_map = {
@@ -498,6 +499,7 @@ class ServiceMigrate(object):
                 "DELETE": "删除",
                 "DETAIL": "详情",
                 "EXPORT": "导出",
+                "IMPORT": "导入",
             }
 
             service_name = "{}_{}".format(self.worksheet.name, action_map.get(action))
@@ -528,7 +530,14 @@ class ServiceMigrate(object):
             self.action = action
 
             # 获取 workflow
-            action_map = {"ADD": "新增", "EDIT": "编辑", "DELETE": "删除", "DETAIL": "详情"}
+            action_map = {
+                "ADD": "新增",
+                "EDIT": "编辑",
+                "DELETE": "删除",
+                "DETAIL": "详情",
+                "IMPORT": "导入",
+                "EXPORT": "导出",
+            }
             service_name = "{}_{}".format(
                 self.worksheet.name, action_map.get(self.action)
             )

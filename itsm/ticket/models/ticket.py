@@ -3622,7 +3622,7 @@ class Ticket(Model):
         self.set_current_processors()
 
         if str(state_id) == self.first_state_id:
-            self.title = self.get_field_value("title", "--")
+            self.title = self.get_field_value("title", "--") or self.title
             self.bk_biz_id = self.get_field_value("bk_biz_id", DEFAULT_BK_BIZ_ID)
             self.save(update_fields=("title", "bk_biz_id"))
 

@@ -22,11 +22,12 @@ NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES
 WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
+import json
 import random
 import string
 
 from common.log import logger
-from itsm.project.models import ProjectConfig
+from itsm.project.serializers import ProjectSerializer
 from itsm.service.handler.service_handler import ServiceCatalogHandler
 from itsm.service.models import Service
 from itsm.workflow.models import Workflow
@@ -58,18 +59,13 @@ class ProjectImportHandler:
     def create_project(self, project_serializer):
         project_data = project_serializer.validated_data
         project_data["creator"] = self.request.user.username
+        self.project_key = project_data["key"]
         try:
             logger.info("正在导入应用")
-
             project_serializer.save()
-
         except Exception as e:
             logger.exception("应用初始化失败: {}, {}".format(project_data["key"], e))
-            raise ProjectInitError()
-
-    def create_project_config(self, project_config_data):
-        project_config_data["project_key"] = self.project_key
-        ProjectConfig.objects.create(**project_config_data)
+            raise ProjectInitError(e)
 
     def create_worksheet(self, worksheets):
         try:
@@ -82,8 +78,8 @@ class ProjectImportHandler:
                 db_name = "{0}_{1}".format(self.project_key, ws.key)
                 logger.info("正在准备初始化db表, db_name={}".format(db_name))
                 DjangoHandler(db_name).init_db()
-        except Exception:
-            logger.exception("表单初始化失败")
+        except Exception as e:
+            logger.exception("表单初始化失败,error: {}".format(e))
             raise WorkSheetInitError()
 
     def create_worksheet_filed(self, worksheet_field):
@@ -177,14 +173,31 @@ class ProjectImportHandler:
                     button["value"] = self.service_map[int(button["value"])]
 
                 new_fields = []
-                for filed in page_component.config.get("fields", []):
-                    new_fields.append(self.filed_map[filed])
+                for field in page_component.config.get("fields", []):
+                    if field in ["update_at", "create_at", "creator", "updated_by"]:
+                        new_fields.append(field)
+                        continue
+                    # 被导出的应用表单更新，但是列表设置没有更新
+                    if not self.filed_map.get(field):
+                        continue
+                    new_fields.append(self.filed_map[field])
 
                 page_component.config["fields"] = new_fields
 
                 new_search_fields = []
                 for search_filed in page_component.config.get("searchInfo", []):
-                    new_search_fields.append(self.filed_map[search_filed])
+                    if search_filed in [
+                        "update_at",
+                        "create_at",
+                        "creator",
+                        "updated_by",
+                    ]:
+                        new_search_fields.append(search_filed)
+                        continue
+                    # 被导出的应用表单更新，但是列表设置没有更新
+                    if not self.filed_map.get(search_filed):
+                        continue
+                    new_fields.append(self.filed_map[search_filed])
 
                 page_component.config["searchInfo"] = new_search_fields
 
@@ -207,20 +220,57 @@ class ProjectImportHandler:
             )
             service.bind_catalog(catalog_id)
 
-    def import_project(self, project_serializer):
-
+    def create_worksheet_page_service(self):
+        """
+        创建相应的表单,页面，功能
+        """
         worksheet = self.data.get("worksheet")
         worksheet_field = self.data.get("worksheet_field")
         page = self.data.get("page")
         page_component = self.data.get("page_component")
         service = self.data.get("service")
 
-        self.create_project(project_serializer)
-
         self.create_worksheet(worksheet)
         self.create_worksheet_filed(worksheet_field)
+        logger.info("初始化表单成功")
+
         self.create_page(page)
         self.create_page_components(page_component)
+        logger.info("初始化页面成功")
+
         self.create_service(service)
         self.bind_service_catalogs()
+        logger.info("初始化功能成功")
+
         self.migrate_page_components()
+        logger.info("初始化迁移页面组件成功")
+
+    def import_project(self, project_serializer):
+        self.create_project(project_serializer)
+        logger.info("初始化应用成功")
+        self.create_worksheet_page_service()
+
+    def clone_project(self):
+        project_data = self.data.get("project")
+        project_config = self.data.get("project_config")
+
+        # 应用数据初始化
+        self.project_key = "".join(
+            [random.choice(string.ascii_letters) for _ in range(5)]
+        )
+        project_data["key"] = self.project_key
+        project_data["name"] = f"{project_data['name']}_{self.project_key}"
+        project_data["color"] = json.loads(project_data["color"])
+        # 应用设置初始化
+        project_config["workflow_prefix"] = self.project_key
+        project_config.pop("project_key", "")
+        # 构建应用数据
+        project_data.setdefault("project_config", project_config)
+
+        project_serializer = ProjectSerializer(
+            data=project_data, context={"request": self.request}
+        )
+        project_serializer.is_valid(raise_exception=True)
+
+        self.create_project(project_serializer)
+        self.create_worksheet_page_service()

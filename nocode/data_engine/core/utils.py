@@ -47,6 +47,8 @@ from nocode.data_engine.core.constants import (
     TYPE_MAPPING,
     ALLOWED_EXPRESSION_KEY,
     SYS_KEYWORD,
+    GROUP_CONNECTOR_KEYWORD,
+    GROUP_EXPRESSION_KEYWORD,
 )
 
 
@@ -92,12 +94,50 @@ class ConditionTransfer(object):
         self.condition_filter = Q()
         self.for_worksheet = for_worksheet
 
-    def _verify(self):
+    def _verify(self, conditions=None):
         """校验器"""
+        if not conditions:
+            conditions = self.conditions
+
         # 检测 conditions 所含的参数
-        for key in self.conditions:
+        for key in conditions:
             assert key in ALLOWED_CONDITION_KEY, "Wrong Params in Condition"
         # 检查 Q 的连接方式
+        if GROUP_CONNECTOR_KEYWORD in conditions:
+            assert (
+                conditions[GROUP_CONNECTOR_KEYWORD].upper() in ALLOWED_CONNECTOR_KEY
+            ), "Dismatch Type of 'Connector'"
+        else:
+            assert (
+                conditions[CONNECTOR_KEYWORD].upper() in ALLOWED_CONNECTOR_KEY
+            ), "Dismatch Type of 'Connector'"
+        # 检测 condition.group_expressions 下的构造
+        if GROUP_EXPRESSION_KEYWORD in conditions:
+            for item in conditions.get(GROUP_EXPRESSION_KEYWORD, None):
+                self._verify(item)
+        # 检测 expressions 的构造
+        else:
+            expressions = conditions.get(EXPRESSION_KEYWORD, None)
+            if isinstance(expressions, list) and not expressions:
+                return
+            assert isinstance(expressions, list) and len(
+                expressions
+            ), "Expressions cannot be empty"
+            # 检测 conditions.expressions 的每个条件的构造
+            for expression in expressions:
+                assert len(expression) == len(
+                    ALLOWED_EXPRESSION_KEY
+                ), "Wrong number of Params"
+                for key, val in expression.items():
+                    assert key in ALLOWED_EXPRESSION_KEY, "Wrong Params in Expression"
+                    if key == CONDITION_KEYWORD:
+                        assert (
+                            val in ALLOWED_EXPRESSION_CONDITION_KEY
+                        ), "Dismatch Type of 'Condition'"
+                    if key == TYPE_KEYWORD:
+                        assert (
+                            val == ALLOWED_EXPRESSION_TYPE_KEY
+                        ), "Dismatch Type of 'Type'"
         assert (
             self.conditions[CONNECTOR_KEYWORD].upper() in ALLOWED_CONNECTOR_KEY
         ), "Dismatch Type of 'Connector'"
@@ -138,14 +178,53 @@ class ConditionTransfer(object):
             q, self.conditions[CONNECTOR_KEYWORD].upper(), squash=False
         )
 
+    def _group_expression_connector(self, expression, condition_filter, conditions):
+
+        """转换为符合 Q 的元组"""
+        key = expression[KEY_KEYWORD]
+        if key in PK_KEYWORD:
+            key = "id"
+        elif key in SYS_KEYWORD:
+            pass
+        elif key not in PK_KEYWORD and self.for_worksheet:
+            key = "contents__{}".format(key)
+        condition = expression[CONDITION_KEYWORD]
+        value = expression[VALUE_KEYWORD]
+        if condition == "in":
+            if isinstance(expression[VALUE_KEYWORD], str):
+                value = value.split(",")
+        suffix, positive = TYPE_MAPPING[condition]
+        q = Q() if positive else ~Q()
+        q.children.append(("{}{}".format(key, suffix), value))
+        condition_filter.add(q, conditions[CONNECTOR_KEYWORD].upper(), squash=False)
+        return condition_filter
+
+    def _group_trans(self, conditions, condition_filter):
+        for expression in conditions[EXPRESSION_KEYWORD]:
+            self._group_expression_connector(expression, condition_filter, conditions)
+
     def trans(self):
         """转换器"""
         if not self.conditions:
             return Q()
         self._verify()
-        self.condition_filter.connector = self.conditions[CONNECTOR_KEYWORD].upper()
-        for expression in self.conditions[EXPRESSION_KEYWORD]:
-            self._expression_connector(expression)
+        if GROUP_CONNECTOR_KEYWORD not in self.conditions:
+            self.condition_filter.connector = self.conditions[CONNECTOR_KEYWORD].upper()
+            for expression in self.conditions[EXPRESSION_KEYWORD]:
+                self._expression_connector(expression)
+        else:
+            self.condition_filter.connector = self.conditions[
+                GROUP_CONNECTOR_KEYWORD
+            ].upper()
+            for condition in self.conditions[GROUP_EXPRESSION_KEYWORD]:
+                condition_filter = Q()
+                condition_filter.connector = condition[CONNECTOR_KEYWORD].upper()
+                self._group_trans(condition, condition_filter)
+                self.condition_filter.add(
+                    condition_filter,
+                    self.conditions[GROUP_CONNECTOR_KEYWORD].upper(),
+                    squash=False,
+                )
         return self.condition_filter
 
 
