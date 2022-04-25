@@ -54,4 +54,8 @@ export default {
   },
 };
 </script>
-<style lang="postcss" scoped></style>
+<style lang="postcss" scoped>
+.setting-page-container{
+  overflow: hidden;
+}
+</style>

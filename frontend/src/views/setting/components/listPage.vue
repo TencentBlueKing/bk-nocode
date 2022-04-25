@@ -198,9 +198,15 @@ export default {
     Bus.$on('sendTimeRange', (val) => {
       this.config.time_range = val;
     });
+    Bus.$on('sendSortRule', (val) => {
+      this.config.ordering = val;
+    });
   },
   beforeDestroy() {
     Bus.$off('sendFormData');
+    Bus.$off('sendConfigRules');
+    Bus.$off('sendSortRule');
+    Bus.$off('sendTimeRange');
   },
   methods: {
     handleAddFunction() {
@@ -278,10 +284,10 @@ export default {
     },
     getData() {
       const { value, buttonGroup, fields, optionList, searchInfo, sys_fields, show_mode, conditions,
-        time_range } = this.config;
+        time_range, ordering } = this.config;
       const params = {
         value,
-        config: { buttonGroup, fields, optionList, searchInfo, sys_fields, show_mode, time_range },
+        config: { buttonGroup, fields, optionList, searchInfo, sys_fields, show_mode, time_range, ordering },
       };
       if (conditions.connector) {
         params.config.conditions = conditions;

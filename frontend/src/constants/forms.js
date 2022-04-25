@@ -176,7 +176,7 @@ export const FIELDS_SHOW_DEFAULT_VALUE = ['SELECT', 'MULTISELECT', 'INPUTSELECT'
 // 流程配置需要展示默认值的字段类型
 export const FIELDS_SHOW_DEFAULT_VALUE_IN_WORKFLOW = ['STRING', 'TEXT', 'INT', 'DATE', 'DATETIME', 'SELECT', 'MULTISELECT', 'INPUTSELECT', 'CHECKBOX', 'RADIO', 'MEMBER', 'MEMBERS', 'RICHTEXT', 'DESC'];
 // 列表页面配置数据筛选规则需要过滤的字段
-export  const FIELDS_FILTER_CONFIG = ['TABLE', 'LINK', 'IMAGE', 'FILE', 'RICHTEXT'];
+export const FIELDS_FILTER_CONFIG = ['TABLE', 'LINK', 'IMAGE', 'FILE', 'RICHTEXT'];
 // 默认值可以配置固定值和数据联动的字段类型  'SELECT', 'MULTISELECT', 'INPUTSELECT'
 export const FIELDS_SHOW_CONFIG_VALUE = ['STRING', 'TEXT', 'INT', 'DATE', 'DATETIME'];
 // 可以联动的字段
@@ -242,3 +242,12 @@ export const ACCURACY_TIME = [
 
 // 支持数据源的字段类型
 export const DATA_SOURCE_FIELD = ['SELECT', 'INPUTSELECT', 'MULTISELECT', 'CHECKBOX', 'RADIO'];
+
+export const CONDITION_FUNCTION_MAP = {
+  '==': 'equeal',
+  '>=': 'greaterOrEqual',
+  '<=': 'lessOrEaqual',
+  '>': 'greater',
+  '<': 'lesser',
+  in: 'include',
+};

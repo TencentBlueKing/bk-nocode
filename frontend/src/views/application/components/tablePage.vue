@@ -84,7 +84,9 @@
             :key="field.id"
             :label="field.name"
             :prop="field.key"
-            :show-overflow-tooltip="true">
+            :sortable="['create_at','update_at'].includes(field.id)"
+            :show-overflow-tooltip="'RICHTEXT'!==field.type"
+           >
             <template slot-scope="{ row,column }">
               <span
                 v-if="['RICHTEXT', 'IMAGE','TABLE'].includes(field.type)
@@ -97,13 +99,21 @@
                 暂无内容
               </span>
               <bk-button
-                v-else-if="['RICHTEXT','TABLE'].includes(field.type)"
+                v-else-if="field.type==='TABLE'"
                 theme="primary"
                 style="margin-right: 8px"
                 @click="handleView(row,column,field)"
                 text>
                 查看
               </bk-button>
+              <span
+                v-else-if="field.type==='RICHTEXT'"
+                theme="primary"
+                style="cursor: pointer"
+                @click="handleView(row,column,field)"
+                text>
+              {{ clearRichText( row[field.key])}}
+              </span>
               <div v-else-if="'IMAGE'.includes(field.type)" class="photo-view">
                 <viewer :images="getImageListFullPath(row[column.property])">
                   <template v-for=" (item,index) in row[column.property]">
@@ -133,6 +143,14 @@
                 v-else-if="['SELECT', 'RADIO','CHECKBOX', 'INPUTSELECT', 'MULTISELECT','FORMULA'].includes(field.type)">
                 {{ transformFields(field, row) }}</span
               >
+              <span v-else-if="field.type==='TEXT'" @click="handleView(row,column,field)" style="cursor: pointer">
+<!-- v-bk-overflow-tips="{ allowHtml: true,-->
+<!--                   // content: '#text-config',-->
+<!--                    width: 175 }">-->
+<!--                <span id="text-config" v-html=" row[field.key].replaceAll('\n', '</br>')||'&#45;&#45;'">-->
+<!--                </span>-->
+                {{ row[field.key]| formatData}}
+              </span>
               <span v-else>{{ row[field.key] | formatData }}</span>
             </template>
           </bk-table-column>
@@ -243,9 +261,11 @@
       width="960"
       title="表格详情">
       <label class="label">{{ imageConfig.label }}</label>
-
       <div class="img-wrapper">
         <span v-if="imageConfig.type === 'RICHTEXT'" v-html="imageConfig.imgList" style="overflow: hidden"></span>
+        <span v-if="imageConfig.type === 'TEXT'"
+              v-html="imageConfig.imgList.replaceAll('\n', '</br>') || '--'">
+        </span>
         <custom-table
           class="custom-table"
           v-if="imageConfig.type === 'TABLE'"
@@ -347,14 +367,7 @@ export default {
       return `${y}-${MM}-${d} ${h}:${m}`;
     },
     formatData(value) {
-      // value=0
-      if (typeof value === 'number') {
-        return value;
-      }
-      if (!value) {
-        return '--';
-      }
-      return value;
+      return value === 0 ? value : value || '--';
     },
   },
   mixins: [permission],
@@ -506,6 +519,9 @@ export default {
   },
 
   methods: {
+    trans(val) {
+      return val.replaceAll('\n', '</br>');
+    },
     handleSearch(item) {
       this.searchFormData = item;
       this.isShowSearchInfo = false;
@@ -780,6 +796,7 @@ export default {
               pageId: this.page.id,
               funcId: value,
               actionId: this.btnId,
+              actionName: btn.name,
             },
             query: {
               actionType,
@@ -1159,6 +1176,13 @@ export default {
       }
       window.open(url, '_blank');
     },
+    clearRichText(texts) {
+      const text1 = texts.replace(/<\/?(img|table)[^>]*>/g, '');// 去除图片、表格
+      const text2 = text1.replace(/<\/?.+?>/g, '');// 去除标签包裹
+      const text3 = text2.replace(/[ | ]*\n/g, '\n'); // 去除行尾空白
+      const text4 = text3.replace(/ /g, '');// 去除空格
+      return text4 || '点击查看';
+    },
   },
 };
 </script>
@@ -1472,8 +1496,11 @@ export default {
 .img-wrapper {
   padding: 13px 16px 0 16px;
   height: 500px;
+  overflow: auto;
+  @mixin scroller;
   .custom-table {
     overflow: auto;
+
     /deep/ .bk-table-body-wrapper {
       @mixin scroller;
     }

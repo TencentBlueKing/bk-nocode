@@ -1,15 +1,25 @@
 <template>
   <section class="app-list-page">
     <div class="operate-area">
-      <bk-button
-        v-cursor="{ active: !hasCreateAppPerm }"
-        theme="primary"
-        icon="plus"
-        :class="{ 'btn-permission-disabled': !hasCreateAppPerm }"
-        :disabled="permLoading"
-        @click="onCreateApp">
-        添加应用
-      </bk-button>
+      <div>
+        <bk-button
+          v-cursor="{ active: !hasCreateAppPerm }"
+          theme="primary"
+          icon="plus"
+          :class="{ 'btn-permission-disabled': !hasCreateAppPerm }"
+          :disabled="permLoading"
+          @click="onCreateApp">
+          添加应用
+        </bk-button>
+        <bk-button
+          v-cursor="{ active: !hasCreateAppPerm }"
+          theme="default"
+          :class="['export',{ 'btn-permission-disabled': !hasCreateAppPerm }]"
+          :disabled="permLoading"
+          @click="onCreateApp('import')">
+          导入
+        </bk-button>
+      </div>
       <div class="search-content">
         <bk-select class="app-status-filter" :clearable="false" v-model="status" @change="getAppList">
           <bk-option v-for="item in statusList" class="action-item" :key="item.id" :id="item.id" :name="item.name">
@@ -43,7 +53,7 @@
     </div>
     <bk-dialog
       v-model="appEditDialogShow"
-      title="应用设置"
+      :title="isImport?'应用导入':'应用设置'"
       header-position="left"
       :mask-close="false"
       :auto-close="false"
@@ -79,6 +89,18 @@
           </bk-form-item>
           <bk-form-item label="应用摘要" property="desc">
             <bk-input type="textarea" placeholder="请输入应用摘要" v-model.trim="editingApp.desc"></bk-input>
+          </bk-form-item>
+          <bk-form-item label="文件" property="file" :required="true" v-if="isImport" :error-display-type="'normal'">
+            <bk-upload
+              :theme="'button'"
+              :tip="'仅支持.json格式文件'"
+              :accept="'.json'"
+              :url="url"
+              :with-credentials="true"
+              :multiple="false"
+              :custom-request="customRequest"
+            >
+            </bk-upload>
           </bk-form-item>
         </bk-form>
       </div>
@@ -130,6 +152,13 @@ export default {
             trigger: 'blur',
           },
         ],
+        file: [
+          {
+            required: true,
+            message: '附件为必填项',
+            trigger: 'blur',
+          },
+        ],
       },
       statusList: [
         { id: 'ALL', name: '全部' },
@@ -137,6 +166,8 @@ export default {
         { id: 'RELEASED', name: '已发布' },
         { id: 'CHANGED', name: '已变更待发布' },
       ],
+      isImport: false,
+      url: `${window.SITE_URL}api/project/manager/import_project/`,
     };
   },
   created() {
@@ -212,11 +243,12 @@ export default {
       }, 2000);
       this.$set(this.appReleasingTimer, key, id);
     },
-    onCreateApp() {
+    onCreateApp(type) {
       if (!this.hasCreateAppPerm) {
         this.applyForPermission(['project_create'], []);
         return;
       }
+      this.isImport = type === 'import';
       this.editingApp = {
         key: '',
         prefix: '',
@@ -225,6 +257,7 @@ export default {
         color: ['#3a84ff', '#6cbaff'],
         project_config: {},
         isCreate: true,
+        file: '',
       };
       this.appEditDialogShow = true;
     },
@@ -356,10 +389,14 @@ export default {
               .join('')[0]
               .toUpperCase();
             this.editingApp.logo = logo;
+            if (this.isImport) {
+              await  this.importApp();
+              return;
+            }
             if (this.editingApp.isCreate) {
               const res = await this.$store.dispatch('setting/createApp', this.editingApp);
               this.$router.push({ name: 'formList', params: { appId: res.data.key } });
-            } else {
+            }  else {
               await this.$store.dispatch('setting/editApp', this.editingApp);
               this.appEditDialogShow = false;
               this.editingApp = null;
@@ -391,13 +428,46 @@ export default {
       const params = {
         project_key: app.key,
       };
-      console.log(getQuery(params));
       window.open(`${window.location.origin}${window.SITE_URL}api/project/manager/export/${getQuery(params)}`);
+    },
+    customRequest(fileData) {
+      this.editingApp.file = fileData.fileObj.origin;
+    },
+    async importApp() {
+      this.appEditPending = true;
+      const data = new FormData();
+      const logo = pinyin(this.editingApp.name, {
+        style: pinyin.STYLE_NORMAL,
+        heteronym: false,
+      })
+        .join('')[0]
+        .toUpperCase();
+      this.editingApp.logo = logo;
+      for (const key in this.editingApp) {
+        if (['project_config', 'color'].includes(key)) {
+          data.append(key, JSON.stringify(this.editingApp[key]));
+          continue;
+        }
+        data.append(key, this.editingApp[key]);
+      }
+      try {
+        const res = await this.$store.dispatch('setting/importApp', data);
+        this.$bkMessage({
+          theme: 'success',
+          message: '导入成功',
+        });
+        this.$router.push({ name: 'formList', params: { appId: res.data.key } });
+      } catch (e) {
+        console.warn(e);
+      } finally {
+        this.appEditPending = false;
+      }
     },
   },
 };
 </script>
 <style lang="postcss" scoped>
+@import "../../css/scroller.css";
 .app-list-page {
   margin: 0 auto;
   padding: 44px 0;
@@ -415,8 +485,10 @@ export default {
     align-items: center;
     cursor: pointer;
   }
+
   .search-input {
     width: 215px;
+
     /deep/ .bk-form-input {
       border-top-left-radius: 0;
       border-bottom-left-radius: 0;
@@ -439,6 +511,11 @@ export default {
   background: #f5f6fa;
 }
 
+/deep/ .bk-dialog-body{
+  max-height: 400px;
+  overflow: auto;
+  @mixin scroller;
+}
 .app-edit-content {
   .bk-form.bk-form-vertical {
     .bk-form-item:not(:first-of-type) {
@@ -486,24 +563,32 @@ export default {
   background: #ffffff;
   box-shadow: none;
 }
+
 .status-list-content {
   width: 120px;
+
   .action-item {
     padding: 0 12px;
     height: 32px;
     line-height: 32px;
     color: #63656e;
     cursor: pointer;
+
     &:hover,
     &.actived {
       background: #f4f6fa;
       color: #3a84ff;
     }
+
     i {
       width: 12px;
       margin-right: 4px;
     }
   }
+}
+
+.export {
+  margin-left: 8px;
 }
 </style>
 <style lang="postcss">
@@ -511,6 +596,7 @@ export default {
   .bk-tooltip-content {
     background: #ffffff;
   }
+
   .tippy-tooltip {
     padding: 0;
   }

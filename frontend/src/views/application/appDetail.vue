@@ -6,7 +6,7 @@
     </div>
     <page-wrapper
       class="page-content-area"
-      :title="crtPage.name"
+      :title="curName"
       :back-icon="$route.name === 'commonCreateTicket'"
       @back="updateUrl">
       <template v-if="crtPage.id">
@@ -36,7 +36,6 @@ export default {
     PageWrapper,
     PageNavi,
     ApplyPermPage,
-    ApplyPermPage,
   },
   mixins: [permission],
   props: {
@@ -57,6 +56,9 @@ export default {
     appName() {
       const appData = this.appList.find(item => item.key === this.appId);
       return appData ? appData.name : '';
+    },
+    curName() {
+      return `${this.crtPage.name ?? ''}${this.$route.params.actionName ? `/${this.$route.params.actionName}` : ''}` ;
     },
   },
   watch: {
@@ -88,9 +90,9 @@ export default {
           this.$store.dispatch('application/getPageList', params),
         ]);
         const [pagePerm, pageList] = res;
-        this.pageList = pageList.data.children.map(item => {
+        this.pageList = pageList.data.children.map((item) => {
           if (item.type === 'GROUP') {
-            item.children.forEach(page => {
+            item.children.forEach((page) => {
               page.canView = pagePerm.data[page.id] === true;
             });
           } else {
@@ -112,7 +114,7 @@ export default {
           this.crtPage = this.findPage(this.pageId); // URL参数带页面id
         } else {
           // URL 参数不带页面id默认选中第一个非分组页面
-          this.pageList.some(item => {
+          this.pageList.some((item) => {
             if (item.type === 'GROUP') {
               if (item.children.length > 0) {
                 this.crtPage = item.children[0];
@@ -129,7 +131,7 @@ export default {
     },
     findPage(id) {
       let page;
-      this.pageList.some(item => {
+      this.pageList.some((item) => {
         if (id === item.id) {
           if (item.type === 'GROUP') {
             if (item.children.length > 0) {
@@ -141,7 +143,7 @@ export default {
             return true;
           }
         } else if (item.type === 'GROUP') {
-          return item.children.some(p => {
+          return item.children.some((p) => {
             if (id === p.id) {
               page = p;
               return true;
@@ -158,18 +160,6 @@ export default {
       });
     },
     handleSelectPage(val) {
-      if (this.crtPage.type === 'SHEET' && this.$refs.pageComp && this.$refs.pageComp.getFormNeedConfirmState()) {
-        this.$bkInfo({
-          title: '此操作会导致您的编辑没有保存，确认吗？',
-          type: 'warning',
-          width: 500,
-          confirmFn: () => {
-            this.crtPage = val;
-            this.updateUrl();
-          },
-        });
-        return;
-      }
       this.crtPage = val;
       this.updateUrl();
     },

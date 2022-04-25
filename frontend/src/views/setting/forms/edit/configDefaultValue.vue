@@ -3,7 +3,7 @@
     <bk-select
       :value="defaultValue"
       @selected="handleSelect">
-      <bk-option v-for=" option in optionList" :key="option.id" :id="option.id" :name="option.name"></bk-option>
+      <bk-option v-for=" option in curOptionList" :key="option.id" :id="option.id" :name="option.name"></bk-option>
     </bk-select>
     <div class="fixed-value" v-show="defaultValue==='defaultValue'">
       <default-value
@@ -234,9 +234,6 @@ export default {
       }, {
         id: 'linkageRules',
         name: '联动规则',
-      }, {
-        id: 'curTime',
-        name: '此刻',
       }],
       currentFieldList: cloneDeep(this.fieldList).filter(item => FIELDS_CONDITION_VALUE.includes(item.type) && item.id),
       formData: {
@@ -279,6 +276,14 @@ export default {
         return 'STRING';
       }
       return FIELDS_TYPES.find(el => el.type === this.field.type).comp;
+    },
+    curOptionList() {
+      const tempArr =  cloneDeep(this.optionList);
+      tempArr.push({
+        id: 'curTime',
+        name: '此刻',
+      });
+      return this.field.type === 'DATETIME' ? tempArr : this.optionList;
     },
   },
   watch: {

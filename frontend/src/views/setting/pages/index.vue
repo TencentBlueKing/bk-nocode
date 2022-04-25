@@ -64,11 +64,13 @@
                 :show-mode="showMode"
                 :conditions="conditions"
                 :time-range="timeRange"
+                :ordering="ordering"
                 :list-id="attrData.listId"
                 @select="getTableFileds">
               </right-setting>
             </div>
-            <div class="bottom-container" v-if="['FUNCTION','SHEET','LIST'].includes(crtPage.type)">
+            <div class="bottom-container" v-if="!(crtPage.type==='CUSTOM'&&pageComponent.length===0)">
+              <template v-if="['FUNCTION','SHEET','LIST'].includes(crtPage.type)">
                 <bk-button
                   class="btn-save"
                   theme="primary"
@@ -87,6 +89,17 @@
                   class="btn-rest">
                   重置
                 </bk-button>
+              </template>
+              <template v-else>
+                <bk-button
+                  class="btn-save"
+                  theme="primary"
+                  title="编辑页面"
+                  :disabled="pageComponentLoading"
+                  @click="handleEditPage">
+                  编辑页面
+                </bk-button>
+              </template>
             </div>
           </div>
         </template>
@@ -158,6 +171,7 @@ export default {
       showMode: '',
       conditions: {},
       timeRange: '',
+      ordering: '',
     };
   },
   computed: {
@@ -238,12 +252,16 @@ export default {
             if (!config.time_range) {
               this.$set(this.pageComponent[0].config, 'time_range', 'all');
             }
+            if (!config.ordering) {
+              this.$set(this.pageComponent[0].config, 'ordering', 'create_at');
+            }
             const { value } = list;
             this.listId = value;
             this.workSheetId = value || '';
             this.showMode = config.show_mode.mode || 0;
             this.conditions = config.conditions;
             this.timeRange = config.time_range || 'all';
+            this.ordering = config.ordering || 'create_at';
           }
         } else {
           if (this.crtPage.type === 'SHEET') {
@@ -263,6 +281,7 @@ export default {
                 sys_fields: [],
                 show_mode: { mode: 0 },
                 time_range: 'all',
+                ordering: 'create_at',
                 conditions: { connector: '', expressions: [{ condition: '', key: '', value: '', type: 'const' }] },
               },
             });
@@ -464,6 +483,9 @@ export default {
         this.getPageComponent();
       }
     },
+    handleEditPage() {
+      this.$router.push({ name: 'customPage', params: { appId: this.appId, pageId: this.crtPage.id } });
+    },
     async getTableFileds(val) {
       if (val) {
         this.listLoading = true;
@@ -485,6 +507,7 @@ export default {
 <style lang="postcss" scoped>
 @import "../../../css/scroller.css";
 @import "../../../css/header-wrapper.css";
+
 .page-container {
   display: flex;
   height: 100%;
@@ -511,7 +534,7 @@ export default {
 
   .custom-page {
     width: 100%;
-    height: 100%;
+    height: calc(100% - 52px);
     border-radius: 2px;
     overflow: auto;
     @mixin scroller;
