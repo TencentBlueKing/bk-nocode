@@ -1,18 +1,19 @@
 <template>
   <bk-form :label-width="150" ext-cls="custom-detail-form">
-    <bk-form-item v-for="item in localVal" :label="`${item.name}:`" :key="item.id">
+    <template v-for="item in localVal">
+      <bk-form-item v-if="isShow(item)" :label="`${item.name}:`" :key="item.id">
       <span v-if="dataSourceField.includes(item.type)">
         {{ transformFields(item) }}
       </span>
-      <span v-else-if="item.type === 'RICHTEXT'" v-html="item.val||'--'"></span>
-      <span v-else-if="item.type === 'IMAGE'">
+        <span v-else-if="item.type === 'RICHTEXT'" v-html="item.val||'--'"></span>
+        <span v-else-if="item.type === 'IMAGE'">
         <image-file :view-mode="true" :value="item.val" v-if="item.val && item.val.length!==0"></image-file>
         <span v-else>--</span>
       </span>
-      <span v-else-if="item.type === 'IMAGE'">
-        <image-file :view-mode="true" :value="item.val"></image-file>
-      </span>
-      <span v-else-if="item.type === 'TABLE'">
+        <!--        <span v-else-if="item.type === 'IMAGE'">-->
+        <!--        <image-file :view-mode="true" :value="item.val"></image-file>-->
+        <!--      </span>-->
+        <span v-else-if="item.type === 'TABLE'">
          <bk-table :data="item.val" v-if="item.val&&item.val.length!==0">
             <template v-for="col in item.choice">
               <bk-table-column :label="col.name" :key="col.key">
@@ -24,7 +25,7 @@
           </bk-table>
           <span v-else>--</span>
       </span>
-      <span v-else-if="item.type === 'FILE'">
+        <span v-else-if="item.type === 'FILE'">
          <bk-button
            v-if="item.val"
            theme="primary"
@@ -35,22 +36,26 @@
           </bk-button>
           <span v-else>--</span>
       </span>
-      <span v-else-if="item.type === 'TEXT'" v-html="textTrans(item.val)">
+        <span v-else-if="item.type === 'TEXT'" v-html="textTrans(item.val)">
       </span>
-      <span v-else>{{item.val}}</span>
-    </bk-form-item>
+        <span v-else>{{ item.val }}</span>
+      </bk-form-item>
+    </template>
   </bk-form>
 </template>
 
 <script>
 import imageFile from '@/components/form/formFields/fields/imageFile.vue';
 import { DATA_SOURCE_FIELD } from '@/constants/forms.js';
+import judgeFieldsConditionMixins from '@/components/form/formFields/judgeFieldsConditionMixins';
 import cloneDeep from 'lodash.clonedeep';
+
 export default {
   name: 'ItemFrom',
   components: {
     imageFile,
   },
+  mixins: [judgeFieldsConditionMixins],
   props: {
     fieldList: {
       type: Array,
@@ -66,7 +71,7 @@ export default {
   watch: {
     fieldList: {
       handler(val) {
-        this.localVal =  cloneDeep(this.fieldList);
+        this.localVal = cloneDeep(this.fieldList);
         this.initChoice();
       },
       immediate: true,
@@ -77,7 +82,7 @@ export default {
       const arr = this.localVal;
       const len = arr.length;
       if (len > 0) {
-        for (let i = 0 ;i < len;i++) {
+        for (let i = 0; i < len; i++) {
           if (DATA_SOURCE_FIELD.includes(arr[i].type) && arr[i].source_type !== 'CUSTOM') {
             await this.setSourceData(arr[i]);
           }
@@ -90,7 +95,7 @@ export default {
         if (['MULTISELECT', 'CHECKBOX'].includes(field.type)) {
           const tempArr = [];
           field.choice.forEach((item) => {
-            if (field.val &&  Array.isArray(field.val.split(','))) {
+            if (field.val && Array.isArray(field.val.split(','))) {
               field.val.split(',').forEach((val) => {
                 if (item.key === val) {
                   tempArr.push(item.name);
@@ -107,7 +112,7 @@ export default {
           });
         }
       }
-      return  showValue || '--';
+      return showValue || '--';
     },
     handleDownload(val) {
       const fileArr = val;
@@ -174,6 +179,13 @@ export default {
       } catch (e) {
         console.error(e);
       }
+    },
+    isShow(item) {
+      if (this.isObjectHaveAttr(item.show_conditions)) {
+        console.log(!this.judgeFieldsCondition(item.show_conditions));
+        return !this.judgeFieldsCondition(item.show_conditions);
+      }
+      return  true;
     },
   },
 };
