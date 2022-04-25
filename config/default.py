@@ -398,8 +398,8 @@ CACHES.update(
 # Django 项目配置 - 其他
 # ==============================================================================
 CSRF_COOKIE_PATH = "/"
-CSRF_COOKIE_NAME = "bkitsm_csrftoken"
-SESSION_COOKIE_NAME = "bkitsm_sessionid"
+CSRF_COOKIE_NAME = "bknocode_csrftoken"
+SESSION_COOKIE_NAME = "bknocode_sessionid"
 
 # Template
 MAKO_DIR_NAME = "mako_templates"

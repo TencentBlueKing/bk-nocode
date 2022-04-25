@@ -56,7 +56,7 @@ RIO_TOKEN = ""
 # import logging
 # logging.getLogger('app').setLevel('INFO')
 
-CSRF_COOKIE_NAME = "bkitsm_csrftoken"
+CSRF_COOKIE_NAME = "bknocode_csrftoken"
 
 # 正式环境数据库可以在这里配置
 
