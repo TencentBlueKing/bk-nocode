@@ -29,7 +29,7 @@ import string
 from common.log import logger
 from itsm.project.serializers import ProjectSerializer
 from itsm.service.handler.service_handler import ServiceCatalogHandler
-from itsm.service.models import Service
+from itsm.service.models import Service, WorkSheetEvent, PeriodicTask, ServiceCatalog
 from itsm.workflow.models import Workflow
 from nocode.base.basic import get_random_key
 from nocode.page.models import Page, PageComponent
@@ -62,7 +62,8 @@ class ProjectImportHandler:
         self.project_key = project_data["key"]
         try:
             logger.info("正在导入应用")
-            project_serializer.save()
+            instance = project_serializer.save()
+            return instance
         except Exception as e:
             logger.exception("应用初始化失败: {}, {}".format(project_data["key"], e))
             raise ProjectInitError(e)
@@ -70,6 +71,7 @@ class ProjectImportHandler:
     def create_worksheet(self, worksheets):
         try:
             logger.info("正在初始化工作表")
+
             for worksheet in worksheets:
                 old_id = worksheet.pop("id")
                 worksheet["project_key"] = self.project_key
@@ -78,9 +80,10 @@ class ProjectImportHandler:
                 db_name = "{0}_{1}".format(self.project_key, ws.key)
                 logger.info("正在准备初始化db表, db_name={}".format(db_name))
                 DjangoHandler(db_name).init_db()
+
         except Exception as e:
             logger.exception("表单初始化失败,error: {}".format(e))
-            raise WorkSheetInitError()
+            raise WorkSheetInitError(e)
 
     def create_worksheet_filed(self, worksheet_field):
         try:
@@ -245,19 +248,53 @@ class ProjectImportHandler:
         self.migrate_page_components()
         logger.info("初始化迁移页面组件成功")
 
+    def rollback_data(self, project):
+        worksheet = WorkSheet.objects.filter(project_key=project.key)
+        WorkSheetField.objects.filter(
+            worksheet_id__in=worksheet.values_list("id", flat=True)
+        ).delete()
+        worksheet.delete()
+
+        services = Service.objects.filter(project_key=project.key)
+        service_catalog = ServiceCatalog.objects.filter(project_key=project.key)
+        WorkSheetEvent.objects.filter(service_id__in=services).delete()
+        PeriodicTask.objects.filter(service_id__in=services).delete()
+        services.delete()
+        service_catalog.delete()
+
+        pages = Page.objects.filter(project_key=project.key)
+        PageComponent.objects.filter(
+            page_id__in=pages.values_list("id", flat=True)
+        ).delete()
+        pages.delete()
+
+        project.delete()
+
+    def init_project_worksheet_page_service(self, project_serializer):
+        project_data = project_serializer.validated_data
+        project_data["creator"] = self.request.user.username
+        self.project_key = project_data["key"]
+
+        logger.info("正在导入应用")
+        instance = project_serializer.save()
+        try:
+            self.create_worksheet_page_service()
+        except Exception as e:
+            logger.exception("应用初始化失败: {}, {}".format(project_data["key"], e))
+            self.rollback_data(instance)
+            raise ProjectInitError(e)
+        return instance
+
     def import_project(self, project_serializer):
-        self.create_project(project_serializer)
-        logger.info("初始化应用成功")
-        self.create_worksheet_page_service()
+        instance = self.init_project_worksheet_page_service(project_serializer)
+        return instance
 
     def clone_project(self):
         project_data = self.data.get("project")
         project_config = self.data.get("project_config")
 
         # 应用数据初始化
-        self.project_key = "".join(
-            [random.choice(string.ascii_letters) for _ in range(5)]
-        )
+        self.project_key = self.generate_project_key()
         project_data["key"] = self.project_key
         project_data["name"] = f"{project_data['name']}_{self.project_key}"
         project_data["color"] = json.loads(project_data["color"])
@@ -272,5 +309,5 @@ class ProjectImportHandler:
         )
         project_serializer.is_valid(raise_exception=True)
 
-        self.create_project(project_serializer)
-        self.create_worksheet_page_service()
+        instance = self.init_project_worksheet_page_service(project_serializer)
+        return instance

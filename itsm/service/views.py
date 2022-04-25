@@ -66,6 +66,7 @@ from itsm.service.models import (
     FavoriteService,
     ServiceSla,
     WorkSheetEvent,
+    PeriodicTask,
 )
 from itsm.component.drf import permissions as perm
 from itsm.service.permission import ServicePermission
@@ -411,7 +412,9 @@ class ServiceViewSet(component_viewsets.AuthModelViewSet):
             raise serializers.ValidationError(_("内置服务不允许进行删除"))
         with transaction.atomic():
             ServiceSla.objects.filter(service_id=instance.id).delete()
-            WorkSheetEvent.objects.filter(service_id=instance.id).delete()
+            if instance.type == "AUTO":
+                PeriodicTask.objects.delete_periodic_task(service_id=instance.id)
+                WorkSheetEvent.objects.filter(service_id=instance.id).delete()
             change_so_project_change(instance.project_key)
             super().perform_destroy(instance)
 
