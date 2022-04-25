@@ -156,8 +156,11 @@ class ListComponentDataHandler(BaseDataHandler):
         ordering = config.get("ordering", [])
 
         # 排序字段支持
+        ordering = config.get("ordering", "id")
+        # 排序字段支持
         if len(ordering) > 1:
-            queryset = queryset.order_by(ordering[0])
+            queryset = queryset.order_by(ordering)
+
         # 筛选条件支持
         if tab_id:
             # 子选项卡
