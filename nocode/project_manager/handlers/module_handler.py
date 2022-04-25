@@ -383,11 +383,17 @@ class UserGroupHandlerOpen:
                 raise MigrateUserGroupPoliciesError("用户组页面访问策略更新失败")
 
         members = []
-        for user in user_group.users.get("members", []):
-            members.append({"type": "user", "id": user})
+        for members_item in user_group.users.get("members", []):
+            if not isinstance(members_item, dict):
+                members.append({"type": "user", "id": members_item})
+                continue
+            members.append({"type": "user", "id": members_item["id"]})
 
-        for department_id in user_group.users.get("departments", []):
-            members.append({"type": "department", "id": department_id})
+        for departments_item in user_group.users.get("departments", []):
+            if not isinstance(departments_item, dict):
+                members.append({"type": "department", "id": departments_item})
+                continue
+            members.append({"type": "department", "id": departments_item["id"]})
 
         if not members:
             logger.info("[UserGroupHandler][create_new_group] 监测到用户组没有配置人员信息，跳过初始化人员")
@@ -534,11 +540,18 @@ class UserGroupHandlerIeod(UserGroupHandlerOpen):
                 raise MigrateUserGroupPoliciesError("用户组页面访问策略更新失败")
 
         members = []
-        for user in user_group.users.get("members", []):
-            members.append({"type": "user", "id": user})
+        # members: [1,2,3, ....] / [{"id":1, "name":"tom"}, ...]
+        for members in user_group.users.get("members", []):
+            if not isinstance(members, dict):
+                members.append({"type": "user", "id": members})
+            members.append({"type": "user", "id": [user["id"] for user in members]})
 
-        for department_id in user_group.users.get("departments", []):
-            members.append({"type": "department", "id": department_id})
+        for department_items in user_group.users.get("departments", []):
+            if not isinstance(department_items, dict):
+                members.append({"type": "department", "id": department_items})
+            members.append(
+                {"type": "department", "id": [item["id"] for item in department_items]}
+            )
 
         if not members:
             logger.info("[UserGroupHandler][create_new_group] 监测到用户组没有配置人员信息，跳过初始化人员")
