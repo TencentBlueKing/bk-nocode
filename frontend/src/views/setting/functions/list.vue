@@ -155,7 +155,6 @@ export default {
       return temparr;
     },
     currentHeight() {
-      console.log(this.searchInfo.length > 0 && this.isShowSearchInfo);
       if (this.searchInfo.length > 0 && !this.isShowSearchInfo) {
         return this.defaultTableHeight - 38;
       }

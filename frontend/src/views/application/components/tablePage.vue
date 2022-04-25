@@ -209,7 +209,9 @@
       ext-cls="custom-sidelider">
       <div slot="header">{{ slideTitle }}</div>
       <div slot="content" v-bkloading="{ isLoading: editorLoading }">
-        <item-from :field-list="showFiled" v-if="!isEditor &&showFiled.length!==0" />
+        <item-from
+          :field-list="showFiled"
+          v-if="!isEditor &&showFiled.length!==0" />
         <editor-form
           :fields="editorList"
           @change="handleChange"
@@ -438,6 +440,7 @@ export default {
       DAY_TIME_STAMP: 60 * 60 * 24 * 1000,
       // 编辑和详情需要的全部字段
       editFiledsList: [],
+      detailList: [],
       fieldListLoading: false,
       isDropdownShow: false,
       btnValue: '',
@@ -717,6 +720,7 @@ export default {
       this.slideTitle = '详情';
       this.sidesliderIsShow = true;
       this.isEditor = false;
+      const tempSysfiledList = SYS_FIELD.filter(filed => this.config.fields && this.config.fields.includes(filed.key));
       const params = {
         pk: row.id,
         service_id: btn.value,
@@ -725,17 +729,20 @@ export default {
       try {
         this.editorLoading = true;
         const res = await this.$store.dispatch('application/getDetail', params);
+        const result = await this.getEditFieldList(btn.value);
+        this.detailList = [...result, ...tempSysfiledList];
         const resData = res.data[0];
         const showFiled = [];
-        this.editFiledsList.forEach((item) => {
-          if (typeof (resData[item.key]) !== 'undefined') {
+        this.detailList.forEach((item) => {
+          const curkey = item.meta?.worksheet.field_key;
+          if (typeof (resData[curkey]) !== 'undefined') {
             if (['IMAGE'].includes(item.type)) {
-              const arr = resData[item.key];
+              const arr = resData[curkey];
               item.val = arr ? arr.map(el => ({
                 path: el,
               })) : [];
             } else {
-              item.val = resData[item.key];
+              item.val = resData[curkey];
             }
             showFiled.push(item);
           }
@@ -1017,8 +1024,9 @@ export default {
         this.editorValue = {};
       }
     },
-    handleChange($event) {
+    handleChange(key, $event) {
       this.editorValue = Object.assign(this.editorValue, $event);
+      this.editorList.find(item => item.key === key).value = $event[key];
     },
     transformFields(field, row) {
       let showValue = '';

@@ -8,7 +8,7 @@ const instance = axios.create({
   // `headers` are custom headers to be sent
   headers: { 'X-Requested-With': 'XMLHttpRequest' },
   // csrftoken变量名
-  xsrfCookieName: 'bkitsm_csrftoken',
+  xsrfCookieName: 'bknocode_csrftoken',
   // cookie中的csrftoken信息名称
   xsrfHeaderName: 'X-CSRFToken',
   withCredentials: true,

@@ -70,10 +70,7 @@ export default {
       return  this.field.is_readonly;
     },
     isShow() {
-      if (this.field.show_conditions && this.field.show_conditions.connector) {
-        return  false;
-      }
-      return  true;
+      return  !!this.field.show_type;
     },
   },
   beforeCreate() {
