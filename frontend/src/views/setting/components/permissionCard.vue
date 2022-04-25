@@ -8,21 +8,21 @@
             :text="true"
             title="primary"
             class="operate-btn"
-            @click="$emit('handleClick',{ card: userGroup,type: 'setting' })">
+            @click="$emit('handleClick', { card: userGroup, type: 'setting' })">
             权限设置
           </bk-button>
           <bk-button
             :text="true"
             title="primary"
             class="operate-btn"
-            @click="$emit('handleClick',{ card: userGroup,type: 'add' })">
+            @click="$emit('handleClick', { card: userGroup, type: 'add' })">
             添加人员
           </bk-button>
           <bk-button
             :text="true"
             title="primary"
             class="operate-btn"
-            @click="$emit('handleClick',{ card: userGroup,type: 'delete' })">
+            @click="$emit('handleClick', { card: userGroup, type: 'delete' })">
             删除
           </bk-button>
         </div>
@@ -30,12 +30,7 @@
       <span class="card-desc">{{ userGroup.desc }}</span>
     </div>
     <div class="show-members">
-            <member-tag
-              v-for="item in currentShowTag"
-              :key="item.id"
-              @delete="handleDelete"
-              :member="item">
-            </member-tag>
+      <member-tag v-for="item in currentShowTag" :key="item.id" @delete="handleDelete" :member="item"> </member-tag>
     </div>
   </div>
 </template>
@@ -51,40 +46,19 @@ export default {
   props: {
     userGroup: {
       type: Object,
-      delete: () => {
-      },
+      delete: () => {},
     },
   },
   computed: {
-    department() {
-      return this.$store.state.setting.departmentsTree;
-    },
-    member() {
-      return this.userGroup.users.members ? this.userGroup.users.members.map(item => ({
-        username: item,
-        display_name: item,
-      })) : [];
-    },
     currentShowTag() {
-      return this.checkedDepartment(this.department, this.userGroup.users.departments || []).concat(this.member);
+      const { departments, members } = this.userGroup.users;
+      return [...departments, ...members];
     },
   },
   methods: {
-    checkedDepartment(val, departments, result = []) {
-      val.forEach((item) => {
-        if (departments.includes(item.id)) {
-          result.push(item);
-        }
-        if (item.children) {
-          this.checkedDepartment(item.children, departments, result);
-        }
-      });
-      return result;
-    },
     handleDelete(tag) {
       this.$emit('deleteCard', tag, this.userGroup);
     },
-
   },
 };
 </script>
@@ -94,7 +68,7 @@ export default {
   position: relative;
   margin-top: 24px;
   padding: 24px;
-  min-height: 134px;;
+  min-height: 134px;
   background: #fff;
   box-shadow: 0 2px 4px 0 rgba(25, 25, 41, 0.05);
   border-radius: 2px;
@@ -154,7 +128,7 @@ export default {
   height: 34px;
 }
 
-.show-members{
+.show-members {
   margin-top: 16px;
 }
 .cursor-pointer {
