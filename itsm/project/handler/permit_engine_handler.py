@@ -31,17 +31,22 @@ class BasePermitInitManager:
     def update_data_user_group(self, username_list):
         pass
 
-    def get_departments_id(self):
-        res = get_list_departments({"fields": "id"})
-        return res[0]["id"]
+    def get_root_departments_id(self):
+        res = get_list_departments({"fields": "id,level"})
+        departments_struct = [
+            {"type": "department", "id": int(item["id"])}
+            for item in res
+            if item["level"] == 0
+        ]
+        return departments_struct
 
     def build_grade_manager_data(self):
         GRANT_DEPARTMENT_ID = settings.GRANT_DEPARTMENT_ID
 
         if GRANT_DEPARTMENT_ID is None:
-            department_id = self.get_departments_id()
+            department_struct = self.get_root_departments_id()
         else:
-            department_id = int(GRANT_DEPARTMENT_ID)
+            department_struct = [{"type": "department", "id": int(GRANT_DEPARTMENT_ID)}]
 
         # 后续可以做成mako渲染
         request_data = {
@@ -111,7 +116,7 @@ class BasePermitInitManager:
                     ],
                 },
             ],
-            "subject_scopes": [{"type": "department", "id": department_id}],
+            "subject_scopes": department_struct,
         }
         return request_data
 

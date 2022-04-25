@@ -140,15 +140,21 @@ class ProjectManagerViewSet(BaseApiViewSet):
     )
     @action(detail=False, methods=["post"])
     def import_project(self, request, *args, **kwargs):
-        project_data = request.data
+        project_data = request.data.dict()
+        project_data["color"] = json.loads(project_data["color"])
+        project_data["project_config"] = json.loads(project_data["project_config"])
         project_serializer = ProjectSerializer(
             data=project_data, context={"request": request}
         )
         project_serializer.is_valid(raise_exception=True)
 
         data = json.loads(request.FILES.get("file").read())
-        ProjectImportHandler(data, request).import_project(project_serializer)
-        return Response()
+        instance = ProjectImportHandler(data, request).import_project(
+            project_serializer
+        )
+        return Response(
+            ProjectSerializer(instance=instance, context={"request": request}).data
+        )
 
     @swagger_auto_schema(
         operation_summary="应用克隆", request_body=query.ProjectPublishSerializer()
@@ -157,5 +163,5 @@ class ProjectManagerViewSet(BaseApiViewSet):
     def clone_project(self, request, *args, **kwargs):
         project_key = self.validated_data["project_key"]
         data = ProjectExportHandler(project_key).build_tag_data()
-        ProjectImportHandler(data, request).clone_project()
-        return Response()
+        instance = ProjectImportHandler(data, request).clone_project()
+        return Response(ProjectSerializer(instance=instance).data)
