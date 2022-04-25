@@ -153,8 +153,6 @@ class ListComponentDataHandler(BaseDataHandler):
         config = self.get_config(config)
         queryset = manager.get_queryset()
 
-        ordering = config.get("ordering", [])
-
         # 排序字段支持
         ordering = config.get("ordering", "id")
         # 排序字段支持
