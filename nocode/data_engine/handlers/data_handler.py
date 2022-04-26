@@ -121,7 +121,7 @@ class ListComponentDataHandler(BaseDataHandler):
             queryset = page_config_queryset.filter(filters).values(*keys)
         # 上传类控件数值变换
         queryset = value_to_list(upload_fields, queryset)
-        logger.info("[get_list_components_data] -> queryset={}".format(queryset))
+        logger.info("[get_list_components_data] get_querySet")
         if not need_page:
             return Response(self.get_response_data(queryset))
         pagination = CustomPageNumberPagination()
