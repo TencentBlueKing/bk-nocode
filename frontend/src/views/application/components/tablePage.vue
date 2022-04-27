@@ -136,7 +136,7 @@
                 theme="primary"
                 @click="goToLink(row,column)"
                 text>
-                点击跳转
+                {{ row[field.key]  }}
               </bk-button>
               <span v-else-if=" ['create_at','update_at'].includes(field.id)">{{ row[field.key] | formatTimer }}</span>
               <span
