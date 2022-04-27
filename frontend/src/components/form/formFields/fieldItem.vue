@@ -71,7 +71,7 @@ export default {
       return  this.field.is_readonly;
     },
     isShow() {
-      if (!field.show_conditions) {
+      if (!this.field.show_conditions) {
         return  true;
       }
       return  !!this.field.show_type;

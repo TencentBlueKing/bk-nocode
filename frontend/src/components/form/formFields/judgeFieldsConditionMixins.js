@@ -56,6 +56,53 @@ export default {
       return !!Object.keys(value).length;
     },
 
+    judgePageCondition() {
+      const  len = this.fieldList.length;
+      for (let i = 0; i < len;i++) {
+        // 必填
+        if (this.isObjectHaveAttr(this.fieldList[i].mandatory_conditions)) {
+          this.judgePageFieldsCondition(this.fieldList[i].mandatory_conditions)
+            ? this.$set(this.fieldList[i], 'validate_type', 'REQUIRE')
+            : this.$set(this.fieldList[i], 'validate_type', 'OPTION');
+          // function 判断是否符合设置条件 里面包含 各种操作符号 >= ...
+        }
+        // 只读
+        if (this.isObjectHaveAttr(this.fieldList[i].read_only_conditions)) {
+          this.judgePageFieldsCondition(this.fieldList[i].read_only_conditions)
+            ? this.$set(this.fieldList[i], 'is_readonly', true)
+            : this.$set(this.fieldList[i], 'is_readonly', false);
+        }
+        // 显隐
+        if (this.isObjectHaveAttr(this.fieldList[i].show_conditions)) {
+          // 1 为展示，0为隐藏
+          this.judgePageFieldsCondition(this.fieldList[i].show_conditions)
+            ? this.$set(this.fieldList[i], 'show_type', 0)
+            : this.$set(this.fieldList[i], 'show_type', 1);
+        }
+      }
+    },
+    judgePageFieldsCondition(condition) {
+      // 且或逻辑处理        遍历条件  or  some || and every
+      if (condition.connector === 'and') {
+        // 这里需要对符号判断
+        return  condition.expressions?.every((item) => {
+          const  func = CONDITION_FUNCTION_MAP[item.condition];
+          return this[func](
+            item.value,
+            this.formValue[item.key]
+          );
+        });
+      }
+      //  or 的条件处理
+      return condition.expressions?.some((item) => {
+        const  func = CONDITION_FUNCTION_MAP[item.condition];
+        return this[func](
+          item.value,
+          this.formValue[item.key]
+        );
+      });
+    },
+
     equeal(param1, param2) {
       return param1 === param2;
     },
