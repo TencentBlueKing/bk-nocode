@@ -206,6 +206,8 @@
     <bk-sideslider
       :is-show.sync="sidesliderIsShow"
       :width="640"
+      :quick-close="!isEditor"
+      :show-mask="true"
       ext-cls="custom-sidelider">
       <div slot="header">{{ slideTitle }}</div>
       <div slot="content" v-bkloading="{ isLoading: editorLoading }">
@@ -231,7 +233,7 @@
       :render-directive="'if'"
       v-model="visible"
       theme="primary"
-      :mask-close="false"
+      :mask-close="true"
       header-position="left"
       @value-change="handleCloseDialog"
       :show-footer="false"
@@ -257,7 +259,7 @@
       :render-directive="'if'"
       v-model="imageConfig.imageVisible"
       theme="primary"
-      :mask-close="false"
+      :mask-close="true"
       header-position="left"
       :show-footer="false"
       width="960"
@@ -465,7 +467,7 @@ export default {
             if (el.key === key) {
               // 排除其他数据源
               const IsSourceType = !['API', 'WORKSHEET'].includes(el.source_type);
-              if (Array.isArray(this.searchFormData[key]) && !['CHECKBOX', 'MULTISELECT'].includes(el.type)) {
+              if (Array.isArray(this.searchFormData[key]) && !['CHECKBOX', 'MULTISELECT', 'MEMBER'].includes(el.type)) {
                 if (this.searchFormData[key].every(it => it)) {
                   searchArr.push({
                     name: el.name,
@@ -476,12 +478,11 @@ export default {
               } else if (Array.isArray(this.searchFormData[key]) && IsSourceType) {
                 if (!this.searchFormData[key].length > 0) {
                   return;
-                }
-                ;
-                const tempName = this.searchFormData[key].map(it => el.choice.find(ele => it === ele.key).name);
+                };
+                const tempName = this.searchFormData[key].map(it => el.choice?.find(ele => it === ele.key).name);
                 searchArr.push({
                   name: el.name,
-                  value: tempName.toString(),
+                  value: el.type === 'MEMBER' ? this.searchFormData[key].toString() : tempName.toString(),
                   key,
                 });
               } else if (['SELECT', 'RADIO', 'INPUTSELECT'].includes(el.type) && IsSourceType) {
@@ -551,7 +552,7 @@ export default {
     // 格式化搜索条件
     formatSearchCondition(item) {
       const tempIntType = this.fieldList.filter(item => item.type === 'INT').map(item => item.key);
-      const tempMutiSelecet = this.fieldList.filter(item => ['CHECKBOX', 'MULTISELECT'].includes(item.type)).map(item => item.key);
+      const tempMutiSelecet = this.fieldList.filter(item => ['CHECKBOX', 'MULTISELECT', 'MEMBER'].includes(item.type)).map(item => item.key);
       const tempText = this.fieldList.filter(item => ['STRING', 'TEXT'].includes(item.type)).map(item => item.key);
       // 下拉框数据源为api和表单 来源
       const tempSourceType = this.fieldList.filter(item => SHOW_SELECT_TYPE_LIST.includes(item.type)
@@ -566,8 +567,10 @@ export default {
             }
           });
           //  多选下拉框以及checkbox
-        } else if (Array.isArray(item[key]) && item[key].length > 0) {
-          tempArr.push({ key, value: item[key].toString(), type: 'const', condition: '==' });
+        } else if (Array.isArray(item[key])) {
+          if (item[key].length > 0) {
+            tempArr.push({ key, value: item[key].toString(), type: 'const', condition: '==' });
+          }
           //  数字类型
         } else if (tempIntType.includes(key) && item[key].length > 0) {
           tempArr.push({ key, value: Number(item[key]), type: 'const', condition: '==' });

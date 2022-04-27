@@ -48,6 +48,7 @@
           <field-value
             style="width: 240px"
             :field="getField(expression.key)"
+            :use-fixed-data-source="getField(expression.key).source==='global'"
             :value="expression.value"
             @change="fieldValueChange(index, i, $event)">
           </field-value>

@@ -60,14 +60,15 @@ import { FIELDS_TYPES } from '@/constants/forms.js';
 import FormFields from '@/components/form/formFields/index.vue';
 import CreateTicketSuccess from './createTicketSuccess.vue';
 import { debounce } from '@/utils/util';
-
+import judgeFieldsConditionMixins from '@/components/form/formFields/judgeFieldsConditionMixins.js';
+import { CONDITION_FUNCTION_MAP } from '@/constants/forms.js';
 export default {
   name: 'CreateTicket',
   components: {
     FormFields,
     CreateTicketSuccess,
   },
-  mixins: [permission],
+  mixins: [permission, judgeFieldsConditionMixins],
   props: {
     appId: String,
     appName: String,
@@ -118,13 +119,14 @@ export default {
       }
     },
   },
-  created() {
+  async created() {
+    this.debounceChange = debounce(this.handleChangeFormValue, 300);
     sessionStorage.setItem('isOpenApi', false);
     if (typeof this.funcId === 'number') {
-      this.getFieldList();
-      this.getBuiltInService();
+      await this.getFieldList();
+      await this.getBuiltInService();
     }
-    this.debounceChange = debounce(this.handleChangeFormValue, 300);
+    this.judgePageCondition();
   },
   methods: {
     async getFieldList() {
@@ -142,6 +144,7 @@ export default {
           },
         });
         this.fieldList = res.data;
+        this.fields = res.data;
         this.formValue = this.getFormValue();
       } catch (e) {
         console.error(e);
@@ -356,6 +359,7 @@ export default {
           }
         }
       }
+      this.judgePageCondition();
     },
     getValue(item, res) {
       const { choice } = item.meta.data_config;
@@ -376,6 +380,7 @@ export default {
       };
       return params;
     },
+
   },
 };
 </script>

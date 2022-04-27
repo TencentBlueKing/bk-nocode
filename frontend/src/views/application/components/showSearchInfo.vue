@@ -18,7 +18,7 @@
               style="width: 100%;"
               :type="'daterange'"
               v-model="formData[item.key]"
-             @clear="handleClear(item.key)">
+              @clear="handleClear(item.key)">
             </bk-date-picker>
           </bk-form-item>
           <bk-form-item
@@ -49,6 +49,14 @@
                       @clear="handleClear(item.key)">
             </bk-input>
           </bk-form-item>
+          <bk-form-item :label="item.name" v-else-if="['MEMBER'].includes(item.type)" ext-cls="form-item">
+            <member-select :placeholder="`请输入${item.name}`"
+                           clearable
+                           type="number"
+                           v-model="formData[item.key]"
+                           @clear="handleClear(item.key)">
+            </member-select>
+          </bk-form-item>
           <bk-form-item :label="item.name" v-else ext-cls="form-item">
             <bk-input :placeholder="`请输入${item.name}`"
                       clearable
@@ -74,8 +82,11 @@
 import Bus from '@/utils/bus.js';
 import cloneDeep from 'lodash.clonedeep';
 import { SHOW_SELECT_TYPE_LIST } from '@/constants/fromTypeMap.js';
+import MemberSelect from '@/components/memberSelect.vue';
+
 export default {
   name: 'ShowSearchInfo',
+  components: { MemberSelect },
   props: {
     filedList: {
       type: Array,
