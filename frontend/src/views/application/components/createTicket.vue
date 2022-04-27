@@ -61,7 +61,6 @@ import FormFields from '@/components/form/formFields/index.vue';
 import CreateTicketSuccess from './createTicketSuccess.vue';
 import { debounce } from '@/utils/util';
 import judgeFieldsConditionMixins from '@/components/form/formFields/judgeFieldsConditionMixins.js';
-import { CONDITION_FUNCTION_MAP } from '@/constants/forms.js';
 export default {
   name: 'CreateTicket',
   components: {
@@ -159,7 +158,6 @@ export default {
           if (['MULTISELECT', 'CHECKBOX', 'MEMBER', 'MEMBERS', 'TABLE', 'IMAGE'].includes(item.type)) {
             value[item.key] = item.default ? item.default.split(',') : [];
           } else if (item.type === 'DATETIME' && item.default === 'curTime') {
-            console.log(this.$dayjs(new Date()).format('YYYY-MM-DD HH:mm:ss'));
             value[item.key] = this.$dayjs(new Date()).format('YYYY-MM-DD HH:mm:ss');
           } else {
             value[item.key] = item.default;
@@ -299,13 +297,14 @@ export default {
         if (item[i].meta.data_config) {
           const { type, conditions, value } = item[i].meta.data_config;
           // 判断变化的字段是不是被联动的字段
-          const isRelationFields = Array.isArray(conditions) && conditions.map(condition => `${item[i].meta.worksheet.key}_${condition.id}`).includes(key);
           // 当前表单
           let isConditonFlag;
-          if (type === 1 && isRelationFields) {
+          if (type === 1) {
+            console.log(i);
             isConditonFlag = conditions.every((condition) => {
               const tempkey = `${item[i].meta.worksheet.key}_${condition.id}`;
               if (condition.type === 'variable') {
+                console.log($event[tempkey], $event[`${item[i].meta.worksheet.key}_${condition.relationCurrentValue}`]);
                 return $event[tempkey] === $event[`${item[i].meta.worksheet.key}_${condition.relationCurrentValue}`];
               }
               return $event[tempkey] === condition.relationCurrentValue;
