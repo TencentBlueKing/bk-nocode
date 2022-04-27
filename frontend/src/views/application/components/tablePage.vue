@@ -206,6 +206,8 @@
     <bk-sideslider
       :is-show.sync="sidesliderIsShow"
       :width="640"
+      :quick-close="!isEditor"
+      :show-mask="true"
       ext-cls="custom-sidelider">
       <div slot="header">{{ slideTitle }}</div>
       <div slot="content" v-bkloading="{ isLoading: editorLoading }">
@@ -231,7 +233,7 @@
       :render-directive="'if'"
       v-model="visible"
       theme="primary"
-      :mask-close="false"
+      :mask-close="true"
       header-position="left"
       @value-change="handleCloseDialog"
       :show-footer="false"
@@ -257,7 +259,7 @@
       :render-directive="'if'"
       v-model="imageConfig.imageVisible"
       theme="primary"
-      :mask-close="false"
+      :mask-close="true"
       header-position="left"
       :show-footer="false"
       width="960"
