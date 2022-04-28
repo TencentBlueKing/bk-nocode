@@ -274,6 +274,8 @@ class StateSerializer(serializers.ModelSerializer):
         data_manager = extras.get("dataManager")
         if not data_manager:
             raise serializers.ValidationError(_("数据处理节点需要配置相关设置项"))
+        if data_manager["action"] != "ADD":
+            return
         worksheet_id = data_manager["worksheet_id"]
         worksheet_required_fields = (
             WorkSheetFieldModelHandler()

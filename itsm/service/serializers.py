@@ -663,7 +663,7 @@ class ServiceSerializer(AuthModelSerializer):
         data["relate_worksheet"] = relate_worksheet
         data["type"] = instance.type
         data["type_name"] = dict(SERVICE_TYPE_CHOICES).get(instance.type)
-        workflow_instance = Workflow.objects.get(id=instance.workflow.workflow_id)
+        workflow_instance = Workflow._objects.get(id=instance.workflow.workflow_id)
 
         username = self.context["request"].user.username
         data["creator"] = transform_single_username(data["creator"])
