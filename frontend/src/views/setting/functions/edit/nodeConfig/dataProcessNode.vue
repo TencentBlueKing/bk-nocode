@@ -68,57 +68,25 @@
                 @selected="expression.value = ''">
                 <bk-option id="const" name="值"></bk-option>
                 <bk-option id="field" name="引用变量"></bk-option>
-                <bk-option
-                  v-if="
+                <template v-if="
                     fieldList.length > 0 &&
                     expression.key &&
                     fieldList.find(i => i.key === expression.key).type === 'INT'
-                  "
-                  id="increment"
-                  name="增加">
-                </bk-option>
-                <bk-option
-                  v-if="
-                    fieldList.length > 0 &&
-                    expression.key &&
-                    fieldList.find(i => i.key === expression.key).type === 'INT'
-                  "
-                  id="reduction"
-                  name="减少">
-                </bk-option>
-                <bk-option
-                  v-if="
-                    fieldList.length > 0 &&
-                    expression.key &&
-                    ['STRING', 'TEXT', 'DATE', 'DATETIME', 'SELECT', 'RADIO'].includes(
-                      fieldList.find(i => i.key === expression.key).type
-                    )
-                  "
-                  id="system"
-                  name="系统变量">
-                </bk-option>
-                <bk-option
-                  v-if="
-                    fieldList.length > 0 &&
-                    expression.key &&
-                    ['STRING', 'TEXT', 'DATE', 'DATETIME', 'SELECT', 'RADIO'].includes(
-                      fieldList.find(i => i.key === expression.key).type
-                    )
-                  "
-                  id="approver"
-                  name="审批人">
-                </bk-option>
-                <bk-option
-                  v-if="
-                    fieldList.length > 0 &&
-                    expression.key &&
-                    ['STRING', 'TEXT', 'DATE', 'DATETIME', 'SELECT', 'RADIO'].includes(
-                      fieldList.find(i => i.key === expression.key).type
-                    )
-                  "
-                  id="leader"
-                  name="指定上级">
-                </bk-option>
+                  ">
+                  <bk-option id="increment" name="增加"></bk-option>
+                  <bk-option id="reduction" name="减少"></bk-option>
+                </template>
+                <template v-if="
+                  fieldList.length > 0 &&
+                  expression.key &&
+                  ['STRING', 'TEXT', 'DATE', 'DATETIME', 'SELECT', 'RADIO'].includes(
+                    fieldList.find(i => i.key === expression.key).type
+                  )
+                ">
+                  <bk-option id="system" name="系统变量"></bk-option>
+                  <bk-option id="approver" name="审批人"></bk-option>
+                  <bk-option id="leader" name="指定上级"></bk-option>
+                </template>
               </bk-select>
               <bk-select
                 v-if="expression.type === 'field'"
@@ -130,7 +98,7 @@
                 :loading="relationListLoading"
                 :disabled="relationListLoading || !editable">
                 <bk-option-group
-                  v-for="(group, gIdx) in relationList"
+                  v-for="(group, gIdx) in getAvailableRelationList(expression)"
                   :key="gIdx"
                   :name="group.name"
                   :show-collapse="true"
@@ -220,60 +188,30 @@
                 @selected="mapping.value = ''">
                 <bk-option id="const" name="值"></bk-option>
                 <bk-option id="field" name="引用变量"></bk-option>
-                <bk-option
-                  v-if="
-                    targetFields.length > 0 &&
-                    mapping.key &&
-                    targetFields.find(i => i.key === mapping.key).type === 'INT'
-                  "
-                  id="increment"
-                  name="增加">
-                </bk-option>
-                <bk-option
-                  v-if="
-                    targetFields.length > 0 &&
-                    mapping.key &&
-                    targetFields.find(i => i.key === mapping.key).type === 'INT'
-                  "
-                  id="reduction"
-                  name="减少">
-                </bk-option>
-                <bk-option
-                  v-if="
-                    targetFields.length > 0 &&
-                    mapping.key &&
-                    ['STRING', 'TEXT', 'DATE', 'DATETIME', 'SELECT', 'RADIO'].includes(
-                      targetFields.find(i => i.key === mapping.key).type
-                    )
-                  "
-                  id="system"
-                  name="系统变量">
-                </bk-option>
-                <bk-option
-                  v-if="
-                    targetFields.length > 0 &&
-                    mapping.key &&
-                    ['STRING', 'TEXT', 'DATE', 'DATETIME', 'SELECT', 'RADIO'].includes(
-                      fieldList.find(i => i.key === mapping.key).type
-                    )
-                  "
-                  id="approver"
-                  name="审批人">
-                </bk-option>
-                <bk-option
-                  v-if="
-                    targetFields.length > 0 &&
-                    mapping.key &&
-                    ['STRING', 'TEXT', 'DATE', 'DATETIME', 'SELECT', 'RADIO'].includes(
-                      fieldList.find(i => i.key === mapping.key).type
-                    )
-                  "
-                  id="leader"
-                  name="指定上级">
-                </bk-option>
+                <template v-if="
+                  targetFields.length > 0 &&
+                  mapping.key &&
+                  targetFields.find(i => i.key === mapping.key).type === 'INT'
+                ">
+                  <bk-option id="increment" name="增加"></bk-option>
+                  <bk-option id="reduction" name="减少"></bk-option>
+                  <bk-option v-if="formData.action === 'EDIT'" id="field_increment" name="加指定变量"></bk-option>
+                  <bk-option v-if="formData.action === 'EDIT'" id="field_reduction" name="减指定变量"></bk-option>
+                </template>
+                <template v-if="
+                  targetFields.length > 0 &&
+                  mapping.key &&
+                  ['STRING', 'TEXT', 'DATE', 'DATETIME', 'SELECT', 'RADIO'].includes(
+                    fieldList.find(i => i.key === mapping.key).type
+                  )
+                ">
+                <bk-option id="system" name="系统变量"></bk-option>
+                <bk-option id="approver" name="审批人"></bk-option>
+                <bk-option id="leader" name="指定上级"></bk-option>
+                </template>
               </bk-select>
               <bk-select
-                v-if="mapping.type === 'field'"
+                v-if="['field', 'field_increment', 'field_reduction'].includes(mapping.type)"
                 v-model="mapping.value"
                 placeholder="选择变量"
                 style="width: 208px"
@@ -282,7 +220,7 @@
                 :loading="relationListLoading"
                 :disabled="relationListLoading || !editable">
                 <bk-option-group
-                  v-for="(group, gIdx) in relationList"
+                  v-for="(group, gIdx) in getAvailableRelationList(mapping)"
                   :key="gIdx"
                   :name="group.name"
                   :show-collapse="true"
@@ -532,6 +470,7 @@ export default {
       }
       return [];
     },
+    // 可选择的目标表字段
     getSelectableField(fieldList, crtKey, type) {
       const data = type === 'condition' ? this.formData.conditions.expressions : this.formData.mapping;
       const usedKeys = [];
@@ -596,6 +535,28 @@ export default {
         return;
       }
       this.formData.mapping.splice(index, 1);
+    },
+    // 数字类型的变量如果指定值类型为减指定变量、加指定变量，可选变量需要过滤
+    getAvailableRelationList(exp) {
+      if (this.targetFields.length > 0) {
+        const field = this.targetFields.find(i => i.key === exp.key).type === 'INT';
+        if (field && ['field_increment', 'field_reduction'].includes(exp.type)) {
+          const list = [];
+          this.relationList.forEach(group => {
+            const fields = [];
+            group.fields.forEach(item => {
+              if (item.type === 'INT') {
+                fields.push(item);
+              }
+            });
+            if (fields.length > 0) {
+              list.push({ name: group.name, fields });
+            }
+          });
+          return list;
+        }
+      }
+      return this.relationList;
     },
     // 选择表单字段，修改对应值的数据类型
     handleSelectField(data) {
