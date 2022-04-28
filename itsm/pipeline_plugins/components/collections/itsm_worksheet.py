@@ -382,9 +382,10 @@ class DataProcessingService(Service):
                 for ws in worksheets:
                     ws_id = ws.id
                     data = copy.deepcopy(ws.contents)
+                    data.update(map_data)
+                    # map_data 更新数据
                     if compute_fields:
                         data = state_extra_manager.compute_field(compute_fields, data)
-                    data.update(map_data)
                     manager.update(ws_id, data, operator)
 
                     logger.info(
