@@ -222,7 +222,7 @@ class StateExtraManager:
                     INCREMENT: data[item["key"]] + int(item["value"]),
                     REDUCTION: data[item["key"]] - int(item["value"]),
                 }
-                data[item["key"]] = compute_type.get(item["type"])
+                data_struct[item["key"]] = compute_type.get(item["type"])
             if item["type"] in [FIELD_INCREMENT, FIELD_REDUCTION]:
                 ticket_field_key = re.findall(r"\${param_(.*?)}", item["value"])[0]
                 field_map = {
@@ -231,8 +231,8 @@ class StateExtraManager:
                     FIELD_REDUCTION: data[item["key"]]
                     - self.get_field_value(ticket_field_key),
                 }
-                data[item["key"]] = field_map.get(item["type"])
-        return data
+                data_struct[item["key"]] = field_map.get(item["type"])
+        return data_struct
 
     def get_compute_field(self):
         data = []
@@ -382,10 +382,16 @@ class DataProcessingService(Service):
                 for ws in worksheets:
                     ws_id = ws.id
                     data = copy.deepcopy(ws.contents)
-                    data.update(map_data)
                     # map_data 更新数据
                     if compute_fields:
-                        data = state_extra_manager.compute_field(compute_fields, data)
+                        compute_result = state_extra_manager.compute_field(
+                            compute_fields, data
+                        )
+                    map_data.update(compute_result)
+                    data.update(map_data)
+
+                    print("计算后的数据=={}".format(data))
+
                     manager.update(ws_id, data, operator)
 
                     logger.info(
