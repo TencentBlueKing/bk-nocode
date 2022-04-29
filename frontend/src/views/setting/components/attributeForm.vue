@@ -22,7 +22,7 @@
         property="workSheetId"
         :required="true"
         :error-display-type="'normal'">
-        <bk-select v-model="configData.workSheetId" @change="change">
+        <bk-select v-model="configData.workSheetId" @selected="change">
           <bk-option
             v-for="list in workSheetList"
             :key="list.id"
@@ -232,6 +232,9 @@ export default {
     sortBy(val) {
       this.localSortBy = cloneDeep(val);
     },
+    functionList(val) {
+      console.log(val);
+    },
   },
   mounted() {
     // 选中按钮
@@ -311,7 +314,6 @@ export default {
       expression.value = val;
     },
     handleConfirm() {
-      // if (!(this.localVal.connector && this.localVal.expressions.every(i => i))) {
       if (!this.localVal.connector) {
         this.errorTips = true;
         return;

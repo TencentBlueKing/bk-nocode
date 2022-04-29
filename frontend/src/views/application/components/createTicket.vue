@@ -177,7 +177,7 @@ export default {
         } else if (['MULTISELECT', 'CHECKBOX', 'MEMBER', 'MEMBERS'].includes(type)) {
           value = Array.isArray(this.formValue[key]) ? this.formValue[key].join(',') : this.formValue[key];
         } else if (type === 'INT') {
-          value = this.formValue[key] || 0;
+          value = this.formValue[key] || '0';
         }
         return { choice, id, key, type, value };
       });
@@ -270,6 +270,9 @@ export default {
         } else {
           clearTimeout(timer);
           this.ticketStatus = currentStatus;
+          setTimeout(() => {
+            this.visible = false;
+          }, 500);
         }
       } catch (e) {
         console.warn(e);

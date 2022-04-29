@@ -354,12 +354,14 @@ export default {
       this.pageComponent = [];
       this.attrData = {};
       this.workSheetId = '';
+      this.timeRange = 'all',
+      this.ordering = 'create_at',
+      this.showMode = 0;
       this.getPageComponent();
     },
     handleAttrChange(val) {
       if (this.crtPage.type === 'SHEET') {
         this.attrData = { ...val };
-        console.log(val);
       } else if (this.crtPage.type === 'FUNCTION') {
         const { funcId, name, desc, bgColor, index } = val;
         const card = this.pageComponent[index];

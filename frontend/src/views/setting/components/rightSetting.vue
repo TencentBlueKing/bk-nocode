@@ -15,7 +15,6 @@
       :work-sheet-list="tableList"
       @select="handleSelect">
     </attribute-form>
-
   </div>
 </template>
 

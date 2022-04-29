@@ -527,6 +527,7 @@ export default {
       } else {
         this.fieldData.show_conditions = {};
       }
+      this.fieldData.show_type = val ? 0 : 1;
     },
     // 打开添加条件面板
     handleOpenConditionsPanel(key) {
@@ -591,6 +592,7 @@ export default {
               read_only_conditions, // 只读条件
               show_conditions, // 隐藏条件
               default: defaultVal,
+              show_type,
             } = this.fieldData;
             const action = this.isCreate ? 'createNodeField' : 'updateNodeField';
             const params = {
@@ -615,6 +617,7 @@ export default {
               mandatory_conditions,
               read_only_conditions,
               show_conditions,
+              show_type,
               default: defaultVal,
             };
             const res = await this.$store.dispatch(`setting/${action}`, params);

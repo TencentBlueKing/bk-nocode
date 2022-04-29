@@ -125,6 +125,7 @@ export default {
     handleSelectField(data) {
       const field = this.fields.find(item => item.key === data.key);
       data.condition = '';
+      data.type = field.type;
       switch (field.type) {
         case 'INT':
           data.value = 0;
