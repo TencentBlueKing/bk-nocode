@@ -74,11 +74,13 @@ def field_validate(field, state_fields, key_value, **kwargs):
 
     if field_obj.type == "INT":
         if field["value"] == "":
-            raise serializers.ValidationError(_(f" {field_obj.name}: 请输入标准整数"))
+            raise serializers.ValidationError(_(f" {field_obj.name}: 请输入标准数字"))
+
         try:
-            int(field["value"])
+            # 兼容浮点数的校验
+            float(field["value"])
         except ValueError:
-            raise serializers.ValidationError(_(f" {field_obj.name}: 请输入标准整数"))
+            raise serializers.ValidationError(_(f" {field_obj.name}: 请输入标准数字"))
 
     choice_validate(field, field_obj, key_value, **kwargs)
     regex_validate(field, field_obj)
