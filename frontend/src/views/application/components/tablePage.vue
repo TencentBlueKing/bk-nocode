@@ -1,76 +1,97 @@
 <template>
   <div class="list-page">
-    <div v-if="!fieldListLoading && !showSuccess" class="table-config">
-      <div class="header-config">
-        <div class="function-btn" v-if="config.buttonGroup">
-          <bk-button
-            v-for="(item, index) in config.buttonGroup.slice(0, limitShowBtn)"
-            v-cursor="{ active: actionsPermMap[item.id] === false }"
-            :key="index"
-            :theme="index === 0 ? 'primary' : 'default'"
-            :class="{ 'btn-permission-disabled': actionsPermMap[item.id] === false }"
-            :disabled="!(item.id in actionsPermMap)"
-            size="normal"
-            class="btn-content"
-            @click="handleClick(item, {}, 'buttonGroup')">
-            {{ item.name }}
-          </bk-button>
-          <bk-dropdown-menu
-            @show="dropdownShow"
-            @hide="dropdownHide"
-            ref="dropdown"
-            style="margin-left: 8px"
-            v-if="config.buttonGroup.length > limitShowBtn">
-            <div class="dropdown-trigger-btn" style="padding-left: 19px" slot="dropdown-trigger">
-              更多
-              <i :class="['bk-icon icon-angle-down', { 'icon-flip': isDropdownShow }]"></i>
-            </div>
-            <!--      <ul class="bk-dropdown-list" slot="dropdown-content" v-for="item in buttonGroup">-->
-            <ul class="bk-dropdown-list" slot="dropdown-content">
-              <li v-for="(item, index) in config.buttonGroup.slice(limitShowBtn)" :key="index">
-                <a
-                  v-cursor="{ active: actionsPermMap[item.id] === false }"
-                  href="javascript:;"
-                  :class="{
-                    'text-permission-disabled': actionsPermMap[item.id] === false,
-                    disabled: !(item.id in actionsPermMap),
-                  }"
-                  @click="handleClick(item, {}, 'buttonGroup')">
-                  {{ item.name }}
-                </a>
-              </li>
-              <!--              <li><a href="javascript:;" @click="handleExport"> 导出</a></li>-->
-            </ul>
-          </bk-dropdown-menu>
+    <div class="table-config">
+      <div ref="dataOperationArea" id="data-operation-area" class="data-operation-area">
+        <div class="header-config">
+          <div class="function-btn" v-if="config.buttonGroup">
+            <bk-button
+              v-for="(item, index) in config.buttonGroup.slice(0, limitShowBtn)"
+              v-cursor="{ active: actionsPermMap[item.id] === false }"
+              :key="index"
+              :theme="index === 0 ? 'primary' : 'default'"
+              :class="{ 'btn-permission-disabled': actionsPermMap[item.id] === false }"
+              :disabled="!(item.id in actionsPermMap)"
+              size="normal"
+              class="btn-content"
+              @click="handleClick(item, {}, 'buttonGroup')">
+              {{ item.name }}
+            </bk-button>
+            <bk-dropdown-menu
+              @show="dropdownShow"
+              @hide="dropdownHide"
+              ref="dropdown"
+              style="margin-left: 8px"
+              v-if="config.buttonGroup.length > limitShowBtn">
+              <div class="dropdown-trigger-btn" style="padding-left: 19px" slot="dropdown-trigger">
+                更多
+                <i :class="['bk-icon icon-angle-down', { 'icon-flip': isDropdownShow }]"></i>
+              </div>
+              <!--      <ul class="bk-dropdown-list" slot="dropdown-content" v-for="item in buttonGroup">-->
+              <ul class="bk-dropdown-list" slot="dropdown-content">
+                <li v-for="(item, index) in config.buttonGroup.slice(limitShowBtn)" :key="index">
+                  <a
+                    v-cursor="{ active: actionsPermMap[item.id] === false }"
+                    href="javascript:;"
+                    :class="{
+                      'text-permission-disabled': actionsPermMap[item.id] === false,
+                      disabled: !(item.id in actionsPermMap),
+                    }"
+                    @click="handleClick(item, {}, 'buttonGroup')">
+                    {{ item.name }}
+                  </a>
+                </li>
+                <!--              <li><a href="javascript:;" @click="handleExport"> 导出</a></li>-->
+              </ul>
+            </bk-dropdown-menu>
+          </div>
+          <div class="table-operate-area">
+            <bk-popover
+              ext-cls="table-config-pop-wrapper"
+              placement="bottom-end"
+              :tippy-options="{
+                arrow: false,
+                theme: 'light',
+                trigger: 'click'
+              }">
+              <div :class="['pop-trigger', { actived: rowAutoHeight }]">表格风格设置</div>
+              <div slot="content">
+                <div :class="['option-item', { actived: !rowAutoHeight }]" @click="rowAutoHeight = false">默认</div>
+                <div :class="['option-item', { actived: rowAutoHeight }]" @click="rowAutoHeight = true">自适应行高</div>
+              </div>
+            </bk-popover>
+            <div class="vertical-split-line"></div>
+            <i
+              v-bk-tooltips="topStart"
+              class="custom-icon-font icon-filter-funnel filter-extend-icon"
+              @click="isShowSearchInfo = !isShowSearchInfo">
+            </i>
+          </div>
         </div>
-        <div class="search-icon top-start" @click="isShowSearchInfo = !isShowSearchInfo" v-bk-tooltips="topStart">
-          <i class="custom-icon-font icon-filter-funnel"></i>
-        </div>
-      </div>
-      <show-search-info
-        v-show="config.searchInfo && config.searchInfo.length !== 0 && isShowSearchInfo"
-        :search-info="config.searchInfo"
-        :filed-list="fieldList"
-        @search="handleSearch"
-        @cancel="handleCancel">
-      </show-search-info>
-      <div class="search-item-container">
-        <template v-if="!isShowSearchInfo && searchInfo.length!==0">
+        <show-search-info
+          v-if="config.searchInfo && config.searchInfo.length !== 0 && isShowSearchInfo"
+          :search-info="config.searchInfo"
+          :filed-list="fieldList"
+          @search="handleSearch"
+          @cancel="handleCancel">
+        </show-search-info>
+        <div v-if="!isShowSearchInfo && searchInfo.length!==0" class="search-item-container">
           <search-tag
             v-for="item in searchInfo"
             :search-item="item"
             :key="item.key"
             @delete="handleRemoveSearch">
           </search-tag>
-        </template>
+        </div>
       </div>
-      <div class="custom-table">
+      <div ref="dataTableArea" class="custom-table">
         <bk-table
           v-bkloading="{ isLoading: tableDataLoading,zIndex: 9999 }"
           v-if="fields.length !== 0"
           ext-cls="table-border"
           :data="tableData"
           :outer-border="false"
+          :row-auto-height="rowAutoHeight"
+          :max-height="maxTableHeight"
           :pagination="pagination"
           @page-change="handlePageChange"
           @page-limit-change="handlePageLimitChange"
@@ -145,14 +166,9 @@
                 v-else-if="['SELECT', 'RADIO','CHECKBOX', 'INPUTSELECT', 'MULTISELECT','FORMULA'].includes(field.type)">
                 {{ transformFields(field, row) }}</span
               >
-              <span v-else-if="field.type==='TEXT'" @click="handleView(row,column,field)" style="cursor: pointer">
-<!-- v-bk-overflow-tips="{ allowHtml: true,-->
-<!--                   // content: '#text-config',-->
-<!--                    width: 175 }">-->
-<!--                <span id="text-config" v-html=" row[field.key].replaceAll('\n', '</br>')||'&#45;&#45;'">-->
-<!--                </span>-->
-                {{ row[field.key]| formatData}}
-              </span>
+              <div v-else-if="field.type==='TEXT'"
+                :class="['cell-textarea', { 'auto-height': rowAutoHeight }]"
+                @click="handleView(row,column,field)">{{ row[field.key]| formatData}}</div>
               <span v-else>{{ row[field.key] | formatData }}</span>
             </template>
           </bk-table-column>
@@ -227,7 +243,11 @@
         <bk-button theme="default" @click="handleClose" style="margin-left: 8px">取消</bk-button>
       </div>
     </bk-sideslider>
-    <create-ticket-success v-if="!isBuiltIn && showSuccess" @back="handleSuccessBack" :id="ticketId">
+    <create-ticket-success
+      v-if="!isBuiltIn && showSuccess"
+      class="success-exception"
+      :id="ticketId"
+      @back="handleSuccessBack">
     </create-ticket-success>
     <bk-dialog
       :value="visible"
@@ -459,6 +479,8 @@ export default {
       btnId: '',
       showFiled: [],
       searchFormData: {},
+      rowAutoHeight: false,
+      maxTableHeight: 0,
     };
   },
   computed: {
@@ -521,10 +543,15 @@ export default {
     },
   },
   async mounted() {
+    this.setTableMaxHeight();
+    // 监听表格上部区域高度变化，重新设置表格最大高度
+    const observer = new MutationObserver(this.setTableMaxHeight);
+    observer.observe(this.$refs.dataOperationArea, {
+      childList: true,
+    });
     await this.getFieldList();
     await this.getTableList();
   },
-
   methods: {
     trans(val) {
       return val.replaceAll('\n', '</br>');
@@ -597,6 +624,12 @@ export default {
       }
       this.handleSearch(params);
       Bus.$emit('clearSearch', item);
+    },
+    // 设置表格最大高度
+    setTableMaxHeight() {
+      console.log('height change');
+      const { height } = this.$refs.dataTableArea.getBoundingClientRect();
+      this.maxTableHeight = height;
     },
     async handleCloseDialog() {
       this.ticketStatus = 'RUNNING';
@@ -1232,14 +1265,18 @@ export default {
   }
 
   .table-config {
+    display: flex;
+    flex-direction: column;
+    position: relative;
     margin: 24px;
     padding: 20px 16px;
+    height: calc(100% - 56px);
     border-radius: 2px;
     background: #ffffff;
-    height: calc(100% - 56px);
-    overflow: auto;
-    position: relative;
-    @mixin scroller;
+  }
+  .custom-table {
+    flex: 1;
+    overflow: hidden;
   }
 
   .is-active {
@@ -1273,23 +1310,36 @@ export default {
     margin-top: 16px;
   }
 
-  .search-icon {
-    width: 32px;
-    height: 32px;
-    border: 1px solid #C4C6CC;
-    cursor: pointer;
+  .table-operate-area {
     display: flex;
-    justify-content: center;
     align-items: center;
-    border-radius: 2px;
-    background: #FFFFFF;
-
-    &:hover {
-      border: 1px solid #979BA5;
+    .pop-trigger {
+      font-size: 14px;
+      color: #747677;
+      cursor: pointer;
+      &.actived {
+        color: #3a84ff;
+      }
     }
-
-    i {
-      color: #979BA5
+    .vertical-split-line {
+      width: 1px;
+      height: 20px;
+      margin: 0 8px;
+      background-color: #e5e5e8;
+    }
+    .filter-extend-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 32px;
+      width: 32px;
+      color: #979ba5;
+      border: 1px solid #c4c6cc;
+      border-radius: 2px;
+      background: #ffffff;
+      &:hover {
+        border: 1px solid #979ba5;
+      }
     }
   }
 
@@ -1364,6 +1414,14 @@ export default {
       width: 12px;
       margin-right: 4px;
     }
+  }
+}
+
+.cell-textarea {
+  cursor: pointer;
+  &.auto-height {
+    padding: 4px 0;
+    white-space: pre-line;
   }
 }
 
@@ -1533,9 +1591,40 @@ export default {
   color: #313238;
   line-height: 22px;
 }
+.success-exception {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: #f5f7fa;
+  z-index: 2000;
+}
 
 </style>
 <style lang="postcss">
+.table-config-pop-wrapper {
+  .tippy-tooltip {
+    padding: 0;
+  }
+  .tippy-content {
+    padding: 6px 0;
+    width: 120px;
+  }
+  .option-item {
+    padding: 0 8px;
+    line-height: 32px;
+    font-size: 14px;
+    cursor: pointer;
+    &.actived {
+      color: #3a84ff;
+      background-color: #f4f6fa;
+    }
+    &:hover {
+      background-color: #eaf3ff;
+    }
+  }
+}
 .more-option-popover {
   .tippy-tooltip {
     padding: 2px 0;
