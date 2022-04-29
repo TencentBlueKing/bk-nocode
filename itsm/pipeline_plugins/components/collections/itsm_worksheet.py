@@ -387,7 +387,7 @@ class DataProcessingService(Service):
                         compute_result = state_extra_manager.compute_field(
                             compute_fields, data
                         )
-                    map_data.update(compute_result)
+                        map_data.update(compute_result)
                     data.update(map_data)
 
                     print("计算后的数据=={}".format(data))
