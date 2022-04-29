@@ -199,7 +199,7 @@ def field_conditions_conversion(condition):
             )
         inner_expressions.append(evaluation)
 
-    expression_type = " {} ".format(condition.type)
+    expression_type = " {} ".format(condition.connector)
     return expression_type.join(inner_expressions)
 
 
