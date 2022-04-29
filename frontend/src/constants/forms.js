@@ -178,7 +178,7 @@ export const FIELDS_SHOW_DEFAULT_VALUE_IN_WORKFLOW = ['STRING', 'TEXT', 'INT', '
 // 列表页面配置数据筛选规则需要过滤的字段
 export const FIELDS_FILTER_CONFIG = ['TABLE', 'LINK', 'IMAGE', 'FILE', 'RICHTEXT'];
 // 默认值可以配置固定值和数据联动的字段类型  'SELECT', 'MULTISELECT', 'INPUTSELECT'
-export const FIELDS_SHOW_CONFIG_VALUE = ['STRING', 'TEXT', 'INT', 'DATE', 'DATETIME'];
+export const FIELDS_SHOW_CONFIG_VALUE = ['STRING', 'TEXT', 'INT', 'DATE', 'DATETIME', 'LINK'];
 // 可以联动的字段
 export const FIELDS_CONDITION_VALUE = ['STRING', 'TEXT', 'INT', 'DATE', 'DATETIME', 'SELECT', 'MULTISELECT', 'INPUTSELECT', 'AUTO-NUMBER'];
 // 需要展示数据源的字段类型

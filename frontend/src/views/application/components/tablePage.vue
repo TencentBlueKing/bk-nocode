@@ -4,7 +4,7 @@
       <div class="header-config">
         <div class="function-btn" v-if="config.buttonGroup">
           <bk-button
-            v-for="(item, index) in config.buttonGroup.slice(0, 3)"
+            v-for="(item, index) in config.buttonGroup.slice(0, limitShowBtn)"
             v-cursor="{ active: actionsPermMap[item.id] === false }"
             :key="index"
             :theme="index === 0 ? 'primary' : 'default'"
@@ -20,14 +20,14 @@
             @hide="dropdownHide"
             ref="dropdown"
             style="margin-left: 8px"
-            v-if="config.buttonGroup.length > 3">
+            v-if="config.buttonGroup.length > limitShowBtn">
             <div class="dropdown-trigger-btn" style="padding-left: 19px" slot="dropdown-trigger">
               更多
               <i :class="['bk-icon icon-angle-down', { 'icon-flip': isDropdownShow }]"></i>
             </div>
             <!--      <ul class="bk-dropdown-list" slot="dropdown-content" v-for="item in buttonGroup">-->
             <ul class="bk-dropdown-list" slot="dropdown-content">
-              <li v-for="(item, index) in config.buttonGroup.slice(3)" :key="index">
+              <li v-for="(item, index) in config.buttonGroup.slice(limitShowBtn)" :key="index">
                 <a
                   v-cursor="{ active: actionsPermMap[item.id] === false }"
                   href="javascript:;"
@@ -134,8 +134,10 @@
               <bk-button
                 v-else-if="['LINK'].includes(field.type)&&row[column.property]"
                 theme="primary"
+                text
+                style="display: contents;"
                 @click="goToLink(row,column)"
-                text>
+                >
                 {{ row[field.key] }}
               </bk-button>
               <span v-else-if=" ['create_at','update_at'].includes(field.id)">{{ row[field.key] | formatTimer }}</span>
@@ -157,7 +159,7 @@
           <bk-table-column label="操作" width="200" fixed="right" v-if="config.optionList.length>0">
             <template slot-scope="{ row }">
               <bk-button
-                v-for="(btn, index) in config.optionList.slice(0, 3)"
+                v-for="(btn, index) in config.optionList.slice(0, limitShowBtn)"
                 :key="index"
                 theme="primary"
                 style="margin-right: 12px"
@@ -173,10 +175,10 @@
                 theme="light"
                 ext-cls="more-option-popover"
                 :tippy-options="{ arrow: false, hideOnClick: false }">
-                <i v-if="config.optionList.length > 3" class="bk-icon icon-more table-more-icon"></i>
+                <i v-if="config.optionList.length > limitShowBtn" class="bk-icon icon-more table-more-icon"></i>
                 <div class="table-more-actions" slot="content">
                   <div
-                    v-for="(btn, index) in config.optionList.slice(3)"
+                    v-for="(btn, index) in config.optionList.slice(limitShowBtn)"
                     v-cursor="{ active: actionsPermMap[btn.id] === false }"
                     :class="{
                       'action-item': true,
@@ -397,6 +399,7 @@ export default {
   },
   data() {
     return {
+      limitShowBtn: 3, // 限制展示按钮个数
       submitPending: false,
       tableDataLoading: false,
       isShowSearchInfo: false,
@@ -1147,6 +1150,9 @@ export default {
         } else {
           clearTimeout(timer);
           this.ticketStatus = currentStatus;
+          setTimeout(() => {
+            this.visible = false;
+          }, 500);
         }
       } catch (e) {
         console.warn(e);

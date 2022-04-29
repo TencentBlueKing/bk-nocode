@@ -279,11 +279,15 @@ export default {
     },
     curOptionList() {
       const tempArr =  cloneDeep(this.optionList);
-      tempArr.push({
-        id: 'curTime',
-        name: '此刻',
-      });
-      return this.field.type === 'DATETIME' ? tempArr : this.optionList;
+      if (this.field.type === 'LINK') {
+        tempArr.shift();
+      } else if (this.field.type === 'DATETIME') {
+        tempArr.push({
+          id: 'curTime',
+          name: '此刻',
+        });
+      }
+      return tempArr;
     },
   },
   watch: {
