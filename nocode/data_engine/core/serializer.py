@@ -22,6 +22,7 @@ NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES
 WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
+
 from rest_framework import serializers
 
 
@@ -45,8 +46,32 @@ class BaseGenerator:
         return params
 
 
-class IntGenerator(BaseGenerator):
-    serializer_field_class = serializers.IntegerField
+class IntegerAndFloatField(serializers.IntegerField):
+    # 改写IntegerField 兼容浮点数
+
+    def to_internal_value(self, data):
+        if isinstance(data, str) and len(data) > self.MAX_STRING_LENGTH:
+            self.fail("max_string_length")
+
+        def change_str_to_num(value):
+            try:
+                return int(value)
+            except ValueError:
+                return float(value)
+
+        try:
+            num_str = self.re_decimal.sub("", str(data))
+            data = change_str_to_num(num_str)
+            return data
+        except (ValueError, TypeError):
+            self.fail("invalid")
+
+    def to_representation(self, value):
+        return value
+
+
+class IntFloatGenerator(BaseGenerator):
+    serializer_field_class = IntegerAndFloatField
 
     def _build_serializer_params(self):
         params = {"help_text": self.filed["name"]}
@@ -144,7 +169,7 @@ class SerializerDispatcher:
         self.filed = filed
 
     _GENERATOR_MAP = {
-        "INT": IntGenerator,
+        "INT": IntFloatGenerator,
         "FLOAT": FloatGenerator,
         "DATE": DataGenerator,
         "SELECT": ChoiceGenerator,
