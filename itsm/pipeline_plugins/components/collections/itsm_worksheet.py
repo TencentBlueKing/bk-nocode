@@ -398,8 +398,6 @@ class DataProcessingService(Service):
                         map_data.update(compute_result)
                     data.update(map_data)
 
-                    print("计算后的数据=={}".format(data))
-
                     manager.update(ws_id, data, operator)
 
                     logger.info(

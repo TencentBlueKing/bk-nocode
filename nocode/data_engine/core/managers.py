@@ -275,7 +275,7 @@ class DataManager:
         contents = copy.deepcopy(obj_contents)
         # 兼容隐藏字段直接采用原数据
         for key, value in validated_data.items():
-            if not value:
+            if value is None:
                 continue
             contents[key] = value
         # 计算控件重新计算
