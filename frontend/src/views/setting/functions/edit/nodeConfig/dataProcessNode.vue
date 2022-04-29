@@ -539,8 +539,8 @@ export default {
     // 数字类型的变量如果指定值类型为减指定变量、加指定变量，可选变量需要过滤
     getAvailableRelationList(exp) {
       if (this.targetFields.length > 0) {
-        const field = this.targetFields.find(i => i.key === exp.key).type === 'INT';
-        if (field && ['field_increment', 'field_reduction'].includes(exp.type)) {
+        const field = this.fieldList.find(i => i.key === exp.key);
+        if (field && field.type === 'INT' && ['field_increment', 'field_reduction'].includes(exp.type)) {
           const list = [];
           this.relationList.forEach(group => {
             const fields = [];

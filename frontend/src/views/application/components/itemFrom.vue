@@ -115,8 +115,7 @@ export default {
       return showValue || '--';
     },
     handleDownload(val) {
-      const fileArr = val;
-      fileArr.forEach((item) => {
+      val.forEach((item) => {
         window.open(`${window.location.origin}${window.SITE_URL}api/misc/download_file/?file_name=${item.file_name}&origin_name=${item.origin_name}&download_flag=1`);
       });
     },

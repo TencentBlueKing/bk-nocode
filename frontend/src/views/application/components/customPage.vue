@@ -38,7 +38,7 @@ export default {
     handleClick(page) {
       const { id, page_id, value, type } = page;
       switch (type) {
-        case 'FUNCTION_GROUP':
+        case 'FUNCTION':
           this.$router.push({
             name: 'commonCreateTicket',
             params: {

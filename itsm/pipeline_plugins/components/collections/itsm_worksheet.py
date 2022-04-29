@@ -83,10 +83,18 @@ class StateExtraManager:
         :param key: 字段键
         :param field_queryset: Ticket Fields QuerySet
         """
+
+        def change_str_to_num(value):
+            try:
+                return int(value)
+            except ValueError:
+                return float(value)
+
         try:
             field_inst = self.field_queryset.filter(key=key).first()
             if field_inst.type == "INT":
-                return int(field_inst.value)
+                value = change_str_to_num(field_inst.value)
+                return value
             return field_inst.value
         except Exception:
             field_inst = TicketGlobalVariable.objects.filter(
@@ -387,7 +395,7 @@ class DataProcessingService(Service):
                         compute_result = state_extra_manager.compute_field(
                             compute_fields, data
                         )
-                    map_data.update(compute_result)
+                        map_data.update(compute_result)
                     data.update(map_data)
 
                     print("计算后的数据=={}".format(data))

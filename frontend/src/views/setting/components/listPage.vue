@@ -203,7 +203,7 @@ export default {
     });
   },
   beforeDestroy() {
-    Bus.$off('sendFormData');
+    // Bus.$off('sendFormData');
     Bus.$off('sendConfigRules');
     Bus.$off('sendSortRule');
     Bus.$off('sendTimeRange');
