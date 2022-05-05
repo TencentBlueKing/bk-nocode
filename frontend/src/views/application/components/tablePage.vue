@@ -543,7 +543,7 @@ export default {
     },
   },
   created() {
-    const key = "isAutoHeight_${this.page.id}";
+    const key = `isAutoHeight_${this.page.id}`;
     const rowAutoHeight = JSON.parse(localStorage.getItem(key));
     if (rowAutoHeight != null) {
       this.rowAutoHeight = rowAutoHeight;
@@ -565,7 +565,7 @@ export default {
     },
     changeRowAutoHeight(isAutoHeight) {
       this.rowAutoHeight = isAutoHeight;
-      const key = "isAutoHeight_${this.page.id}";
+      const key = `isAutoHeight_${this.page.id}`;
       localStorage.setItem(key, isAutoHeight);
     },
     handleSearch(item) {
