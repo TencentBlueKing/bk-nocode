@@ -55,8 +55,8 @@
               }">
               <div :class="['pop-trigger', { actived: rowAutoHeight }]">表格风格设置</div>
               <div slot="content">
-                <div :class="['option-item', { actived: !rowAutoHeight }]" @click="rowAutoHeight = false">默认</div>
-                <div :class="['option-item', { actived: rowAutoHeight }]" @click="rowAutoHeight = true">自适应行高</div>
+                <div :class="['option-item', { actived: !rowAutoHeight }]" @click="changeRowAutoHeight(false)">默认</div>
+                <div :class="['option-item', { actived: rowAutoHeight }]" @click="changeRowAutoHeight(true)">自适应行高</div>
               </div>
             </bk-popover>
             <div class="vertical-split-line"></div>
@@ -542,6 +542,13 @@ export default {
       if (oval && !nval && !this.tableDataLoading) this.$emit('isFinishLoading');
     },
   },
+  created() {
+    const key = "isAutoHeight_${this.page.id}";
+    const rowAutoHeight = JSON.parse(localStorage.getItem(key));
+    if (rowAutoHeight != null) {
+      this.rowAutoHeight = rowAutoHeight;
+    };
+  },
   async mounted() {
     this.setTableMaxHeight();
     // 监听表格上部区域高度变化，重新设置表格最大高度
@@ -555,6 +562,11 @@ export default {
   methods: {
     trans(val) {
       return val.replaceAll('\n', '</br>');
+    },
+    changeRowAutoHeight(isAutoHeight) {
+      this.rowAutoHeight = isAutoHeight;
+      const key = "isAutoHeight_${this.page.id}";
+      localStorage.setItem(key, isAutoHeight);
     },
     handleSearch(item) {
       this.searchFormData = item;
