@@ -75,6 +75,7 @@ export default {
       type: Boolean,
       default: true,
     },
+    type: [String],
     value: {
       type: Object,
       default() {
@@ -104,7 +105,9 @@ export default {
   methods: {
     // 确保至少有一个字段条件
     getLocalVal(val) {
-      const defaultVal = { connector: 'and', expressions: [{ key: '', condition: '', value: '' }] };
+      const expressions = [{ key: '', condition: '', value: '' }];
+      let defaultVal;
+      this.type === 'show_conditions' ? defaultVal = { type: 'and', expressions } : defaultVal = { connector: 'and', expressions };
       return Object.assign({}, defaultVal, cloneDeep(val));
     },
     // 筛选条件字段

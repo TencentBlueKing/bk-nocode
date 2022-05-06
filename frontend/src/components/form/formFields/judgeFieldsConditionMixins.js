@@ -32,7 +32,7 @@ export default {
 
     judgeFieldsCondition(condition) {
       // 且或逻辑处理        遍历条件  or  some || and every
-      if (condition.connector === 'and') {
+      if (condition.connector === 'and' || condition.type === 'and') {
         // 这里需要对符号判断
         return  condition.expressions?.every((item) => {
           const  func = CONDITION_FUNCTION_MAP[item.condition];
@@ -84,7 +84,7 @@ export default {
     },
     judgePageFieldsCondition(condition, isNumber) {
       // 且或逻辑处理        遍历条件  or  some || and every
-      if (condition.connector === 'and') {
+      if (condition.connector === 'and' || condition.type === 'and') {
         // 这里需要对符号判断
         return  condition.expressions?.every((item) => {
           const  func = CONDITION_FUNCTION_MAP[item.condition];
