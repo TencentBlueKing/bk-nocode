@@ -192,12 +192,13 @@
           </condition-group>
         </bk-form-item>
         <bk-form-item label="是否隐藏">
-          <bk-checkbox :value="!!fieldData.show_conditions.connector" @change="handleHideFieldChange">
+          <bk-checkbox :value="!!fieldData.show_conditions.type" @change="handleHideFieldChange">
             隐藏
           </bk-checkbox>
           <condition-group
-            v-if="fieldData.show_conditions.connector"
+            v-if="fieldData.show_conditions.type"
             :fields="fieldList"
+            type="show_conditions"
             :fields-loading="fieldListLoading"
             :show-delete-icon="false"
             :value="fieldData.show_conditions"
@@ -523,11 +524,15 @@ export default {
     // 切换是否隐藏
     handleHideFieldChange(val) {
       if (val) {
-        this.handleOpenConditionsPanel('show_conditions');
+        this.handleOpenHideConditionsPanel();
       } else {
         this.fieldData.show_conditions = {};
       }
       this.fieldData.show_type = val ? 0 : 1;
+    },
+    // 隐藏条件表达式处理
+    handleOpenHideConditionsPanel() {
+      this.fieldData.show_conditions = { type: 'and', expressions: [{ key: '', condition: '', value: '' }] };
     },
     // 打开添加条件面板
     handleOpenConditionsPanel(key) {
