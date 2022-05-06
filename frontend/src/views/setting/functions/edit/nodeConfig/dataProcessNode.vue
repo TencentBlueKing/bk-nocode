@@ -68,6 +68,7 @@
                 @selected="expression.value = ''">
                 <bk-option id="const" name="值"></bk-option>
                 <bk-option id="field" name="引用变量"></bk-option>
+                <bk-option id="department" name="组织架构"></bk-option>
                 <template v-if="
                     fieldList.length > 0 &&
                     expression.key &&
@@ -185,9 +186,10 @@
                 style="width: 100px; margin-right: 8px"
                 :clearable="false"
                 :disabled="!editable"
-                @selected="mapping.value = ''">
+                @selected="(val) => handleSelectMapValue(mapping,val)">
                 <bk-option id="const" name="值"></bk-option>
                 <bk-option id="field" name="引用变量"></bk-option>
+                <bk-option id="department" name="组织架构"></bk-option>
                 <template v-if="
                   targetFields.length > 0 &&
                   mapping.key &&
@@ -266,9 +268,9 @@
                 </bk-option>
               </bk-select>
               <field-value
-                v-else
+                v-else-if="targetFields.length > 0"
                 style="width: 208px"
-                :field="targetFields.length > 0 && targetFields.find(i => i.key === mapping.key)"
+                :field=" targetFields.find(i => i.key === mapping.key)"
                 :value="mapping.value"
                 :editable="editable"
                 @change="mapping.value = $event">
@@ -321,6 +323,7 @@ export default {
         { id: 'EDIT', name: '更新' },
         { id: 'DELETE', name: '删除' },
       ],
+      isDepartMent: '',
       conditionRelations: CONDITION_RELATIONS,
       formListLoading: false,
       formList: [],
@@ -351,12 +354,19 @@ export default {
   },
   computed: {
     targetFields() {
-      return this.fieldList.filter(item => !['id', 'ids'].includes(item.key));
+      const tempKey = this.formData?.mapping.filter(item => item.type === 'department').map(item => item.key);
+      const targetFiled =  this.fieldList.filter(item => !['id', 'ids'].includes(item.key)).map((el) => {
+        if (tempKey.includes(el.key)) {
+          return { ...el, type: 'MEMBER' };
+        }
+        return el;
+      });
+      return targetFiled;
     },
     // 值类型为指定上级时，可选值为引用变量中的单选人员变量
     memberRelationFields() {
       const list = [];
-      this.relationList.forEach(group => {
+      this.relationList.forEach((group) => {
         const memberTypeFields = group.fields.filter(item => item.type === 'MEMBER');
         if (memberTypeFields.length > 0) {
           list.push({ name: group.name, fields: memberTypeFields });
@@ -411,11 +421,11 @@ export default {
         this.relationListLoading = true;
         const res = await this.$store.dispatch('setting/getGroupedNodeVars', this.node.id);
         const groupedList = [];
-        res.data.forEach(group => {
+        res.data.forEach((group) => {
           if (group.fields.length > 0) {
             groupedList.push({
               name: group.state_name,
-              fields: group.fields.map(item => {
+              fields: group.fields.map((item) => {
                 const { key, name, type } = item;
                 return {
                   type,
@@ -474,7 +484,7 @@ export default {
     getSelectableField(fieldList, crtKey, type) {
       const data = type === 'condition' ? this.formData.conditions.expressions : this.formData.mapping;
       const usedKeys = [];
-      data.forEach(item => {
+      data.forEach((item) => {
         if (item.key && item.key !== crtKey) {
           usedKeys.push(item.key);
         }
@@ -542,9 +552,9 @@ export default {
         const field = this.fieldList.find(i => i.key === exp.key);
         if (field && field.type === 'INT' && ['field_increment', 'field_reduction'].includes(exp.type)) {
           const list = [];
-          this.relationList.forEach(group => {
+          this.relationList.forEach((group) => {
             const fields = [];
-            group.fields.forEach(item => {
+            group.fields.forEach((item) => {
               if (item.type === 'INT') {
                 fields.push(item);
               }
@@ -615,6 +625,10 @@ export default {
         delete data.conditions;
       }
       return data;
+    },
+    handleSelectMapValue(mapping, val) {
+      mapping.value = '';
+      val === 'department' ?   this.isDepartMent = true : this.isDepartMent = false;
     },
   },
 };
