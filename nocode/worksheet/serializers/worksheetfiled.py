@@ -36,7 +36,10 @@ from itsm.postman.serializers import ApiInstanceSerializer
 from itsm.project.handler.project_handler import ProjectHandler
 from nocode.base.basic import check_user_owner_creator
 from nocode.base.constants import CUSTOM, FORMULA, WORKSHEET, CALCULATE_LIMIT
-from nocode.project_manager.handlers.project_white_handler import ProjectWhiteHandler
+from nocode.project_manager.handlers.project_white_handler import (
+    ProjectWhiteHandler,
+    white_token_generate,
+)
 from nocode.worksheet.handlers.worksheet_field_handler import WorkSheetFieldIndexHandler
 from nocode.worksheet.models import WorkSheetField, WorkSheet
 from nocode.worksheet.serializers import mock_data
@@ -121,6 +124,8 @@ class WorkSheetFieldSerializer(serializers.ModelSerializer):
             if not api_instance.exists():
                 raise serializers.ValidationError("绑定的api异常")
             data["api_info"] = ApiInstanceSerializer(api_instance[0]).data
+        if instance.source_type == "WORKSHEET":
+            white_token_generate(data)
         return data
 
     def get_related_fields(self, api_instance, validated_data):
