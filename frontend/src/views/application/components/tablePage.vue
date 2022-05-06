@@ -20,7 +20,7 @@
               @show="dropdownShow"
               @hide="dropdownHide"
               ref="dropdown"
-              style="margin-left: 8px"
+              style="margin-left: 8px;height: 32px;"
               v-if="config.buttonGroup.length > limitShowBtn">
               <div class="dropdown-trigger-btn" style="padding-left: 19px" slot="dropdown-trigger">
                 更多
