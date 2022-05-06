@@ -15,7 +15,7 @@ export default {
     };
   },
   created() {
-    this.isOpenApi = sessionStorage.getItem('isOpenApi');
+    this.isOpenApi = sessionStorage.getItem('isOpenApi') !== 'false';
     this.setSourceData();
   },
   methods: {
