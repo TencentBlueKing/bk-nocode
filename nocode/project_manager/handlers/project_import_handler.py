@@ -150,6 +150,9 @@ class ProjectImportHandler:
             states = service["workflow"]["states"]
             for state in states.values():
                 if state["type"] == "DATA-PROC":
+                    # 导出的应用某个功能的数据处理节点没有进行配置
+                    if not state["extras"].get("dataManager", None):
+                        continue
                     old_worksheet_id = state["extras"]["dataManager"]["worksheet_id"]
                     state["extras"]["dataManager"]["worksheet_id"] = self.worksheet_map[
                         old_worksheet_id

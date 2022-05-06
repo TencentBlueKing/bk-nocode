@@ -30,7 +30,7 @@ from nocode.data_engine.core.utils import install
 
 class BaseBackend:
     def __init__(self, db_name):
-        self.da_name = db_name
+        self.da_name = db_name.lower()
 
     def get_model(self):
         pass

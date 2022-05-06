@@ -83,10 +83,18 @@ class StateExtraManager:
         :param key: 字段键
         :param field_queryset: Ticket Fields QuerySet
         """
+
+        def change_str_to_num(value):
+            try:
+                return int(value)
+            except ValueError:
+                return float(value)
+
         try:
             field_inst = self.field_queryset.filter(key=key).first()
             if field_inst.type == "INT":
-                return int(field_inst.value)
+                value = change_str_to_num(field_inst.value)
+                return value
             return field_inst.value
         except Exception:
             field_inst = TicketGlobalVariable.objects.filter(
@@ -222,7 +230,7 @@ class StateExtraManager:
                     INCREMENT: data[item["key"]] + int(item["value"]),
                     REDUCTION: data[item["key"]] - int(item["value"]),
                 }
-                data[item["key"]] = compute_type.get(item["type"])
+                data_struct[item["key"]] = compute_type.get(item["type"])
             if item["type"] in [FIELD_INCREMENT, FIELD_REDUCTION]:
                 ticket_field_key = re.findall(r"\${param_(.*?)}", item["value"])[0]
                 field_map = {
@@ -231,8 +239,8 @@ class StateExtraManager:
                     FIELD_REDUCTION: data[item["key"]]
                     - self.get_field_value(ticket_field_key),
                 }
-                data[item["key"]] = field_map.get(item["type"])
-        return data
+                data_struct[item["key"]] = field_map.get(item["type"])
+        return data_struct
 
     def get_compute_field(self):
         data = []
@@ -382,9 +390,14 @@ class DataProcessingService(Service):
                 for ws in worksheets:
                     ws_id = ws.id
                     data = copy.deepcopy(ws.contents)
+                    # map_data 更新数据
                     if compute_fields:
-                        data = state_extra_manager.compute_field(compute_fields, data)
+                        compute_result = state_extra_manager.compute_field(
+                            compute_fields, data
+                        )
+                        map_data.update(compute_result)
                     data.update(map_data)
+
                     manager.update(ws_id, data, operator)
 
                     logger.info(

@@ -77,9 +77,8 @@ def service_validate(service_id):
         raise serializers.ValidationError({_("服务"): _("服务不存在，请联系管理员！")})
 
     try:
-        catalog_services = CatalogService.objects.get(
-            service_id=service_id, is_deleted=False
-        )
+        # 走版本，表单被删了，现有版本无法使用
+        catalog_services = CatalogService._objects.get(service_id=service_id)
     except CatalogService.DoesNotExist:
         raise serializers.ValidationError({_("服务"): _("服务对应的服务目录不存在")})
 
