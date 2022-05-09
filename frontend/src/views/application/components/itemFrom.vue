@@ -5,7 +5,9 @@
       <span v-if="dataSourceField.includes(item.type)">
         {{ transformFields(item) }}
       </span>
-        <span v-else-if="item.type === 'RICHTEXT'" v-html="item.val||'--'"></span>
+        <span v-else-if="item.type === 'RICHTEXT'">
+            <rich-text :disabled="true" :value="item.val||'--'" />
+        </span>
         <span v-else-if="item.type === 'IMAGE'">
         <image-file :view-mode="true" :value="item.val" v-if="item.val && item.val.length!==0"></image-file>
         <span v-else>--</span>
@@ -48,12 +50,14 @@
 import imageFile from '@/components/form/formFields/fields/imageFile.vue';
 import { DATA_SOURCE_FIELD } from '@/constants/forms.js';
 import judgeFieldsConditionMixins from '@/components/form/formFields/judgeFieldsConditionMixins';
+import RichText from '@/components/form/formFields/fields/richText.vue';
 import cloneDeep from 'lodash.clonedeep';
 
 export default {
   name: 'ItemFrom',
   components: {
     imageFile,
+    RichText,
   },
   mixins: [judgeFieldsConditionMixins],
   props: {
