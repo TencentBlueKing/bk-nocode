@@ -104,9 +104,17 @@ class WorkSheetFieldVersionGenerator(BaseVersionGenerator):
         return data
 
     def get_worksheet_filed(self, worksheet_id):
-        worksheet_fields = WorkSheetFieldModelHandler().filter(
-            worksheet_id=worksheet_id, is_deleted=False
+        fields = WorkSheetModelHandler(worksheet_id=worksheet_id).instance.fields
+        ordering = "FIELD(`id`, %s)" % ",".join(str(field_id) for field_id in fields)
+
+        worksheet_fields = (
+            WorkSheetFieldModelHandler()
+            .filter(worksheet_id=worksheet_id, is_deleted=False, id__in=fields)
+            .extra(select={"ordering": ordering}, order_by=("ordering",))
         )
+        # worksheet_fields = WorkSheetField.objects.filter(
+        #     worksheet_id=worksheet_id, id__in=fields
+        # ).extra(select={"ordering": ordering}, order_by=("ordering",))
         return [worksheet_field.tag_data() for worksheet_field in worksheet_fields]
 
 
