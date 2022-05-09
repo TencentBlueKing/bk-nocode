@@ -195,10 +195,10 @@ export default {
       copyList.forEach((item) => {
         item.fields.forEach((fields) => {
           if (this.isObjectHaveAttr(fields.show_conditions)) {
-            console.log(this.judgeShowConditionAtProcessDetail(fields.show_conditions, item.fields));
-            this.judgeShowConditionAtProcessDetail(fields.show_conditions, item.fields)
-              ? this.$set(fields, 'showFeild', true)
-              : this.$set(fields, 'showFeild', false);
+            const  isNumber = fields === 'INT';
+            this.judgeShowConditionAtProcessDetail(fields.show_conditions, item.fields, isNumber)
+              ? this.$set(fields, 'showFeild', false)
+              : this.$set(fields, 'showFeild', true);
           } else {
             this.$set(fields, 'showFeild', true);
           }

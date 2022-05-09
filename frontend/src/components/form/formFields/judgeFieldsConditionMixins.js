@@ -111,8 +111,9 @@ export default {
         return  condition.expressions?.every((item) => {
           const  func = CONDITION_FUNCTION_MAP[item.condition];
           return this[func](
+            item.value,
             fieldList.find(el => el.key === item.key)?.value,
-            item.value
+
           );
         });
       }
@@ -120,8 +121,8 @@ export default {
       return condition.expressions?.some((item) => {
         const  func = CONDITION_FUNCTION_MAP[item.condition];
         return this[func](
+          item.value,
           fieldList.find(el => el.key === item.key)?.value,
-          item.value
         );
       });
     },
