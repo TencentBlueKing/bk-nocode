@@ -288,7 +288,9 @@
       title="表格详情">
       <label class="label">{{ imageConfig.label }}</label>
       <div class="img-wrapper">
-        <span v-if="imageConfig.type === 'RICHTEXT'" v-html="imageConfig.imgList" style="overflow: hidden"></span>
+        <span v-if="imageConfig.type === 'RICHTEXT'" style="overflow: hidden">
+          <rich-text :disabled="true" :value="imageConfig.imgList" />
+        </span>
         <span v-if="imageConfig.type === 'TEXT'"
               v-html="imageConfig.imgList.replaceAll('\n', '</br>') || '--'">
         </span>
@@ -366,6 +368,7 @@ import CreateTicketSuccess from './createTicketSuccess.vue';
 import customTable from '@/components/form/formFields/fields/table.vue';
 import SearchTag from './searchTag.vue';
 import { SHOW_SELECT_TYPE_LIST } from '@/constants/fromTypeMap.js';
+import RichText from '@/components/form/formFields/fields/richText.vue';
 
 export default {
   name: 'TablePage',
@@ -376,6 +379,7 @@ export default {
     showSearchInfo,
     CreateTicketSuccess,
     customTable,
+    RichText,
   },
   filters: {
     formatTimer(value) {
