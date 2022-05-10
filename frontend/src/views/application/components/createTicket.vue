@@ -56,11 +56,12 @@
 <script>
 import clonedeep from 'lodash.clonedeep';
 import permission from '@/components/permission/mixins.js';
-import { FIELDS_TYPES } from '@/constants/forms.js';
+import {FIELDS_TYPES} from '@/constants/forms.js';
 import FormFields from '@/components/form/formFields/index.vue';
 import CreateTicketSuccess from './createTicketSuccess.vue';
-import { debounce } from '@/utils/util';
+import {debounce} from '@/utils/util';
 import judgeFieldsConditionMixins from '@/components/form/formFields/judgeFieldsConditionMixins.js';
+
 export default {
   name: 'CreateTicket',
   components: {
@@ -170,7 +171,7 @@ export default {
     },
     getApiFields() {
       return this.fieldList.map((item) => {
-        const { choice, id, key, type } = item;
+        const {choice, id, key, type} = item;
         let value = this.formValue[key];
         if (type === 'IMAGE') {
           value = this.formValue[key].map(item => item.path);
@@ -179,7 +180,7 @@ export default {
         } else if (type === 'INT') {
           value = this.formValue[key] || '0';
         }
-        return { choice, id, key, type, value };
+        return {choice, id, key, type, value};
       });
     },
     resetData() {
@@ -201,9 +202,9 @@ export default {
     async submit() {
       if (this.noOperatePerm) {
         const resource = {
-          action: [{ id: this.componentId, name: '提交' }],
-          page: [{ id: this.page.id, name: this.page.name }],
-          project: [{ id: this.appId, name: this.appName }],
+          action: [{id: this.componentId, name: '提交'}],
+          page: [{id: this.page.id, name: this.page.name}],
+          project: [{id: this.appId, name: this.appName}],
         };
         this.applyForPermission(['action_execute'], [], resource);
         return;
@@ -249,7 +250,7 @@ export default {
         this.ticketId = res.data.id;
         if (this.isBuiltIn) {
           this.visible = true;
-          this.polling('workbench/getOrderStatus', { id: this.ticketId });
+          this.polling('workbench/getOrderStatus', {id: this.ticketId});
         }
         this.formValue = this.getFormValue();
         this.showSuccess = !this.isBuiltIn;
@@ -286,19 +287,25 @@ export default {
       }
     },
     goToDetail() {
-      this.$router.push({ name: 'processDetail', params: { id: this.ticketId } });
+      this.$router.push({name: 'processDetail', params: {id: this.ticketId}});
     },
     async handleChangeFormValue(key, $event) {
       this.formValue = $event;
-      const item = this.fieldList;
-      const currentIndex = this.fieldList.findIndex(i => i.key === key);
-      for (let i = 0 ;i < item.length;i++) {
+      const item = [];
+
+      for (let i = 0; i < this.fieldList.length; i++) {
+        if (this.fieldList[i].meta.data_config) {
+          item.push(this.fieldList[i]);
+        }
+      }
+      const currentIndex = item.findIndex(i => i.key === key);
+      for (let i = 0; i < item.length; i++) {
         // 当前用户输入之前的值跳出联动
         if (currentIndex >= i) {
           continue;
         }
         if (item[i].meta.data_config) {
-          const { type, conditions, value } = item[i].meta.data_config;
+          const {type, conditions, value} = item[i].meta.data_config;
           // 判断变化的字段是不是被联动的字段
           // 当前表单
           let isConditonFlag;
@@ -317,7 +324,7 @@ export default {
             let res;
             let validateFlag;
             const expressions = [];
-            for (let j = 0; j < conditions.length;j++) {
+            for (let j = 0; j < conditions.length; j++) {
               const field = conditions[j].id;
               // 当前表单字段
               let curKey;
@@ -344,7 +351,8 @@ export default {
             const params = this.getConditionParams({
               expressions,
               token: item[i].token,
-              fields: [item[i].meta.data_config.value] });
+              fields: [item[i].meta.data_config.value]
+            });
             try {
               res = await this.$store.dispatch('setting/getWorksheetData', params);
               if (res.data && res.data.length > 0) {
@@ -364,14 +372,14 @@ export default {
       this.judgePageCondition();
     },
     getValue(item, res) {
-      const { choice } = item.meta.data_config;
+      const {choice} = item.meta.data_config;
       if (choice && choice.length > 0) {
         return item.meta.data_config.choice.find(it => it.key === res.data[0][item.meta.data_config.value]).name;
       }
       return res.data[0][item.meta.data_config.value];
     },
     getConditionParams(info) {
-      const   { expressions, token, fields } = info;
+      const {expressions, token, fields} = info;
       const params = {
         token,
         fields,
@@ -390,19 +398,20 @@ export default {
 @import '../../../css/scroller.css';
 
 .create-ticket-container {
-  padding: 16px  40px 40px 40px;
+  padding: 16px 40px 40px 40px;
   height: 100%;
   background: #ffffff;
   overflow: auto;
-  @mixin scroller;
+@mixin scroller;
 }
 
 .btn-actions {
   margin-top: 40px;
 
-  .submit-btn {
-    margin-right: 4px;
-  }
+.submit-btn {
+  margin-right: 4px;
+}
+
 }
 
 /deep/ .bk-exception-text {
@@ -415,30 +424,33 @@ export default {
   align-items: center;
   justify-content: center;
 
-  .detail-btn {
-    font-size: 16px;
-  }
+.detail-btn {
+  font-size: 16px;
+}
 
-  & > i {
-    font-size: 56px;
-    color: #2dcb56;
-  }
+&
+> i {
+  font-size: 56px;
+  color: #2dcb56;
+}
 
-  & > p {
-    margin: 20px 0 8px;
-    color: #000000;
-    font-size: 16px;
-    line-height: 1;
-  }
+&
+> p {
+  margin: 20px 0 8px;
+  color: #000000;
+  font-size: 16px;
+  line-height: 1;
+}
 
-  .error-icon {
-    color: #ea3636;
-  }
+.error-icon {
+  color: #ea3636;
+}
 
-  .desc {
-    color: #63656e;
-    font-size: 12px;
-  }
+.desc {
+  color: #63656e;
+  font-size: 12px;
+}
+
 }
 
 .status-wrapper {
