@@ -29,6 +29,7 @@ import logging
 import re
 
 from django.db import IntegrityError
+from pipeline.core.flow import Service
 
 from itsm.component.constants import (
     ADD_STATE,
@@ -44,6 +45,7 @@ from itsm.component.constants import (
     LEADER,
     DEPARTMENT,
     PARAMS_TYPE,
+    FINISHED,
 )
 from itsm.component.esb.esbclient import client_backend
 from itsm.component.exceptions import ComponentCallError
@@ -63,7 +65,6 @@ from nocode.data_engine.core.constants import (
     ALLOWED_EXPRESSION_TYPE_KEY,
 )
 from pipeline.component_framework.component import Component
-from pipeline.core.flow.activity import Service
 
 logger = logging.getLogger("celery")
 
@@ -309,6 +310,10 @@ class DataProcessingService(Service):
             }
             event_execute.send(sender="DataProcessingService", content=content)
 
+    def update_status(self, status):
+        status.status = FINISHED
+        status.save()
+
     def execute(self, data, parent_data):
         logger.info(
             "DataProcessingService execute: data={}, parent_data={}".format(
@@ -463,6 +468,9 @@ class DataProcessingService(Service):
                 failed_message=error_message.format(log_data.get("err")),
             )
             return False
+
+        self.update_status(current_node)
+        ticket.do_before_exit_state(state_id)
         logger.info("DataProcessingService exit without err")
         return True
 
