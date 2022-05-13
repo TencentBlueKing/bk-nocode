@@ -39,3 +39,6 @@ class ProjectVersionHandler:
 
     def get_fields(self, worksheet_id):
         return self.version.worksheet_field.get(worksheet_id, [])
+
+    def get_worksheet_events(self, worksheet_id):
+        return self.version.worksheet_event.get(worksheet_id)

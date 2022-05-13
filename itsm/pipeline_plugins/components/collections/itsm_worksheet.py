@@ -270,6 +270,7 @@ class DataProcessingService(Service):
                 "worksheet_id": worksheet_id,
                 "record_contents": record_contents,
                 "action": action_type,
+                "project_key": ticket.project_key,
             }
             event_execute.send(sender="DataProcessingService", content=content)
 
