@@ -51,6 +51,8 @@ class ProjectImportHandler:
         self.service_map = {}
         self.project_key = None
         self.page_map = {}
+        self.new_worksheet_query = None
+        self.new_page_query = None
 
     def generate_project_key(self):
         num = string.ascii_letters
@@ -80,6 +82,9 @@ class ProjectImportHandler:
                 db_name = "{0}_{1}".format(self.project_key, ws.key)
                 logger.info("正在准备初始化db表, db_name={}".format(db_name))
                 DjangoHandler(db_name).init_db()
+            self.new_worksheet_query = WorkSheet.objects.filter(
+                id__in=self.worksheet_map.values()
+            )
 
         except Exception as e:
             logger.exception("表单初始化失败,error: {}".format(e))
@@ -88,13 +93,20 @@ class ProjectImportHandler:
     def create_worksheet_filed(self, worksheet_field):
         try:
             logger.info("正在初始化工作表字段")
-            for fields in worksheet_field.values():
-                for field in fields:
+            for old_worksheet_id, old_fields in worksheet_field.items():
+                worksheet_field_ids = []
+                for field in old_fields:
                     old_id = field.pop("id")
                     field["worksheet_id"] = self.worksheet_map[field["worksheet_id"]]
                     field.pop("api_info", None)
                     field = WorkSheetField.objects.create(**field)
                     self.filed_map[old_id] = field.id
+                    worksheet_field_ids.append(field.id)
+
+                self.new_worksheet_query.filter(
+                    id=self.worksheet_map[int(old_worksheet_id)]
+                ).update(fields=worksheet_field_ids)
+
         except Exception as e:
             logger.exception("工作表字段失败, error:{}".format(e))
             import traceback
@@ -104,6 +116,7 @@ class ProjectImportHandler:
 
     def init_tree(self, node, parent_id=None):
         old_id = node["id"]
+        new_page_ids = []
         if parent_id is None:
             node_id = Page.objects.get(project_key=self.project_key, key="root").id
         else:
@@ -117,8 +130,11 @@ class ProjectImportHandler:
             ).id
 
         self.page_map[old_id] = node_id
+        new_page_ids.append(node_id)
+
         for item in node.get("children", []):
             self.init_tree(item, node_id)
+        self.new_page_query = Page.objects.filter(id__in=new_page_ids)
 
     def create_page(self, page):
         """
@@ -129,11 +145,17 @@ class ProjectImportHandler:
 
     def create_page_components(self, page_components):
         logger.info("正在初始化页面组件")
-        for key, value in page_components.items():
-            new_page_id = self.page_map.get(int(key))
-            value["page_id"] = new_page_id
-            value.pop("id")
-            PageComponent.objects.create(**value)
+        for old_page_id, page_component_list in page_components.items():
+            new_page_id = self.page_map.get(int(old_page_id))
+            new_page_components_ids = []
+            for item in page_component_list:
+                item["page_id"] = new_page_id
+                item.pop("id")
+                instance = PageComponent.objects.create(**item)
+                new_page_components_ids.append(instance.id)
+            self.new_page_query.filter(id=int(new_page_id)).update(
+                component_list=new_page_components_ids
+            )
 
     def create_service(self, services):
         logger.info("正在初始化服务")

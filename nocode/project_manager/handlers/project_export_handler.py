@@ -77,8 +77,10 @@ class ProjectExportHandler:
         for page_component in page_components:
             tag_data = page_component.tag_data()
             page_id = tag_data["page_id"]
-            data[page_id] = tag_data
-
+            if page_id in data:
+                data[page_id].append(tag_data)
+            else:
+                data.setdefault(page_id, [tag_data])
         return data
 
     def _build_service_tag_data(self):
