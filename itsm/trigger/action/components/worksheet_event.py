@@ -6,19 +6,21 @@ import re
 from celery.task import task
 
 from common.log import logger
-from itsm.service.models import WorkSheetEvent, Service
+from itsm.service.models import Service
 from itsm.ticket.serializers import TicketSerializer
 from itsm.ticket.tasks import start_pipeline
 from itsm.trigger.signal import event_execute
 
 from nocode.data_engine.core.utils import ConditionTransfer
+from nocode.worksheet.handlers.project_version_handler import ProjectVersionHandler
 
 
 class WorkSheetEventExecute:
-    def __init__(self, action_type, worksheet_id, record_contents):
+    def __init__(self, action_type, worksheet_id, record_contents, project_key):
         self.action_type = action_type
         self.worksheet_id = worksheet_id
         self.record_contents = record_contents
+        self.project_key = project_key
 
     def create_ticket(self, data):
         try:
@@ -109,23 +111,27 @@ class WorkSheetEventExecute:
         )
 
     def events_execute(self):
+        # worksheet_id=self.worksheet_id, action_type=self.action_type
+        worksheet_events = ProjectVersionHandler(
+            project_key=self.project_key
+        ).get_worksheet_events(worksheet_id=self.worksheet_id)
 
-        worksheet_events = WorkSheetEvent.objects.filter(
-            worksheet_id=self.worksheet_id, action_type=self.action_type
-        )
+        suitable_events = [
+            item for item in worksheet_events if item["action_type"] == self.action_type
+        ]
 
-        if not worksheet_events.exists():
+        if not suitable_events:
             logger.info(f"表单：{self.worksheet_id}的{self.action_type}操作没有自动化功能触发")
             return True
 
-        for event in worksheet_events:
-            conditions = event.conditions
+        for event in suitable_events:
+            conditions = event["conditions"]
             if conditions:
                 flag = self.convert_conditions(conditions, self.record_contents)
                 if not flag:
                     logger.info(f"表单记录{self.record_contents}不满足触发条件")
                     return True
-            service_id = event.service_id
+            service_id = event["service_id"]
             service = Service.objects.get(id=service_id)
 
             fields = self.restore_fields(service, self.record_contents)
@@ -145,16 +151,26 @@ class WorkSheetEventExecute:
 
 
 @task
-def worksheet_event_start(worksheet_id, record_contents, action, *args, **kwargs):
+def worksheet_event_start(
+    worksheet_id, record_contents, action, project_key, *args, **kwargs
+):
     WorkSheetEventExecute(
-        worksheet_id=worksheet_id, record_contents=record_contents, action_type=action
+        worksheet_id=worksheet_id,
+        record_contents=record_contents,
+        action_type=action,
+        project_key=project_key,
     )()
 
 
 def execute(sender, **kwargs):
     content = kwargs.get("content")
     worksheet_event_start.apply_async(
-        (content["worksheet_id"], content["record_contents"], content["action"])
+        (
+            content["worksheet_id"],
+            content["record_contents"],
+            content["action"],
+            content["project_key"],
+        )
     )
 
 

@@ -30,7 +30,7 @@ from common.log import logger
 from iam.api.client import Client
 from itsm.project.handler.project_handler import ProjectHandler
 from itsm.project.models import ProjectConfig
-from itsm.service.models import Service, PeriodicTask
+from itsm.service.models import Service, PeriodicTask, WorkSheetEvent
 from itsm.workflow.models import Workflow
 from nocode.page.handlers.page_handler import PageModelHandler, PageComponentHandler
 from nocode.permit.models import UserGroup
@@ -116,6 +116,18 @@ class WorkSheetFieldVersionGenerator(BaseVersionGenerator):
         #     worksheet_id=worksheet_id, id__in=fields
         # ).extra(select={"ordering": ordering}, order_by=("ordering",))
         return [worksheet_field.tag_data() for worksheet_field in worksheet_fields]
+
+
+class WorkSheetEventVersionGenerator(BaseVersionGenerator):
+    def create_version(self, project_key):
+        worksheet_events = WorkSheetEvent.objects.filter(project_key=project_key)
+        events = {}
+        for item in worksheet_events:
+            if item.id in events:
+                events[item.id].append(item.tag_data())
+            else:
+                events.setdefault(item.id, [item.tag_data()])
+        return events
 
 
 class ProjectModuleHandler:

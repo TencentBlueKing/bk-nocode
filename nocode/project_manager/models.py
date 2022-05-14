@@ -44,6 +44,7 @@ class ProjectVersion(Model):
     page_component = models.JSONField(_("页面组件元信息"))
     worksheet = models.JSONField(_("项目工作表元信息"))
     worksheet_field = models.JSONField(_("项目工作表字段元信息"))
+    worksheet_event = models.JSONField(_("表单触发事件"))
     version_number = models.CharField(
         _("版本号，32位uuid"), max_length=LEN_NORMAL, null=False
     )
