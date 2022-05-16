@@ -764,7 +764,7 @@ export default {
       ));
       const downloadElement = document.createElement('a');
       downloadElement.href = href;
-      downloadElement.download = `${this.page.name}.csv`; // 下载后文件名
+      downloadElement.download = `${this.page.name}.xls`; // 下载后文件名
       document.body.appendChild(downloadElement);
       downloadElement.click(); // 点击下载
       document.body.removeChild(downloadElement); // 下载完成移除元素
