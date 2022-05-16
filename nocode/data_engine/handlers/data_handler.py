@@ -23,13 +23,13 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 import ast
-import codecs
-import csv
 import datetime
+import io
 import json
 import re
 
 import openpyxl
+import xlwt
 from django.db.models import Count
 from django.http import HttpResponse
 from rest_framework.response import Response
@@ -221,21 +221,16 @@ class ListComponentDataHandler(BaseDataHandler):
 
         key_map = self.get_key_map(fields)
 
-        response = HttpResponse(content_type="text/csv")
-        response["Content-Disposition"] = "attachment;filename={}.csv".format(
-            manager.worksheet.name
-        )
-
-        response.write(codecs.BOM_UTF8)
+        work_book = xlwt.Workbook(encoding="utf-8")
+        work_sheet = work_book.add_sheet(manager.worksheet.name)
 
         head_fields = self.get_filter_fields(page_config["config"], fields)
 
-        writer = csv.writer(response)
-        head = [f["name"] for f in head_fields]
-        head.insert(0, "序号")
-        writer.writerow(head)
+        for index, value in enumerate(head_fields):
+            work_sheet.col(index).width = 256 * 20
+            work_sheet.write(0, index, value["name"])
+
         for row, values in enumerate(queryset):
-            fields = [row + 1]
             for index, key in enumerate(keys):
                 if key in key_map:
                     field = key_map.get(key)
@@ -261,10 +256,20 @@ class ListComponentDataHandler(BaseDataHandler):
                         else:
                             value = values.get(key, "--")
 
-                        fields.append(value)
+                        work_sheet.write(row + 1, index, value)
                 else:
-                    fields.append(values.get(key, "--"))
-            writer.writerow(fields)
+                    work_sheet.write(row + 1, index, values.get(key, "--"))
+
+        output = io.BytesIO()
+        work_book.save(output)
+        output.seek(0)
+
+        response = HttpResponse(
+            output.getvalue(), content_type="application/vnd.ms-excel"
+        )
+        response["Content-Disposition"] = 'attachment;filename="{}.xls"'.format(
+            manager.worksheet.name
+        )
 
         return response
 
