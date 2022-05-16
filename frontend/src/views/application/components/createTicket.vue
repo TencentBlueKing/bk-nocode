@@ -93,6 +93,7 @@ export default {
       fieldList: [],
       fieldListLoading: false,
       formValue: {},
+      beListeningList: [],
       visible: false,
       ticketId: '',
       isBuiltIn: false,
@@ -146,11 +147,26 @@ export default {
         this.fieldList = res.data;
         this.fields = res.data;
         this.formValue = this.getFormValue();
+        this.beListeningList = this.getBeListenList();
       } catch (e) {
         console.error(e);
       } finally {
         this.fieldListLoading = false;
       }
+    },
+
+    getBeListenList() {
+      const data = [];
+      this.fieldList.forEach((item) => {
+        if (item.meta.data_config) {
+          if (Array.isArray(item.meta.data_config.conditions)) {
+            for (let i = 0; i < item.meta.data_config.conditions.length; i++) {
+              data.push(item.meta.data_config.conditions[i].relationCurrentValue);
+            }
+          }
+        }
+      });
+      return data;
     },
     getFormValue() {
       const value = {};
@@ -292,13 +308,20 @@ export default {
     async handleChangeFormValue(key, $event) {
       this.formValue = $event;
       const item = [];
-
       for (let i = 0; i < this.fieldList.length; i++) {
         if (this.fieldList[i].meta.data_config) {
           item.push(this.fieldList[i]);
+          // field_map
         }
       }
+      // 如果变化的不是被联动的字段，则返回
       const currentIndex = item.findIndex(i => i.key === key);
+      // 拿到变化的字段
+      const changedField = item[currentIndex];
+      if (this.beListeningList.indexOf(changedField.meta.worksheet.field_key) == -1) {
+        this.judgePageCondition();
+        return;
+      }
       for (let i = 0; i < item.length; i++) {
         // 当前用户输入之前的值跳出联动
         if (currentIndex >= i) {
