@@ -185,8 +185,7 @@
                 placeholder="值类型"
                 style="width: 100px; margin-right: 8px"
                 :clearable="false"
-                :disabled="!editable"
-                @selected="(val) => handleSelectMapValue(mapping,val)">
+                :disabled="!editable">
                 <bk-option id="const" name="值"></bk-option>
                 <bk-option id="field" name="引用变量"></bk-option>
                 <bk-option id="department" name="组织架构"></bk-option>
@@ -213,7 +212,7 @@
                 </template>
               </bk-select>
               <bk-select
-                v-if="['field', 'field_increment', 'field_reduction'].includes(mapping.type)"
+                v-if="['field', 'field_increment', 'field_reduction','department'].includes(mapping.type)"
                 v-model="mapping.value"
                 placeholder="选择变量"
                 style="width: 208px"
@@ -354,14 +353,7 @@ export default {
   },
   computed: {
     targetFields() {
-      const tempKey = this.formData?.mapping.filter(item => item.type === 'department').map(item => item.key);
-      const targetFiled =  this.fieldList.filter(item => !['id', 'ids'].includes(item.key)).map((el) => {
-        if (tempKey.includes(el.key)) {
-          return { ...el, type: 'MEMBER' };
-        }
-        return el;
-      });
-      return targetFiled;
+      return this.fieldList.filter(item => !['id', 'ids'].includes(item.key));
     },
     // 值类型为指定上级时，可选值为引用变量中的单选人员变量
     memberRelationFields() {
@@ -566,6 +558,21 @@ export default {
           return list;
         }
       }
+      if (exp.type === 'department') {
+        const list = [];
+        this.relationList.forEach((group) => {
+          const fields = [];
+          group.fields.forEach((item) => {
+            if (['MEMBER', 'MEMBERS'].includes(item.type)) {
+              fields.push(item);
+            }
+          });
+          if (fields.length > 0) {
+            list.push({ name: group.name, fields });
+          }
+        });
+        return list;
+      }
       return this.relationList;
     },
     // 选择表单字段，修改对应值的数据类型
@@ -625,10 +632,6 @@ export default {
         delete data.conditions;
       }
       return data;
-    },
-    handleSelectMapValue(mapping, val) {
-      mapping.value = '';
-      val === 'department' ?   this.isDepartMent = true : this.isDepartMent = false;
     },
   },
 };
