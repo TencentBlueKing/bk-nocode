@@ -20,7 +20,7 @@
         </li>
       </ul>
       <div class="header-content">
-        <div class="todo" v-if="realTodoCount.length>0" @click="goToMyTodo">
+        <div class="todo" v-if="realTodoCount>0" @click="goToMyTodo">
           <i class="custom-icon-font icon-bell"></i>
           <span>{{ realTodoCount }}</span>
         </div>
