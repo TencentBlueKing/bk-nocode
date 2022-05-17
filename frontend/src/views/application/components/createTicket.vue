@@ -155,8 +155,10 @@ export default {
       const value = {};
       this.fieldList.forEach((item) => {
         if ('default' in item) {
-          if (['MULTISELECT', 'CHECKBOX', 'MEMBER', 'MEMBERS', 'TABLE', 'IMAGE'].includes(item.type)) {
+          if (['MULTISELECT', 'CHECKBOX', 'MEMBERS', 'TABLE', 'IMAGE'].includes(item.type)) {
             value[item.key] = item.default ? item.default.split(',') : [];
+          } else if (item.type ===  'MEMBER' && item.meta?.defaultType === 'currentUser') {
+            value[item.key] = window.username.split(',');
           } else if (item.type === 'DATETIME' && item.default === 'curTime') {
             value[item.key] = this.$dayjs(new Date()).format('YYYY-MM-DD HH:mm:ss');
           } else {
