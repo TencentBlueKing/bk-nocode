@@ -155,7 +155,6 @@ export default {
       const value = {};
       this.fieldList.forEach((item) => {
         if ('default' in item) {
-          console.log(item);
           if (['MULTISELECT', 'CHECKBOX', 'MEMBERS', 'TABLE', 'IMAGE'].includes(item.type)) {
             value[item.key] = item.default ? item.default.split(',') : [];
           } else if (item.type ===  'MEMBER') {
