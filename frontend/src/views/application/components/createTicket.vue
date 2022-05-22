@@ -399,10 +399,6 @@ export default {
       this.judgePageCondition();
     },
     getValue(item, res) {
-      const {choice} = item.meta.data_config;
-      if (choice && choice.length > 0) {
-        return item.meta.data_config.choice.find(it => it.key === res.data[0][item.meta.data_config.value]).name;
-      }
       return res.data[0][item.meta.data_config.value];
     },
     getConditionParams(info) {
