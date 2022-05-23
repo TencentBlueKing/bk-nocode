@@ -34,7 +34,7 @@ export default {
     workSheetId: [Number, String],
     showMode: [Number, String],
     timeRange: String,
-    ordering: String,
+    ordering: [Array, String],
     conditions: {
       type: Object,
       default: () => ({}),

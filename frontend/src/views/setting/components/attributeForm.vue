@@ -55,7 +55,7 @@
         </bk-select>
       </bk-form-item>
       <bk-form-item label="排序规则" v-show="configData.option==='TABLE'">
-        <bk-select v-model="localSortBy" @selected="handleSelectSort">
+        <bk-select multiple searchable v-model="localSortBy" @selected="handleSelectSort">
           <bk-option
             v-for="list in sortList"
             :key="list.id"
@@ -134,10 +134,10 @@
 <script>
 import Bus from '@/utils/bus.js';
 import cloneDeep from 'lodash.clonedeep';
-import { getFieldConditionsInTablePage } from '@/utils/form.js';
+import {getFieldConditionsInTablePage} from '@/utils/form.js';
 import FieldValue from '@/components/form/fieldValue.vue';
-import { FIELDS_FILTER_CONFIG } from '@/constants/forms.js';
-import { TIME_RANGE, SORT_LIST } from '@/constants/sysField.js';
+import {FIELDS_FILTER_CONFIG} from '@/constants/forms.js';
+import {TIME_RANGE, SORT_LIST} from '@/constants/sysField.js';
 
 
 export default {
@@ -161,7 +161,7 @@ export default {
     workSheetId: [Number, String],
     showMode: [Number, String],
     timeRange: String,
-    sortBy: String,
+    sortBy: [Array, String],
     conditions: {
       type: Object,
       default: () => ({}),
@@ -177,7 +177,7 @@ export default {
         type: '',
         showMode: cloneDeep(this.showMode),
       },
-      sortList: SORT_LIST,
+      sortList: [],
       localTimeRange: cloneDeep(this.timeRange),
       localSortBy: cloneDeep(this.sortBy),
       timeRangeList: TIME_RANGE,
@@ -217,6 +217,9 @@ export default {
   },
   watch: {
     workSheetId(val) {
+      if (val.length > 0) {
+        this.getSortList(val);
+      };
       this.configData.workSheetId = val;
     },
     showMode(val) {
@@ -224,13 +227,17 @@ export default {
     },
     conditions(val) {
       this.localVal = cloneDeep(val);
-      !val.connector ?  this.isDataFilter = false : this.isDataFilter = true;
+      !val.connector ? this.isDataFilter = false : this.isDataFilter = true;
     },
     timeRange(val) {
       this.localTimeRange = cloneDeep(val);
     },
     sortBy(val) {
-      this.localSortBy = cloneDeep(val);
+      if (!(val instanceof Array)) {
+        this.localSortBy = [val];
+      } else {
+        this.localSortBy = cloneDeep(val);
+      }
     },
     functionList(val) {
       console.log(val);
@@ -239,14 +246,38 @@ export default {
   mounted() {
     // 选中按钮
     Bus.$on('selectFunction', (val) => {
-      this.configData = { ...val };
+      this.configData = {...val};
     });
-    !this.conditions.connector ?  this.isDataFilter = false : this.isDataFilter = true;
+    !this.conditions.connector ? this.isDataFilter = false : this.isDataFilter = true;
   },
   beforeDestroy() {
     Bus.$off('selectFunction');
   },
   methods: {
+    async getSortList(workSheetId) {
+      try {
+        this.sortList = [];
+        const res = await this.$store.dispatch('setting/getFormFields', workSheetId);
+        const fieldList = res.data.filter(item => !FIELDS_FILTER_CONFIG.includes(item.type));
+        const sortList = cloneDeep(SORT_LIST);
+        const allowSortFieldType = ["STRING", "INT", "SELECT", "RADIO", "MEMBER", "LINK", "AUTO-NUMBER", "FORMULA"];
+        fieldList.forEach((item) => {
+          if (allowSortFieldType.indexOf(item.type) != "-1") {
+            sortList.push({
+              id: `contents__${item.key}`,
+              name: `根据${item.name}正序`
+            });
+            sortList.push({
+              id: `-contents__${item.key}`,
+              name: `根据${item.name}倒序`
+            });
+          };
+        });
+        this.sortList = sortList;
+      } catch (e) {
+        console.error(e);
+      }
+    },
     async getFieldList() {
       try {
         this.fieldListLoading = true;
@@ -260,13 +291,14 @@ export default {
     },
     change() {
       if (this.configData.value) {
-        const { value } = this.configData;
+        const {value} = this.configData;
         this.functionList.forEach((item) => {
           if (item.id === value) {
             this.configData.type = item.type;
           }
         });
       }
+      this.getSortList(this.configData.workSheetId);
       Bus.$emit('sendFormData', this.configData);
     },
     handleRuleConfig() {
@@ -332,7 +364,7 @@ export default {
     },
     handleChangeStatus(val) {
       if (!val) {
-        this.localVal = { connector: '', expressions: [{ condition: '', key: '', value: '', type: 'const' }] };
+        this.localVal = {connector: '', expressions: [{condition: '', key: '', value: '', type: 'const'}]};
         Bus.$emit('sendConfigRules', {});
       }
     },
@@ -356,9 +388,11 @@ export default {
   font-size: 14px;
   color: #3a84ff;
 
-  &:hover {
-    cursor: pointer;
-  }
+&
+:hover {
+  cursor: pointer;
+}
+
 }
 
 .condition-item {
@@ -366,25 +400,28 @@ export default {
   align-items: center;
   margin-top: 16px;
 
-  .operate-btns {
-    color: #c4c6cc;
-    cursor: pointer;
-    user-select: none;
+.operate-btns {
+  color: #c4c6cc;
+  cursor: pointer;
+  user-select: none;
 
-    i {
-      color: #c4c6cc;
-      cursor: pointer;
+i {
+  color: #c4c6cc;
+  cursor: pointer;
 
-      &:hover {
-        color: #979ba5;
-      }
+&
+:hover {
+  color: #979ba5;
+}
 
-      &.disabled {
-        color: #dcdee5;
-        cursor: not-allowed;
-      }
-    }
-  }
+&
+.disabled {
+  color: #dcdee5;
+  cursor: not-allowed;
+}
+
+}
+}
 }
 
 .connector-rule {
@@ -393,38 +430,44 @@ export default {
   height: 20px;
   margin-top: 16px;
 
-  & > label {
-    position: relative;
-    margin-right: 30px;
-    color: #63656e;
-    font-size: 14px;
-    white-space: nowrap;
+&
+> label {
+  position: relative;
+  margin-right: 30px;
+  color: #63656e;
+  font-size: 14px;
+  white-space: nowrap;
 
-    &:after {
-      content: '*';
-      position: absolute;
-      top: 50%;
-      height: 8px;
-      line-height: 1;
-      color: #ea3636;
-      font-size: 12px;
-      transform: translate(3px, -50%);
-    }
-  }
+&
+:after {
+  content: '*';
+  position: absolute;
+  top: 50%;
+  height: 8px;
+  line-height: 1;
+  color: #ea3636;
+  font-size: 12px;
+  transform: translate(3px, -50%);
+}
+
+}
 }
 
 
 .dialog-container {
   max-height: 512px;
   overflow: auto;
-  @mixin scroller;
+@mixin scroller;
 }
-.data-filter{
+
+.data-filter {
   position: relative;
-  .data-switch{
-    position: absolute;
-    right: 0;
-    top: -32px;
-  }
+
+.data-switch {
+  position: absolute;
+  right: 0;
+  top: -32px;
+}
+
 }
 </style>
