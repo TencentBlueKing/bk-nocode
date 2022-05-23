@@ -171,7 +171,7 @@ export default {
       showMode: '',
       conditions: {},
       timeRange: '',
-      ordering: '',
+      ordering: [],
     };
   },
   computed: {
@@ -253,7 +253,7 @@ export default {
               this.$set(this.pageComponent[0].config, 'time_range', 'all');
             }
             if (!config.ordering) {
-              this.$set(this.pageComponent[0].config, 'ordering', 'create_at');
+              this.$set(this.pageComponent[0].config, 'ordering', ['create_at']);
             }
             const { value } = list;
             this.listId = value;
@@ -261,7 +261,7 @@ export default {
             this.showMode = config.show_mode.mode || 0;
             this.conditions = config.conditions;
             this.timeRange = config.time_range || 'all';
-            this.ordering = config.ordering || 'create_at';
+            this.ordering = config.ordering || ['create_at'];
           }
         } else {
           if (this.crtPage.type === 'SHEET') {
@@ -281,7 +281,7 @@ export default {
                 sys_fields: [],
                 show_mode: { mode: 0 },
                 time_range: 'all',
-                ordering: 'create_at',
+                ordering: ['create_at'],
                 conditions: { connector: '', expressions: [{ condition: '', key: '', value: '', type: 'const' }] },
               },
             });
@@ -355,7 +355,7 @@ export default {
       this.attrData = {};
       this.workSheetId = '';
       this.timeRange = 'all',
-      this.ordering = 'create_at',
+      this.ordering = ['create_at'],
       this.showMode = 0;
       this.getPageComponent();
     },

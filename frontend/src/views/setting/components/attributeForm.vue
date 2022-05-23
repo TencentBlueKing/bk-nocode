@@ -161,7 +161,7 @@ export default {
     workSheetId: [Number, String],
     showMode: [Number, String],
     timeRange: String,
-    sortBy: String,
+    sortBy: [Array, String],
     conditions: {
       type: Object,
       default: () => ({}),
@@ -217,6 +217,9 @@ export default {
   },
   watch: {
     workSheetId(val) {
+      if (val.length > 0) {
+        this.getSortList(val);
+      };
       this.configData.workSheetId = val;
     },
     showMode(val) {
@@ -231,13 +234,12 @@ export default {
     },
     sortBy(val) {
       if (!(val instanceof Array)) {
-        this.localSortBy = cloneDeep([val]);
+        this.localSortBy = [val];
       } else {
         this.localSortBy = cloneDeep(val);
       }
     },
     functionList(val) {
-      this.getSortList();
       console.log(val);
     },
   },
@@ -252,11 +254,12 @@ export default {
     Bus.$off('selectFunction');
   },
   methods: {
-    async getSortList() {
+    async getSortList(workSheetId) {
       try {
-        const res = await this.$store.dispatch('setting/getFormFields', this.configData.workSheetId);
+        this.sortList = [];
+        const res = await this.$store.dispatch('setting/getFormFields', workSheetId);
         const fieldList = res.data.filter(item => !FIELDS_FILTER_CONFIG.includes(item.type));
-        const sortList = SORT_LIST;
+        const sortList = cloneDeep(SORT_LIST);
         const allowSortFieldType = ["STRING", "INT", "SELECT", "RADIO", "MEMBER", "LINK", "AUTO-NUMBER", "FORMULA"];
         fieldList.forEach((item) => {
           if (allowSortFieldType.indexOf(item.type) != "-1") {
@@ -295,6 +298,7 @@ export default {
           }
         });
       }
+      this.getSortList(this.configData.workSheetId);
       Bus.$emit('sendFormData', this.configData);
     },
     handleRuleConfig() {
