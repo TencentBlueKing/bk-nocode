@@ -55,7 +55,7 @@
         </bk-select>
       </bk-form-item>
       <bk-form-item label="排序规则" v-show="configData.option==='TABLE'">
-        <bk-select multiple v-model="localSortBy" @selected="handleSelectSort">
+        <bk-select multiple searchable v-model="localSortBy" @selected="handleSelectSort">
           <bk-option
             v-for="list in sortList"
             :key="list.id"
