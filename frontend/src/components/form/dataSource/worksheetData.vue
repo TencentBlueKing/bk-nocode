@@ -13,7 +13,8 @@
           <bk-option v-for="item in sourceTypeList" :key="item.id" :id="item.id" :name="item.name"></bk-option>
         </bk-select>
       </bk-form-item>
-      <bk-form-item v-if="localVal.target.project_key !== appId" label="应用" property="appId" :required="true" error-display-type="normal">
+      <bk-form-item v-if="localVal.target.project_key !== appId" label="应用" property="appId" :required="true"
+                    error-display-type="normal">
         <bk-select
           placeholder="请选择应用"
           :value="localVal.target.project_key"
@@ -114,7 +115,7 @@
             </i>
           </div>
         </div>
-<!--        <p v-if="errorTips" class="common-error-tips">请检查筛选条件</p>-->
+        <!--        <p v-if="errorTips" class="common-error-tips">请检查筛选条件</p>-->
       </div>
       <div v-else class="data-empty" @click="handleAddExpression(0)">点击添加</div>
     </div>
@@ -122,7 +123,7 @@
 </template>
 <script>
 import cloneDeep from 'lodash.clonedeep';
-import { getFieldConditions } from '@/utils/form.js';
+import {getFieldConditions} from '@/utils/form.js';
 import FieldValue from '@/components/form/fieldValue.vue';
 
 export default {
@@ -139,7 +140,7 @@ export default {
     useVariable: {
       // 参数值是否支持引用变量
       type: Boolean,
-      default: false,
+      default: true,
     },
     sourceTypeList: {
       type: Array,
@@ -148,6 +149,7 @@ export default {
     flowId: Number,
     nodeId: Number,
     value: Object,
+    fields: Array,
   },
   data() {
     return {
@@ -189,8 +191,8 @@ export default {
   computed: {
     // 传入bk-form用来做表单校验
     formModel() {
-      const { field, target } = this.localVal;
-      return { field, appId: target.project_key, formId: target.worksheet_id };
+      const {field, target} = this.localVal;
+      return {field, appId: target.project_key, formId: target.worksheet_id};
     },
   },
   watch: {
@@ -213,7 +215,7 @@ export default {
     async getAppList() {
       try {
         this.appListLoading = true;
-        const res = await this.$store.dispatch('setting/getProjectGranted', { project_key: this.appId });
+        const res = await this.$store.dispatch('setting/getProjectGranted', {project_key: this.appId});
         this.appList = res.data;
       } catch (e) {
         console.error(e);
@@ -246,22 +248,14 @@ export default {
       }
     },
     async getRelationList() {
-      try {
-        this.relationListLoading = true;
-        const params = {
-          workflow: this.flowId,
-          state: this.nodeId,
-        };
-        const res = await this.$store.dispatch('setting/getNodeVars', params);
-        this.relationList = res.data.map((item) => {
-          const { key, name } = item;
-          return { key, name };
+      const data = [];
+      this.fields.forEach(item => {
+        data.push({
+          key: item.key,
+          name: item.name
         });
-      } catch (e) {
-        console.error(e);
-      } finally {
-        this.relationListLoading = false;
-      }
+      });
+      this.relationList = data;
     },
     // 筛选条件字段逻辑选项，不同类型的字段有不同的逻辑关系
     getConditionOptions(key) {
@@ -333,6 +327,9 @@ export default {
     },
     // 选择字段值类型
     handleSelectType(expression) {
+      if (expression.type === "field") {
+        this.getRelationList();
+      }
       expression.value = '';
       this.update();
     },
@@ -376,61 +373,78 @@ export default {
 </script>
 <style lang="postcss" scoped>
 .worksheet-data-wrapper {
-  .select-worksheet {
-    display: flex;
-    align-items: center;
-    .bk-form-item {
-      margin-top: 0;
-      flex: 1;
-      &:not(:last-of-type) {
-        margin-right: 10px;
-      }
-    }
-  }
-  .filter-rules-wrapper {
-    margin-top: 24px;
-  }
-  .connector-rule {
-    display: flex;
-    align-items: center;
-    height: 20px;
-    & > label {
-      position: relative;
-      margin-right: 30px;
-      color: #63656e;
-      font-size: 14px;
-      white-space: nowrap;
-    }
-  }
-  .condition-item {
-    display: flex;
-    align-items: center;
-    margin-top: 16px;
-    .operate-btns {
-      color: #c4c6cc;
-      cursor: pointer;
-      user-select: none;
-      .disabled {
-        color: #dcdee5;
-        cursor: not-allowed;
-      }
-    }
-  }
-  .data-empty {
-    margin-top: 16px;
-    padding: 24px 0;
-    font-size: 12px;
-    text-align: center;
-    color: #dcdee5;
-    border: 1px dashed #dcdee5;
-    cursor: pointer;
-    &:not(.disabled):hover {
-      border-color: #3a84ff;
-      color: #3a84ff;
-    }
-    &.disabled {
-      cursor: not-allowed;
-    }
-  }
+
+.select-worksheet {
+  display: flex;
+  align-items: center;
+
+.bk-form-item {
+  margin-top: 0;
+  flex: 1;
+
+&
+:not(:last-of-type) {
+  margin-right: 10px;
+}
+
+}
+}
+.filter-rules-wrapper {
+  margin-top: 24px;
+}
+
+.connector-rule {
+  display: flex;
+  align-items: center;
+  height: 20px;
+
+&
+> label {
+  position: relative;
+  margin-right: 30px;
+  color: #63656e;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+}
+.condition-item {
+  display: flex;
+  align-items: center;
+  margin-top: 16px;
+
+.operate-btns {
+  color: #c4c6cc;
+  cursor: pointer;
+  user-select: none;
+
+.disabled {
+  color: #dcdee5;
+  cursor: not-allowed;
+}
+
+}
+}
+.data-empty {
+  margin-top: 16px;
+  padding: 24px 0;
+  font-size: 12px;
+  text-align: center;
+  color: #dcdee5;
+  border: 1px dashed #dcdee5;
+  cursor: pointer;
+
+&
+:not(.disabled):hover {
+  border-color: #3a84ff;
+  color: #3a84ff;
+}
+
+&
+.disabled {
+  cursor: not-allowed;
+}
+
+}
 }
 </style>

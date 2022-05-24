@@ -14,9 +14,10 @@
       v-if="show"
       ref="dataSource"
       :app-id="appId"
+      :fields="fields"
       :source-type="sourceType"
       :field-type="fieldType"
-      :use-variable="false"
+      :use-variable="true"
       :value="localVal"
       @change="localVal = $event">
     </data-source>
@@ -39,6 +40,7 @@ export default {
     appId: String,
     sourceType: String,
     fieldType: String,
+    fields: Array, // 当前表单字段列表
     value: [Array, Object], // 自定义数据为Array，api数据、表单数据为Object
   },
   data() {

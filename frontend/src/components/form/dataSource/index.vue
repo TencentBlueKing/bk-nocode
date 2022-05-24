@@ -28,6 +28,7 @@
       :app-id="appId"
       :flow-id="flowId"
       :node-id="nodeId"
+      :fields="fields"
       :change-source="showTypeSelect"
       :source-type-list="sourceTypeList"
       :use-variable="useVariable"
@@ -65,6 +66,7 @@ export default {
       type: Boolean,
       default: true,
     },
+    fields: Array, // 当前表单字段列表
     value: [Array, Object], // 自定义数据为Array，api数据、表单数据为Object
   },
   data() {
