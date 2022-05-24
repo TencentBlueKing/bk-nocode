@@ -64,7 +64,7 @@ export default {
         const expressions = this.field.meta.data_config.conditions.expressions;
         for (let i = 0; i < expressions.length; i++) {
           if (expressions[i].type === "field") {
-            return {};
+            return [];
           }
         }
         this.sourceDataLoading = true;
