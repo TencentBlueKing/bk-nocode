@@ -250,10 +250,12 @@ export default {
     async getRelationList() {
       const data = [];
       this.fields.forEach(item => {
-        data.push({
-          key: item.key,
-          name: item.name
-        });
+        if (item.type === "SELECT") {
+          data.push({
+            key: item.key,
+            name: item.name
+          });
+        }
       });
       this.relationList = data;
     },

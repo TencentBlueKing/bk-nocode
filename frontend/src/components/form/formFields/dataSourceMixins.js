@@ -19,7 +19,7 @@ export default {
       if (this.field.source_type === 'WORKSHEET') {
         this.sourceData = this.field.choice;
       }
-    }
+    },
   },
   created() {
     this.isOpenApi = sessionStorage.getItem('isOpenApi') !== 'false';
@@ -39,7 +39,7 @@ export default {
     async setApiData() {
       try {
         this.sourceDataLoading = true;
-        const {id, api_info, api_instance_id, kv_relation} = this.field;
+        const { id, api_info, api_instance_id, kv_relation } = this.field;
         const params = {
           id,
           api_instance_id,
@@ -51,8 +51,8 @@ export default {
         };
         const resp = await this.$store.dispatch('setting/getSourceData', params);
         this.sourceData = resp.data.map((item) => {
-          const {key, name} = item;
-          return {key, name};
+          const { key, name } = item;
+          return { key, name };
         });
         this.sourceDataLoading = false;
       } catch (e) {
@@ -61,14 +61,14 @@ export default {
     },
     async setWorksheetData() {
       try {
-        const expressions = this.field.meta.data_config.conditions.expressions;
+        const { expressions } = this.field.meta.data_config.conditions;
         for (let i = 0; i < expressions.length; i++) {
-          if (expressions[i].type === "field") {
+          if (expressions[i].type === 'field') {
             return [];
           }
         }
         this.sourceDataLoading = true;
-        const {field, conditions} = this.field.meta.data_config;
+        const { field, conditions } = this.field.meta.data_config;
         let params;
         if (!conditions.connector && !conditions.expressions.every(i => i)) {
           params = {
@@ -90,7 +90,7 @@ export default {
         const resp = await this.$store.dispatch(`setting/${action}`, params);
         this.sourceData = resp.data.map((item) => {
           const val = item[field];
-          return {key: val, name: val};
+          return { key: val, name: val };
         });
         this.sourceDataLoading = false;
       } catch (e) {
