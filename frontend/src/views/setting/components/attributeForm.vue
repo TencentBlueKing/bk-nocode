@@ -297,8 +297,10 @@ export default {
             this.configData.type = item.type;
           }
         });
+        if (this.configData.workSheetId) {
+          this.getSortList(this.configData.workSheetId);
+        }
       }
-      this.getSortList(this.configData.workSheetId);
       Bus.$emit('sendFormData', this.configData);
     },
     handleRuleConfig() {
