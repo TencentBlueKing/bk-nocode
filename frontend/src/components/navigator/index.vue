@@ -20,9 +20,9 @@
         </li>
       </ul>
       <div class="header-content">
-        <div class="todo" v-if="realTodoCount>0" @click="goToMyTodo">
+        <div class="todo" @click="goToMyTodo">
           <i class="custom-icon-font icon-bell"></i>
-          <span>{{ realTodoCount }}</span>
+          <span v-if="realTodoCount!==0">{{ realTodoCount }}</span>
         </div>
         <bk-popover
           theme="navigation-popover"
