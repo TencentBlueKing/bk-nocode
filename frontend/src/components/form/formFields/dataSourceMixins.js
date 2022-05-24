@@ -14,6 +14,13 @@ export default {
       isOpenApi: '',
     };
   },
+  watch: {
+    'field.choice'() {
+      if (this.field.source_type === 'WORKSHEET') {
+        this.sourceData = this.field.choice;
+      }
+    },
+  },
   created() {
     this.isOpenApi = sessionStorage.getItem('isOpenApi') !== 'false';
     this.setSourceData();
@@ -54,6 +61,12 @@ export default {
     },
     async setWorksheetData() {
       try {
+        const { expressions } = this.field.meta.data_config.conditions;
+        for (let i = 0; i < expressions.length; i++) {
+          if (expressions[i].type === 'field') {
+            return [];
+          }
+        }
         this.sourceDataLoading = true;
         const { field, conditions } = this.field.meta.data_config;
         let params;

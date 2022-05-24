@@ -278,6 +278,7 @@
         :source-type="fieldData.source_type"
         :field-type="fieldData.type"
         :value="sourceData"
+        :fields="list"
         @confirm="handleDataSourceChange">
       </data-source-dialog>
       <number-rule-dialog
@@ -357,16 +358,16 @@ export default {
       isDropdownShow: false,
       defaultData: this.getDefaultData(),
       dataSourceDialogShow: false,
-      regexList: [{ id: 'EMPTY', name: '无' }], // 校验方式列表，根据不同字段类型动态请求接口
+      regexList: [{id: 'EMPTY', name: '无'}], // 校验方式列表，根据不同字段类型动态请求接口
       regexListLoading: false,
       numberRuleDialogShow: false,
       configFormulaDialogShow: false,
       resetPeriodList: [
-        { id: '0', name: '不重置' },
-        { id: 'year', name: '年' },
-        { id: 'month', name: '月' },
-        { id: 'week', name: '周' },
-        { id: 'day', name: '日' },
+        {id: '0', name: '不重置'},
+        {id: 'year', name: '年'},
+        {id: 'month', name: '月'},
+        {id: 'week', name: '周'},
+        {id: 'day', name: '日'},
       ],
       datePickerIsShow: {
         startTimeIsshow: false,
@@ -400,14 +401,14 @@ export default {
       return FIELDS_SOURCE_TYPE;
     },
     sourceData() {
-      const { source_type, choice, meta, api_info, kv_relation } = this.fieldData;
+      const {source_type, choice, meta, api_info, kv_relation} = this.fieldData;
       let data = {};
       switch (source_type) {
         case 'CUSTOM':
           data = choice;
           break;
         case 'API':
-          data = { api_info, kv_relation };
+          data = {api_info, kv_relation};
           break;
         case 'WORKSHEET':
           data = meta.data_config;
@@ -425,7 +426,7 @@ export default {
       let text = '';
       if (this.fieldData.type === 'AUTO-NUMBER') {
         this.fieldData.meta.config.forEach((item, index) => {
-          let { value } = item;
+          let {value} = item;
           if (item.type === 'number' && item.length > 1) {
             let zeroStr = '';
             for (let i = 0; i < item.length - value.toString().length; i++) {
@@ -480,7 +481,7 @@ export default {
         const resp = await this.$store.dispatch('setting/getRegexList', params);
         this.regexList = resp.data.regex_choice.map((item) => {
           const [id, name] = item;
-          return { id, name: name === '' ? '无' : name };
+          return {id, name: name === '' ? '无' : name};
         });
       } catch (e) {
         console.error(e);
@@ -489,11 +490,11 @@ export default {
       }
     },
     getDefaultData() {
-      const { type, default: defaultVal, choice, meta } = this.value;
+      const {type, default: defaultVal, choice, meta} = this.value;
       let dftVal;
       if (['MULTISELECT', 'CHECKBOX', 'MEMBERS', 'MEMBER'].includes(type)) {
         dftVal = defaultVal ? defaultVal.split(',') : [];
-      }  else {
+      } else {
         dftVal = cloneDeep(defaultVal);
       }
       return {
@@ -542,7 +543,7 @@ export default {
       this.configFormulaDialogShow = true;
     },
     handleFormulaConfirm(val) {
-      const { value, fields } = val;
+      const {value, fields} = val;
       this.fieldData.meta.config.value = value;
       this.fieldData.meta.config.fields = fields;
       this.change();
@@ -561,8 +562,8 @@ export default {
       this.fieldData.source_type = val;
       if (val === 'CUSTOM') {
         this.fieldData.choice = [
-          { key: 'XUANXIANG1', name: '选项1' },
-          { key: 'XUANXIANG2', name: '选项2' },
+          {key: 'XUANXIANG1', name: '选项1'},
+          {key: 'XUANXIANG2', name: '选项2'},
         ];
         this.fieldData.api_info = {};
         this.fieldData.kv_relation = {};
@@ -575,7 +576,7 @@ export default {
           req_params: {},
           rsp_data: '',
         };
-        this.fieldData.kv_relation = { key: '', name: '' };
+        this.fieldData.kv_relation = {key: '', name: ''};
       } else if (val === 'WORKSHEET') {
         this.fieldData.choice = [];
         this.fieldData.api_info = {};
@@ -600,7 +601,7 @@ export default {
     },
     // 数据源配置变更
     handleDataSourceChange(val) {
-      const { source_type } = this.fieldData;
+      const {source_type} = this.fieldData;
       this.dataSourceDialogShow = false;
       if (source_type === 'CUSTOM') {
         this.fieldData.choice = val;
@@ -730,9 +731,11 @@ export default {
   font-size: 12px;
   color: #63656e;
 
-  &:first-of-type {
-    margin-bottom: 10px;
-  }
+&
+:first-of-type {
+  margin-bottom: 10px;
+}
+
 }
 
 .auto-number-preview {
@@ -758,14 +761,15 @@ export default {
   color: #63656e;
   line-height: 20px;
 
-  /deep/ .bk-form-radio {
-    margin-top: 6px;
-    margin-right: 0;
+/deep/ .bk-form-radio {
+  margin-top: 6px;
+  margin-right: 0;
 
-    .bk-radio-text {
-      font-size: 12px;
-    }
-  }
+.bk-radio-text {
+  font-size: 12px;
+}
+
+}
 }
 
 .checkbox-group {
@@ -773,14 +777,15 @@ export default {
   display: flex;
   flex-direction: column;
 
-  .checkbox-item {
-    margin-top: 12px;
-    margin-bottom: 16px;
-  }
+.checkbox-item {
+  margin-top: 12px;
+  margin-bottom: 16px;
+}
 
-  i {
-    color: #979ba5;
-  }
+i {
+  color: #979ba5;
+}
+
 }
 
 .date-pick {

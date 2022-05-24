@@ -309,13 +309,85 @@ export default {
     goToDetail() {
       this.$router.push({name: 'processDetail', params: {id: this.ticketId}});
     },
+    async setWorkSheetData(key, $event) {
+      // 临时方案，当值变化是，需要先计算好变化的值所依赖的所有的下拉框, 之后填充字段值
+      // 如果变化的不是被联动的字段，则返回
+      const currentIndex = this.fieldList.findIndex(i => i.key === key);
+      const currentField = this.fieldList[currentIndex];
+
+      if (!currentField.meta.worksheet.field_key) {
+        return;
+      }
+      if (!(currentField.type === "SELECT")) {
+        return;
+      }
+
+      const worksheetFieldList = [];
+      // 先过滤出来所有的和当前字段有关的包含变量引用的下拉框字段
+      for (let i = 0; i < this.fieldList.length; i++) {
+        if (this.fieldList[i].meta.data_config) {
+          const expressions = this.fieldList[i].meta.data_config.conditions.expressions;
+          let isField = false;
+          for (let j = 0; j < expressions.length; j++) {
+            if (expressions[j].type === "field" && expressions[j].value === currentField.meta.worksheet.field_key) {
+              isField = true;
+            }
+          }
+          if (isField) {
+            worksheetFieldList.push(this.fieldList[i]);
+          }
+        }
+      }
+      // 计算这些字段
+      for (let i = 0; i < worksheetFieldList.length; i++) {
+        const data_config = clonedeep(worksheetFieldList[i].meta.data_config);
+        const expressions = data_config.conditions.expressions || [];
+        for (let j = 0; j < expressions.length; j++) {
+          for (let k = 0; k < this.fieldList.length; k++) {
+            if (expressions[j].value === currentField.meta.worksheet.field_key) {
+              expressions[j].value = $event[key];
+              expressions[j].type = "const";
+            }
+            if (expressions[j].value === this.fieldList[k].meta.worksheet.field_key && expressions[j].value !== currentField.meta.worksheet.field_key) {
+              expressions[j].value = $event[this.fieldList[k].key];
+              expressions[j].type = "const";
+            }
+          }
+        }
+        const {field, conditions} = data_config;
+        let params;
+        if (!conditions.connector && !conditions.expressions.every(i => i)) {
+          params = {
+            token: worksheetFieldList[i].token,
+            fields: [field],
+            conditions: {},
+          };
+        } else {
+          params = {
+            token: worksheetFieldList[i].token,
+            fields: [field],
+            conditions,
+          };
+        }
+        try {
+          const res = await this.$store.dispatch('setting/getWorksheetData', params);
+          const choices = res.data.map((item) => {
+            const val = item[field];
+            return {key: val, name: val};
+          });
+          worksheetFieldList[i].choice = choices;
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    },
     async handleChangeFormValue(key, $event) {
       this.formValue = $event;
+      this.setWorkSheetData(key, $event);
       const item = [];
       for (let i = 0; i < this.fieldList.length; i++) {
         if (this.fieldList[i].meta.data_config) {
           item.push(this.fieldList[i]);
-          // field_map
         }
       }
       // 如果变化的不是被联动的字段，则返回
@@ -337,7 +409,6 @@ export default {
           // 当前表单
           let isConditonFlag;
           if (type === 1) {
-            console.log(i);
             isConditonFlag = conditions.every((condition) => {
               const tempkey = `${item[i].meta.worksheet.key}_${condition.id}`;
               if (condition.type === 'variable') {
