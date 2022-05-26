@@ -322,7 +322,10 @@ export default {
       // 先过滤出来所有的和当前字段有关的包含变量引用的下拉框字段
       for (let i = 0; i < this.fieldList.length; i++) {
         if (this.fieldList[i].meta.data_config) {
-          const expressions = this.fieldList[i].meta.data_config.conditions.expressions;
+          const expressions = this.fieldList[i].meta.data_config.conditions.expressions || [];
+          if (!expressions) {
+            continue;
+          }
           let isField = false;
           for (let j = 0; j < expressions.length; j++) {
             if (expressions[j].type === "field" && expressions[j].value === currentField.meta.worksheet.field_key) {
@@ -334,6 +337,7 @@ export default {
           }
         }
       }
+      console.log(worksheetFieldList);
       // 计算这些字段
       for (let i = 0; i < worksheetFieldList.length; i++) {
         const data_config = clonedeep(worksheetFieldList[i].meta.data_config);
