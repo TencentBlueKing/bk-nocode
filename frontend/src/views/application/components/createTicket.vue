@@ -310,7 +310,12 @@ export default {
       // 如果变化的不是被联动的字段，则返回
       const currentIndex = this.fieldList.findIndex(i => i.key === key);
       const currentField = this.fieldList[currentIndex];
-
+      if (!currentField) {
+        return;
+      }
+      if (!currentField.meta.worksheet) {
+        return;
+      }
       if (!currentField.meta.worksheet.field_key) {
         return;
       }
@@ -394,6 +399,14 @@ export default {
       const currentIndex = item.findIndex(i => i.key === key);
       // 拿到变化的字段
       const changedField = item[currentIndex];
+
+      if (!changedField) {
+        return;
+      }
+      if (!changedField.meta.worksheet) {
+        this.judgePageCondition();
+        return;
+      }
       if (this.beListeningList.indexOf(changedField.meta.worksheet.field_key) == -1) {
         this.judgePageCondition();
         return;
