@@ -314,7 +314,12 @@ export default {
       // 如果变化的不是被联动的字段，则返回
       const currentIndex = this.fieldList.findIndex(i => i.key === key);
       const currentField = this.fieldList[currentIndex];
-
+      if (!currentField) {
+        return;
+      }
+      if (!currentField.meta.worksheet) {
+        return;
+      }
       if (!currentField.meta.worksheet.field_key) {
         return;
       }
@@ -326,7 +331,10 @@ export default {
       // 先过滤出来所有的和当前字段有关的包含变量引用的下拉框字段
       for (let i = 0; i < this.fieldList.length; i++) {
         if (this.fieldList[i].meta.data_config) {
-          const expressions = this.fieldList[i].meta.data_config.conditions.expressions;
+          const expressions = this.fieldList[i].meta.data_config.conditions.expressions || [];
+          if (!expressions) {
+            continue;
+          }
           let isField = false;
           for (let j = 0; j < expressions.length; j++) {
             if (expressions[j].type === "field" && expressions[j].value === currentField.meta.worksheet.field_key) {
@@ -338,6 +346,7 @@ export default {
           }
         }
       }
+      console.log(worksheetFieldList);
       // 计算这些字段
       for (let i = 0; i < worksheetFieldList.length; i++) {
         const data_config = clonedeep(worksheetFieldList[i].meta.data_config);
@@ -394,6 +403,14 @@ export default {
       const currentIndex = item.findIndex(i => i.key === key);
       // 拿到变化的字段
       const changedField = item[currentIndex];
+
+      if (!changedField) {
+        return;
+      }
+      if (!changedField.meta.worksheet) {
+        this.judgePageCondition();
+        return;
+      }
       if (this.beListeningList.indexOf(changedField.meta.worksheet.field_key) == -1) {
         this.judgePageCondition();
         return;

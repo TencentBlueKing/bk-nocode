@@ -137,12 +137,8 @@
                 :clearable="false"
                 :loading="relationListLoading"
                 :disabled="relationListLoading || !editable">
-                <bk-option
-                  v-for="item in memberRelationFields"
-                  :key="item.id"
-                  :id="item.id"
-                  :name="item.name">
-                </bk-option>
+                <bk-option v-for="item in memberRelationFields" :key="item.id" :id="item.id"
+                           :name="item.name"></bk-option>
               </bk-select>
               <field-value
                 v-else
@@ -357,14 +353,15 @@ export default {
     },
     // 值类型为指定上级时，可选值为引用变量中的单选人员变量
     memberRelationFields() {
-      const list = [];
+      const fields = [];
       this.relationList.forEach((group) => {
-        const memberTypeFields = group.fields.filter(item => item.type === 'MEMBER');
-        if (memberTypeFields.length > 0) {
-          list.push({ name: group.name, fields: memberTypeFields });
-        }
+        group.fields.forEach((item) => {
+          if (item.type === 'MEMBER') {
+            fields.push(item);
+          }
+        });
       });
-      return list;
+      return fields;
     },
   },
   watch: {
