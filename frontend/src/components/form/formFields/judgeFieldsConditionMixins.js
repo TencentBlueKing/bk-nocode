@@ -103,7 +103,29 @@ export default {
         );
       });
     },
+    // 流程详情中判断显隐
+    judgeShowConditionAtProcessDetail(condition, fieldList) {
+      // 且或逻辑处理        遍历条件  or  some || and every
+      if (condition.connector === 'and' || condition.type === 'and') {
+        // 这里需要对符号判断
+        return  condition.expressions?.every((item) => {
+          const  func = CONDITION_FUNCTION_MAP[item.condition];
+          return this[func](
+            item.value,
+            fieldList.find(el => el.key === item.key)?.value,
 
+          );
+        });
+      }
+      //  or 的条件处理
+      return condition.expressions?.some((item) => {
+        const  func = CONDITION_FUNCTION_MAP[item.condition];
+        return this[func](
+          item.value,
+          fieldList.find(el => el.key === item.key)?.value,
+        );
+      });
+    },
     equeal(param1, param2) {
       return param1 === param2;
     },

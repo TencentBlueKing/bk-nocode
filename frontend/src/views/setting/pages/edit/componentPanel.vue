@@ -5,7 +5,7 @@
     </div>
     <div class="component-list-container">
       <div v-for="(group, index) in list" class="field-group" :key="index">
-        <div class="group-name">{{ group.name }}</div>
+<!--        <div class="group-name">{{ group.name }}</div>-->
         <draggable
           class="list-wrap"
           handle=".component-item"
@@ -98,6 +98,7 @@ export default {
 }
 
 .component-list-container {
+  margin: 16px 0 8px;
   padding: 0  16px ;
   height: calc(100% - 44px);
   overflow: auto;

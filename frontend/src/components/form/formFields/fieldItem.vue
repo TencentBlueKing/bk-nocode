@@ -22,7 +22,6 @@
 <script>
 import clonedeep from 'lodash.clonedeep';
 import { FIELDS_TYPES } from '@/constants/forms.js';
-import field from '../../../commonMix/field';
 
 // 注册fields文件夹下所有字段类型组件
 function registerField() {

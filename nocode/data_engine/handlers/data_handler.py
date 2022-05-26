@@ -214,11 +214,15 @@ class ListComponentDataHandler(BaseDataHandler):
         fields = manager.fields
         # 获取所要展示自定义字段
         keys, _ = self.get_keys(page_config["config"], fields)
+
+        page_config_queryset = self.get_page_config_queryset(
+            manager, page_config["config"], tab_id=None
+        )
         # 导出批量记录
         if ids:
-            base_queryset = manager.get_queryset().filter(id__in=ids)
+            base_queryset = page_config_queryset.filter(id__in=ids)
         else:
-            base_queryset = manager.get_queryset()
+            base_queryset = page_config_queryset
         queryset = base_queryset.filter(filters).values(*keys)
 
         key_map = self.get_key_map(fields)

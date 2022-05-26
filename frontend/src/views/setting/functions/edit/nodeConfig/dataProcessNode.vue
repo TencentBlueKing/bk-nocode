@@ -181,8 +181,7 @@
                 placeholder="值类型"
                 style="width: 100px; margin-right: 8px"
                 :clearable="false"
-                :disabled="!editable"
-                @selected="(val) => handleSelectMapValue(mapping,val)">
+                :disabled="!editable">
                 <bk-option id="const" name="值"></bk-option>
                 <bk-option id="field" name="引用变量"></bk-option>
                 <bk-option id="department" name="组织架构"></bk-option>
@@ -203,13 +202,13 @@
                     fieldList.find(i => i.key === mapping.key).type
                   )
                 ">
-                  <bk-option id="system" name="系统变量"></bk-option>
-                  <bk-option id="approver" name="审批人"></bk-option>
-                  <bk-option id="leader" name="指定上级"></bk-option>
+                <bk-option id="system" name="系统变量"></bk-option>
+                <bk-option id="approver" name="审批人"></bk-option>
+                <bk-option id="leader" name="指定上级"></bk-option>
                 </template>
               </bk-select>
               <bk-select
-                v-if="['field', 'field_increment', 'field_reduction'].includes(mapping.type)"
+                v-if="['field', 'field_increment', 'field_reduction','department'].includes(mapping.type)"
                 v-model="mapping.value"
                 placeholder="选择变量"
                 style="width: 208px"
@@ -287,8 +286,8 @@
 </template>
 <script>
 import cloneDeep from 'lodash.clonedeep';
-import {CONDITION_RELATIONS} from '@/constants/forms.js';
-import {getFieldConditions} from '@/utils/form.js';
+import { CONDITION_RELATIONS } from '@/constants/forms.js';
+import { getFieldConditions } from '@/utils/form.js';
 import FieldValue from '@/components/form/fieldValue.vue';
 
 export default {
@@ -315,9 +314,9 @@ export default {
     return {
       formData: this.getInitialFormData(this.node),
       actions: [
-        {id: 'ADD', name: '插入'},
-        {id: 'EDIT', name: '更新'},
-        {id: 'DELETE', name: '删除'},
+        { id: 'ADD', name: '插入' },
+        { id: 'EDIT', name: '更新' },
+        { id: 'DELETE', name: '删除' },
       ],
       isDepartMent: '',
       conditionRelations: CONDITION_RELATIONS,
@@ -350,14 +349,7 @@ export default {
   },
   computed: {
     targetFields() {
-      const tempKey = this.formData?.mapping.filter(item => item.type === 'department').map(item => item.key);
-      const targetFiled = this.fieldList.filter(item => !['id', 'ids'].includes(item.key)).map((el) => {
-        if (tempKey.includes(el.key)) {
-          return {...el, type: 'MEMBER'};
-        }
-        return el;
-      });
-      return targetFiled;
+      return this.fieldList.filter(item => !['id', 'ids'].includes(item.key));
     },
     // 值类型为指定上级时，可选值为引用变量中的单选人员变量
     memberRelationFields() {
@@ -389,7 +381,7 @@ export default {
     async getFormList() {
       try {
         this.formListLoading = true;
-        const res = await this.$store.dispatch('setting/getFormList', {project_key: this.appId, page_size: 1000});
+        const res = await this.$store.dispatch('setting/getFormList', { project_key: this.appId, page_size: 1000 });
         this.formList = res.data.items;
       } catch (e) {
         console.error(e);
@@ -401,9 +393,9 @@ export default {
       try {
         this.fieldListLoading = true;
         const res = await this.$store.dispatch('setting/getFormFields', id);
-        res.data.unshift({key: 'id', name: 'id', type: 'INT'});
+        res.data.unshift({ key: 'id', name: 'id', type: 'INT' });
         if (this.formData.action === 'DELETE') {
-          res.data.unshift({key: 'ids', name: 'ids', type: 'INT'});
+          res.data.unshift({ key: 'ids', name: 'ids', type: 'INT' });
         }
         this.fieldList = res.data;
       } catch (e) {
@@ -423,7 +415,7 @@ export default {
             groupedList.push({
               name: group.state_name,
               fields: group.fields.map((item) => {
-                const {key, name, type} = item;
+                const { key, name, type } = item;
                 return {
                   type,
                   name,
@@ -457,7 +449,7 @@ export default {
       if (node.extras.dataManager) {
         data = cloneDeep(node.extras.dataManager);
         if (!data.conditions) {
-          data.conditions = {connector: 'and', expressions: []};
+          data.conditions = { connector: 'and', expressions: [] };
         }
         if (!data.conditions.expressions) {
           data.conditions.expressions = [];
@@ -466,7 +458,7 @@ export default {
           data.mapping = [];
         }
       } else {
-        data = {action: '', conditions: {connector: 'and', expressions: []}, mapping: [], worksheet_id: ''};
+        data = { action: '', conditions: { connector: 'and', expressions: [] }, mapping: [], worksheet_id: '' };
       }
       return data;
     },
@@ -494,7 +486,7 @@ export default {
       this.formData.action = val;
       if (val === 'DELETE') {
         if (idsFieldIdx === -1) {
-          this.fieldList.splice(0, 0, {key: 'ids', name: 'ids'});
+          this.fieldList.splice(0, 0, { key: 'ids', name: 'ids' });
         }
       } else {
         if (idsFieldIdx > -1) {
@@ -557,11 +549,26 @@ export default {
               }
             });
             if (fields.length > 0) {
-              list.push({name: group.name, fields});
+              list.push({ name: group.name, fields });
             }
           });
           return list;
         }
+      }
+      if (exp.type === 'department') {
+        const list = [];
+        this.relationList.forEach((group) => {
+          const fields = [];
+          group.fields.forEach((item) => {
+            if (['MEMBER', 'MEMBERS'].includes(item.type)) {
+              fields.push(item);
+            }
+          });
+          if (fields.length > 0) {
+            list.push({ name: group.name, fields });
+          }
+        });
+        return list;
       }
       return this.relationList;
     },
@@ -598,7 +605,7 @@ export default {
       return this.$refs.dataForm
         .validate()
         .then(() => {
-          const {expressions = []} = this.formData.conditions;
+          const { expressions = [] } = this.formData.conditions;
           const expInValid = expressions.some(item => item.key === '' || item.condition === '' || item.value === '');
           const mapInValid = (this.formData.mapping || []).some(item => item.key === '' || item.value === '');
           this.errorTips = expInValid || mapInValid;
@@ -623,115 +630,85 @@ export default {
       }
       return data;
     },
-    handleSelectMapValue(mapping, val) {
-      mapping.value = '';
-      val === 'department' ? this.isDepartMent = true : this.isDepartMent = false;
-    },
   },
 };
 </script>
 <style lang="postcss" scoped>
 .data-process-node-form {
-
-.action-select-area {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 24px;
-
-.bk-form-item {
-  flex: 1;
-  margin-top: 0;
-
-&
-:first-child {
-  margin-right: 16px;
-}
-
-}
-}
-&
-> .bk-form-item {
-  margin-top: 24px;
-}
-
-.bk-select {
-  background: #ffffff;
-}
-
-.logic-radio {
-  display: flex;
-  align-items: center;
-  height: 20px;
-
-&
-> label {
-  margin-right: 30px;
-  white-space: nowrap;
-  color: #63656e;
-  font-size: 14px;
-}
-
-}
-.rules-section {
-  margin-top: 16px;
-  padding: 14px 24px 24px;
-  background: #fafbfd;
-  border: 1px solid #dcdee5;
-
-&
-> label {
-  color: #63656e;
-  font-size: 14px;
-}
-
-.condition-item {
-  display: flex;
-  align-items: center;
-  margin-top: 16px;
-}
-
-.operate-btns {
-  user-select: none;
-
-i {
-  color: #c4c6cc;
-  cursor: pointer;
-
-&
-:hover {
-  color: #979ba5;
-}
-
-&
-.disabled {
-  color: #dcdee5;
-  cursor: not-allowed;
-}
-
-}
-}
-.data-empty {
-  margin-top: 16px;
-  padding: 24px 0;
-  font-size: 12px;
-  text-align: center;
-  color: #dcdee5;
-  border: 1px dashed #dcdee5;
-  cursor: pointer;
-
-&
-:not(.disabled):hover {
-  border-color: #3a84ff;
-  color: #3a84ff;
-}
-
-&
-.disabled {
-  cursor: not-allowed;
-}
-
-}
-}
+  .action-select-area {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 24px;
+    .bk-form-item {
+      flex: 1;
+      margin-top: 0;
+      &:first-child {
+        margin-right: 16px;
+      }
+    }
+  }
+  & > .bk-form-item {
+    margin-top: 24px;
+  }
+  .bk-select {
+    background: #ffffff;
+  }
+  .logic-radio {
+    display: flex;
+    align-items: center;
+    height: 20px;
+    & > label {
+      margin-right: 30px;
+      white-space: nowrap;
+      color: #63656e;
+      font-size: 14px;
+    }
+  }
+  .rules-section {
+    margin-top: 16px;
+    padding: 14px 24px 24px;
+    background: #fafbfd;
+    border: 1px solid #dcdee5;
+    & > label {
+      color: #63656e;
+      font-size: 14px;
+    }
+    .condition-item {
+      display: flex;
+      align-items: center;
+      margin-top: 16px;
+    }
+    .operate-btns {
+      user-select: none;
+      i {
+        color: #c4c6cc;
+        cursor: pointer;
+        &:hover {
+          color: #979ba5;
+        }
+        &.disabled {
+          color: #dcdee5;
+          cursor: not-allowed;
+        }
+      }
+    }
+    .data-empty {
+      margin-top: 16px;
+      padding: 24px 0;
+      font-size: 12px;
+      text-align: center;
+      color: #dcdee5;
+      border: 1px dashed #dcdee5;
+      cursor: pointer;
+      &:not(.disabled):hover {
+        border-color: #3a84ff;
+        color: #3a84ff;
+      }
+      &.disabled {
+        cursor: not-allowed;
+      }
+    }
+  }
 }
 </style>

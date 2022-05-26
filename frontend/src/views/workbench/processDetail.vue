@@ -84,8 +84,7 @@ import triggerRecord from './components/triggerRecord.vue';
 import processPreview from './components/processPreview.vue';
 import PageWrapper from '@/components/pageWrapper.vue';
 import { deepClone } from '@/utils/util';
-import MemberSelect from '@/components/memberSelect.vue';
-
+import judgeFieldsConditionMixins from '../../components/form/formFields/judgeFieldsConditionMixins';
 export default {
   name: 'ProcessDetail',
   components: {
@@ -95,9 +94,8 @@ export default {
     processPreview,
     PageWrapper,
     triggerRecord,
-    MemberSelect,
   },
-  mixins: [fieldMix],
+  mixins: [fieldMix, judgeFieldsConditionMixins],
   provide() {
     return {
       getNodeList: this.initData,
@@ -196,7 +194,14 @@ export default {
       const copyList = deepClone(newNodeList);
       copyList.forEach((item) => {
         item.fields.forEach((fields) => {
-          this.$set(fields, 'showFeild', !fields.show_conditions.connector);
+          if (this.isObjectHaveAttr(fields.show_conditions)) {
+            const  isNumber = fields === 'INT';
+            this.judgeShowConditionAtProcessDetail(fields.show_conditions, item.fields, isNumber)
+              ? this.$set(fields, 'showFeild', false)
+              : this.$set(fields, 'showFeild', true);
+          } else {
+            this.$set(fields, 'showFeild', true);
+          }
           this.$set(fields, 'val', '');
         });
         if (item.status === 'AUTO_SUCCESS') {

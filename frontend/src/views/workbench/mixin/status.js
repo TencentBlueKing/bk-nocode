@@ -70,10 +70,7 @@ export default {
     },
     async getAppList() {
       try {
-        const params = {
-          show_type: 'manager_center',
-        };
-        const res = await this.$store.dispatch('setting/getAllApp', params);
+        const res = await this.$store.dispatch('setting/getAllApp');
         this.appList = res.data.filter(item => item.publish_status !== 'UNRELEASED');
       } catch (e) {
         console.error(e);

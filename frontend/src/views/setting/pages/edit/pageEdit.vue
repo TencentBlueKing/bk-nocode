@@ -44,7 +44,7 @@
       </bk-form-item>
       <bk-form-item
         v-if="type==='LINK'"
-        label="链接名称">
+        label="链接地址">
         <bk-input v-model.trim="pageData.value" @change="change">
         </bk-input>
       </bk-form-item>

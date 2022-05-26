@@ -39,6 +39,7 @@ from nocode.project_manager.handlers.module_handler import (
     ProjectModuleHandler,
     WorkSheetFieldModuleHandler,
     WorkSheetModuleHandler,
+    WorkSheetEventVersionGenerator,
 )
 from nocode.project_manager.handlers.project_white_handler import white_token_generate
 from nocode.project_manager.models import ProjectVersion
@@ -84,6 +85,10 @@ class ProjectVersionModelHandler(APIModel):
         self.log_handler.create_log("页面组件版本快照创建完成")
         worksheet = WorkSheetVersionGenerator().create_version(self.project_key)
         self.log_handler.create_log("工作表版本快照创建完成")
+        worksheet_events = WorkSheetEventVersionGenerator().create_version(
+            self.project_key
+        )
+        self.log_handler.create_log("工作表触发事件版本快照创建完成")
         worksheet_field = WorkSheetFieldVersionGenerator().create_version(
             self.project_key
         )
@@ -98,6 +103,7 @@ class ProjectVersionModelHandler(APIModel):
                 page_component=page_component,
                 worksheet=worksheet,
                 worksheet_field=worksheet_field,
+                worksheet_event=worksheet_events,
                 version_number=version_number,
                 project_key=self.project_key,
             )
