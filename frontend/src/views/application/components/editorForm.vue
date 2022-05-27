@@ -64,13 +64,16 @@ export default {
       const currentIndex = this.fieldList.findIndex(i => i.key === key);
       const currentField = this.fieldList[currentIndex];
 
-      if (!currentField.meta.worksheet.field_key) {
-        return;
-      }
-      if (!(currentField.type === "SELECT")) {
+      if (!currentField) {
         return;
       }
 
+      if (!(currentField.type === "SELECT")) {
+        return;
+      }
+      if (!currentField.meta.worksheet) {
+        return;
+      }
       const worksheetFieldList = [];
       // 先过滤出来所有的和当前字段有关的包含变量引用的下拉框字段
       for (let i = 0; i < this.fieldList.length; i++) {
