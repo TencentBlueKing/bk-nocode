@@ -50,7 +50,7 @@ from nocode.data_engine.exceptions import (
     ImportDataError,
     DataValidateError,
 )
-from nocode.data_engine.handlers.constancts import CONDITIONS_PROTOCOL
+from nocode.data_engine.handlers.constancts import CONDITIONS_PROTOCOL, AUTO_LINE_FEED
 from nocode.data_engine.handlers.module_handlers import (
     PageComponentHandler,
     ServiceHandler,
@@ -226,16 +226,32 @@ class ListComponentDataHandler(BaseDataHandler):
         queryset = base_queryset.filter(filters).values(*keys)
 
         key_map = self.get_key_map(fields)
-
+        # 初始化表格
         work_book = xlwt.Workbook(encoding="utf-8")
         work_sheet = work_book.add_sheet(manager.worksheet.name)
+        # 表格样式初始化
+        alignment = xlwt.Alignment()
+        # 水平位置
+        alignment.horz = xlwt.Alignment.HORZ_CENTER
+        # 垂直方向
+        alignment.vert = xlwt.Alignment.VERT_CENTER
 
+        style = xlwt.XFStyle()
+        # 样式加载
+        style.alignment = alignment
+
+        # 页面展示表格的字段作为首行内容
         head_fields = self.get_filter_fields(page_config["config"], fields)
+        text_keys = [
+            f"contents__{item['key']}" for item in head_fields if item["type"] == "TEXT"
+        ]
 
+        # 首行写入
         for index, value in enumerate(head_fields):
             work_sheet.col(index).width = 256 * 20
             work_sheet.write(0, index, value["name"])
 
+        # 对应内容写入
         for row, values in enumerate(queryset):
             for index, key in enumerate(keys):
                 if key in key_map:
@@ -264,7 +280,10 @@ class ListComponentDataHandler(BaseDataHandler):
 
                         work_sheet.write(row + 1, index, value)
                 else:
-                    work_sheet.write(row + 1, index, values.get(key, "--"))
+                    if key in text_keys:
+                        # 多行文本，自动换行
+                        style.alignment.wrap = AUTO_LINE_FEED
+                    work_sheet.write(row + 1, index, values.get(key, "--"), style)
 
         output = io.BytesIO()
         work_book.save(output)
@@ -280,7 +299,7 @@ class ListComponentDataHandler(BaseDataHandler):
         return response
 
     def get_filter_fields(self, config, fields):
-        filter_fields = [{"name": "id"}]
+        filter_fields = [{"name": "id", "type": "INT"}]
         config = self.get_config(config)
         field_ids = config.get("fields", [])
         sys_fields = config.get("sys_fields", [])
@@ -288,14 +307,14 @@ class ListComponentDataHandler(BaseDataHandler):
             if field["id"] in field_ids:
                 filter_fields.append(field)
 
-        sys_dict = {
-            "creator": "提交人",
-            "update_at": "更新时间",
-            "create_at": "创建时间",
-            "updated_by": "更新人",
+        sys_enum = {
+            "creator": {"name": "提交人", "type": "STRING"},
+            "update_at": {"name": "更新时间", "type": "DATETIME"},
+            "create_at": {"name": "创建时间", "type": "DATETIME"},
+            "updated_by": {"name": "更新人", "type": "STRING"},
         }
         for sys_field in sys_fields:
-            filter_fields.append({"name": sys_dict.get(sys_field)})
+            filter_fields.append(sys_enum.get(sys_field))
         return filter_fields
 
     def get_key_map(self, fields):
