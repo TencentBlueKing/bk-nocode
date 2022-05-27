@@ -969,6 +969,8 @@ export default {
         } else if (item.key === 'id') {
           value.id = row.id;
           tempEditData.push(item);
+        } else {
+          tempEditData.push(item);
         }
       });
       this.editorValue = value;

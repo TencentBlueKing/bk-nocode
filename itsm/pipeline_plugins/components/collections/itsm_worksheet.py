@@ -164,10 +164,11 @@ class StateExtraManager:
                     "id": username,
                 }
             )
-            department_list = []
-            for item in res:
-                department_list.append(item["full_name"])
-            return ",".join(department_list)
+
+            if not res:
+                return ""
+
+            return res[-1]["full_name"]
 
         except Exception or ComponentCallError as e:
             logger.info(
