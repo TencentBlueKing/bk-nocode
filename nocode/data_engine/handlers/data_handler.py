@@ -278,7 +278,7 @@ class ListComponentDataHandler(BaseDataHandler):
                         else:
                             value = values.get(key, "--")
 
-                        work_sheet.write(row + 1, index, value)
+                        work_sheet.write(row + 1, index, value, style)
                 else:
                     if key in text_keys:
                         # 多行文本，自动换行
