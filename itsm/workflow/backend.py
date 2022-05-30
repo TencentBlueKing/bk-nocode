@@ -52,6 +52,7 @@ from itsm.component.constants import (
     TICKET_GLOBAL_VARIABLES,
     APPROVAL_STATE,
     DATA_PROC_STATE,
+    DATA_QUERY_STATE,
 )
 from itsm.component.custom_pipeline_engine.runtime import CustomBambooDjangoRuntime
 from itsm.component.exceptions import WorkFlowInvalidError
@@ -141,6 +142,8 @@ class PipelineWrapper(object):
             act = ServiceActivity("itsm_approval_node")
         elif state["type"] == DATA_PROC_STATE:
             act = ServiceActivity("data_processing")
+        elif state["type"] == DATA_QUERY_STATE:
+            act = ServiceActivity("data_query")
         else:
             act = ServiceActivity("itsm_approve")
 
@@ -610,6 +613,7 @@ class PipelineWrapper(object):
                     VIRTUAL_STATE,
                     APPROVAL_STATE,
                     DATA_PROC_STATE,
+                    DATA_QUERY_STATE,
                 ]:
                     # NORMAL（普通节点和分支网关节点）
                     outgoings = state["outgoing"]

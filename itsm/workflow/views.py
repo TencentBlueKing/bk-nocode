@@ -848,15 +848,9 @@ class FieldViewSet(BaseFieldViewSet):
         worksheet_fields = validated_data.get("field_ids")
         if not worksheet_fields:
             raise serializers.ValidationError(_("字段不可为空"))
-        (
-            field_ids,
-            failed_fields,
-        ) = WorkSheetFieldModelHandler().copy_fields_from_worksheet_field(
+        field_ids = WorkSheetFieldModelHandler().copy_fields_from_worksheet_field(
             worksheet_field_ids=worksheet_fields, state=state, service=service
         )
-        if failed_fields:
-            failed_message = f"导入成功{len(field_ids)}个，导入失败 {failed_fields}，失败原因：已经被重复倒入过"
-            raise serializers.ValidationError(_(failed_message))
         queryset = self.get_queryset().filter(id__in=field_ids)
         serializer_data = self.get_serializer(queryset, many=True).data
         return Response(serializer_data)
