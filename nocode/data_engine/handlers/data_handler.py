@@ -813,12 +813,12 @@ class ChartDataHandler(ListComponentDataHandler):
         y_result = self.analysis_after_sort_content(
             sorted_content=sorted_content, y_label_list=y_label_list
         )
-        result = {"x_label": sorted_content.keys(), "y_list": y_result}
-        result.update(
-            {
-                "name": chart_setting["name"],
-            }
-        )
+
+        x_name = x_label_key["name"]
+        y_name = y_label_list[0]["name"]
+        result = []
+        for key, value in y_result.items():
+            result.append({x_name: key, y_name: value[0]["result"]})
         return result
 
     def analysis_by_const(self, queryset, x_label_key, y_label_list, chart_setting):
@@ -826,12 +826,12 @@ class ChartDataHandler(ListComponentDataHandler):
         sorted_content = self.sort_queryset_by_key(queryset, x_label_key)
         # 根据y轴依据进行数据的统计
         y_result = self.analysis_after_sort_content(sorted_content, y_label_list)
-        result = {"x_label": sorted_content.keys(), "y_list": y_result}
-        result.update(
-            {
-                "name": chart_setting["name"],
-            }
-        )
+
+        x_name = x_label_key["name"]
+        y_name = y_label_list[0]["name"]
+        result = []
+        for key, value in y_result.items():
+            result.append({x_name: key, y_name: value[0]["result"]})
         return result
 
     def analysis_after_sort_content(self, sorted_content, y_label_list):
@@ -918,7 +918,7 @@ class ChartDataHandler(ListComponentDataHandler):
         sorted_content = {}
         for year in year_range:
             # 月
-            month = chart_setting["time_range"]["conditions"]["expressions"]["0"][
+            month = chart_setting["time_range"]["conditions"]["expressions"][0][
                 "value"
             ].split("-")[1]
             each_day_queryset = None
@@ -948,7 +948,6 @@ class ChartDataHandler(ListComponentDataHandler):
                     .values("update_at", "total", "contents")
                     .order_by("-create_at")
                 )
-
             for item in each_day_queryset:
                 create_at_day = item.get("create_at")
                 sort_value = f"{year}-{month}-{create_at_day}"
