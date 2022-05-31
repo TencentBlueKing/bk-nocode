@@ -130,10 +130,10 @@ class DataInstanceViewSet(BaseApiViewSet):
     @action(
         detail=False,
         methods=["post"],
-        serializer_class=query.ChartComponentDataSerializer,
+        # serializer_class=query.ChartComponentDataSerializer,
     )
     def list_chart_data(self, request, *args, **kwargs):
-        chart_configs = self.validated_data["chart_configs"]
+        chart_configs = request.data.get("chart_configs", [])
         data = ChartDataHandler(
             request=request,
         ).analysis(chart_configs)
