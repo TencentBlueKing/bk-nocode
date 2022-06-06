@@ -256,7 +256,6 @@ class ListComponentDataHandler(BaseDataHandler):
             for index, key in enumerate(keys):
                 if key in key_map:
                     field = key_map.get(key)
-
                     if field["type"] in ["SELECT", "MULTISELECT", "CHECKBOX", "RADIO"]:
                         choices = field.get("choice", [])
 
@@ -283,7 +282,14 @@ class ListComponentDataHandler(BaseDataHandler):
                     if key in text_keys:
                         # 多行文本，自动换行
                         style.alignment.wrap = AUTO_LINE_FEED
-                    work_sheet.write(row + 1, index, values.get(key, "--"), style)
+                        work_sheet.write(row + 1, index, values.get(key, "--"), style)
+                    if key in ["create_at", "update_at"]:
+                        value = values.get(key, "--")
+                        if isinstance(value, datetime.datetime):
+                            value = value.strftime("%Y-%m-%d %H:%M:%S")
+                            work_sheet.write(row + 1, index, value, style)
+                    else:
+                        work_sheet.write(row + 1, index, values.get(key, "--"), style)
 
         output = io.BytesIO()
         work_book.save(output)
