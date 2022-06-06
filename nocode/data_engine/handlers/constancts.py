@@ -7,3 +7,5 @@ CONDITIONS_PROTOCOL = {
         {"key": "create_at", "type": "const", "condition": "<=", "value": ""},
     ],
 }
+
+AUTO_LINE_FEED = 1
