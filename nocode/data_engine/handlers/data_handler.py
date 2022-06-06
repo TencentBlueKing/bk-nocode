@@ -235,12 +235,10 @@ class ListComponentDataHandler(BaseDataHandler):
         for index, value in enumerate(head_fields):
             work_sheet.col(index).width = 256 * 20
             work_sheet.write(0, index, value["name"])
-
         for row, values in enumerate(queryset):
             for index, key in enumerate(keys):
                 if key in key_map:
                     field = key_map.get(key)
-
                     if field["type"] in ["SELECT", "MULTISELECT", "CHECKBOX", "RADIO"]:
                         choices = field.get("choice", [])
 
@@ -261,10 +259,15 @@ class ListComponentDataHandler(BaseDataHandler):
                             value = value.strip(",")
                         else:
                             value = values.get(key, "--")
-
                         work_sheet.write(row + 1, index, value)
                 else:
-                    work_sheet.write(row + 1, index, values.get(key, "--"))
+                    if key in ["create_at", "update_at"]:
+                        value = values.get(key, "--")
+                        if isinstance(value, datetime.datetime):
+                            value = value.strftime("%Y-%m-%d %H:%M:%S")
+                            work_sheet.write(row + 1, index, value)
+                    else:
+                        work_sheet.write(row + 1, index, values.get(key, "--"))
 
         output = io.BytesIO()
         work_book.save(output)
