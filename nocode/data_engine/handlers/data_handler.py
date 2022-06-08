@@ -233,7 +233,8 @@ class ListComponentDataHandler(BaseDataHandler):
         # 表格样式初始化
         alignment = xlwt.Alignment()
 
-        alignment.horz = xlwt.Alignment.HORZ_LEFT
+        alignment.horz = xlwt.Alignment.HORZ_CENTER
+        alignment.vert = xlwt.Alignment.VERT_CENTER
         # 水平位置
         style = xlwt.XFStyle()
         # 样式加载
