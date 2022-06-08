@@ -286,6 +286,8 @@ class ListComponentDataHandler(BaseDataHandler):
                         # 多行文本，自动换行
                         style.alignment.wrap = AUTO_LINE_FEED
                         work_sheet.write(row + 1, index, values.get(key, "--"), style)
+                        continue
+
                     if key in ["create_at", "update_at"]:
                         value = values.get(key, "--")
                         if isinstance(value, datetime.datetime):
