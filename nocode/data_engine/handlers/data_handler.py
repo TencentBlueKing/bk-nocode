@@ -36,6 +36,7 @@ from rest_framework.response import Response
 
 from common.log import logger
 from itsm.component.drf.pagination import CustomPageNumberPagination
+from itsm.component.utils.misc import transform_single_username, transform_username
 from nocode.base.constants import SELECT_FIELDS_TYPE
 from nocode.data_engine.core.constants import DAY, MONTH, YEAR
 from nocode.data_engine.core.managers import DataManager
@@ -231,11 +232,9 @@ class ListComponentDataHandler(BaseDataHandler):
         work_sheet = work_book.add_sheet(manager.worksheet.name)
         # 表格样式初始化
         alignment = xlwt.Alignment()
-        # 水平位置
-        alignment.horz = xlwt.Alignment.HORZ_CENTER
-        # 垂直方向
-        alignment.vert = xlwt.Alignment.VERT_CENTER
 
+        alignment.horz = xlwt.Alignment.HORZ_LEFT
+        # 水平位置
         style = xlwt.XFStyle()
         # 样式加载
         style.alignment = alignment
@@ -276,8 +275,12 @@ class ListComponentDataHandler(BaseDataHandler):
                             value = value.strip(",")
                         else:
                             value = values.get(key, "--")
+                    elif field["type"] in ["MEMBER"]:
+                        value = transform_single_username(values.get(key, "--"))
+                    elif field["type"] in ["MEMBERS"]:
+                        value = transform_username(values.get(key, "--"))
 
-                        work_sheet.write(row + 1, index, value, style)
+                    work_sheet.write(row + 1, index, value, style)
                 else:
                     if key in text_keys:
                         # 多行文本，自动换行
@@ -333,6 +336,8 @@ class ListComponentDataHandler(BaseDataHandler):
                 "MULTISELECT",
                 "CHECKBOX",
                 "RADIO",
+                "MEMBER",
+                "MEMBERS",
             ]:
                 key_map[key] = field
 
