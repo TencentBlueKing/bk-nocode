@@ -60,7 +60,7 @@ from nocode.project_manager.models import ProjectVersion
 
 
 class BaseDataHandler:
-    def get_response_data(self, page_queryset):
+    def get_response_data(self, page_queryset, member_keys=[]):
         """
         查询到的值去掉contents__前缀
         """
@@ -68,7 +68,11 @@ class BaseDataHandler:
         for item in page_queryset:
             new_item = {}
             for key, value in item.items():
-                new_item[key.replace("contents__", "", 1)] = value
+                new_key = key.replace("contents__", "", 1)
+                if new_key in member_keys:
+                    new_item[new_key] = transform_username(value)
+                else:
+                    new_item[new_key] = value
             data.append(new_item)
 
         return data
@@ -110,6 +114,11 @@ class ListComponentDataHandler(BaseDataHandler):
 
         manager = DataManager(worksheet_id)
         fields = manager.fields
+
+        members_keys = [
+            field["key"] for field in fields if field["type"] in ["MEMBER", "MEMBERS"]
+        ]
+
         keys, upload_fields = self.get_keys(page_config["config"], fields)
         logger.info("[get_list_components_data] -> keys={}".format(keys))
 
@@ -124,10 +133,12 @@ class ListComponentDataHandler(BaseDataHandler):
         queryset = value_to_list(upload_fields, queryset)
         logger.info("[get_list_components_data] get_querySet")
         if not need_page:
-            return Response(self.get_response_data(queryset))
+            return Response(self.get_response_data(queryset, members_keys))
         pagination = CustomPageNumberPagination()
         page_queryset = pagination.paginate_queryset(queryset, self.request)
-        return pagination.get_paginated_response(self.get_response_data(page_queryset))
+        return pagination.get_paginated_response(
+            self.get_response_data(page_queryset, members_keys)
+        )
 
     def get_page_config_queryset(self, manager, config, tab_id):
         """
