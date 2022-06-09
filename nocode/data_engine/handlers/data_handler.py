@@ -544,17 +544,20 @@ class ExportDataHandler:
         version_field_key = [item["key"] for item in version_fields]
         for item in headers:
             item = str(item)
-            key = self.pattern.findall(item)
-            if len(key) != 1:
-                raise ImportDataError(
-                    "[ExportDataHandler][get_keys]数据导入失败，表头{}不符合规范".format(item)
-                )
-            if key[0] not in version_field_key:
-                raise ImportDataError(
-                    "[ExportDataHandler][get_keys]数据导入失败，表头{}不符合规范，表单已变更，请重新生成模板文件".format(
-                        item
+            if item not in ["creator", "create_at", "update_at", "updated_by"]:
+                key = self.pattern.findall(item)
+                if len(key) != 1:
+                    raise ImportDataError(
+                        "[ExportDataHandler][get_keys]数据导入失败，表头{}不符合规范".format(item)
                     )
-                )
+                if key[0] not in version_field_key:
+                    raise ImportDataError(
+                        "[ExportDataHandler][get_keys]数据导入失败，表头{}不符合规范，表单已变更，请重新生成模板文件".format(
+                            item
+                        )
+                    )
+            else:
+                key = [item]
             keys.append(key[0])
         return keys
 
@@ -606,12 +609,35 @@ class ExportDataHandler:
             if index == 0:
                 continue
             data = {}
+
+            creator = None
+            create_at = None
+            update_at = None
+            updated_by = None
             for key, value in zip(keys, rowValues):
                 if isinstance(value, datetime.datetime):
                     value = value.strftime("%Y-%m-%d %H:%M:%S")
-                data[key] = value
+                if key == "creator":
+                    creator = value
+                elif key == "create_at":
+                    create_at = value
+                elif key == "update_at":
+                    update_at = value
+                elif key == "updated_by":
+                    updated_by = value
+                else:
+                    data[key] = value
             try:
-                self.manager.add(data, self.request.user.username)
+                obj = self.manager.add(data, self.request.user.username)
+                if creator:
+                    obj.creator = creator
+                if update_at:
+                    obj.update_at = update_at
+                if create_at:
+                    obj.create_at = create_at
+                if updated_by:
+                    obj.updated_by = updated_by
+                obj.save()
             except Exception as e:
                 logger.info(
                     "[ExportDataHandler][import_by_excels] 数据导入失败，{}条, error={}".format(
