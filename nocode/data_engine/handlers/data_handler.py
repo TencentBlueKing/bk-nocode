@@ -848,6 +848,8 @@ class ChartDataHandler(ListComponentDataHandler):
             "value": (只针对type=time)
         }
         """
+
+        count = chart_setting.get("count")
         if x_label_key["key"] == "create_at":
             queryset.order_by("-create_at")
         if x_label_key["key"] == "update_at":
@@ -887,11 +889,19 @@ class ChartDataHandler(ListComponentDataHandler):
         x_name = x_label_key["name"]
         y_name = y_label_list[0]["name"]
         result = []
+
         for key, value in y_result.items():
-            result.append({x_name: key, y_name: value[0]["result"]})
+            result.append({x_name: key, y_name: value})
+
+        if count is not None:
+            return result[0:count]
+
         return result
 
     def analysis_by_const(self, queryset, x_label_key, y_label_list, chart_setting):
+
+        count = chart_setting.get("count")
+
         # x轴分类的数据
         sorted_content = self.sort_queryset_by_key(queryset, x_label_key)
         # 根据y轴依据进行数据的统计
@@ -900,14 +910,25 @@ class ChartDataHandler(ListComponentDataHandler):
         x_name = x_label_key["name"]
         y_name = y_label_list[0]["name"]
         result = []
-        for key, value in y_result.items():
-            result.append({x_name: key, y_name: value[0]["result"]})
+
+        if y_label_list[0]["type"] in ["count", "type"]:
+            y_result = sorted(y_result.items(), key=lambda x: x[1], reverse=True)
+
+            for item in y_result:
+                result.append({x_name: item[0], y_name: item[1]})
+        else:
+            for key, value in y_result.items():
+                result.append({x_name: key, y_name: value})
+
+        if count is not None:
+            return result[0:count]
+
         return result
 
     def analysis_after_sort_content(self, sorted_content, y_label_list):
         y_result = {}
         for field, content_list in sorted_content.items():
-            y_result[field] = []
+            y_result[field] = {}
             for y_label in y_label_list:
                 # 创建分类的总数统计
                 if y_label["type"] == "count":
@@ -918,15 +939,8 @@ class ChartDataHandler(ListComponentDataHandler):
                 # if y_label["type"] == "sum":
                 else:
                     result_data = self.sum(content_list, y_label["field"])
-                result_data = {
-                    "field_key": y_label["field"],
-                    "field_value": y_label["value"],
-                    "analysis_type": y_label["type"],
-                    "result": result_data,
-                }
 
-                y_result[field].append(result_data)
-
+                y_result[field] = result_data
         return y_result
 
     def sort_queryset_by_key(self, queryset, x_label_key):
