@@ -780,7 +780,7 @@ FRONTEND_URL = os.environ.get("BKAPP_FRONTEND_URL") or os.path.join(
 
 MY_OA_CALLBACK_URL = os.environ.get("MY_OA_CALLBACK_URL", "")
 
-WEIXIN_APP_EXTERNAL_SHARE_HOST = "{}weixin/".format(
+WEIXIN_APP_EXTERNAL_SHARE_HOST = "{}".format(
     os.environ.get("BKAPP_WEIXIN_APP_EXTERNAL_HOST", FRONTEND_URL)
 )
 TICKET_NOTIFY_HOST = WEIXIN_APP_EXTERNAL_SHARE_HOST.replace("https", "http")

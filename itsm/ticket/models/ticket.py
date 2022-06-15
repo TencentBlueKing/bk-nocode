@@ -1380,7 +1380,7 @@ class Ticket(Model):
     @property
     def ticket_url(self):
         if not self.notify_url:
-            return "{site_url}/#/ticket/{ticket_id}/".format(
+            return "{site_url}/workbench/processDetail/{ticket_id}/".format(
                 site_url=settings.TICKET_NOTIFY_HOST.rstrip("/"), ticket_id=self.id
             )
         return self.notify_url
@@ -1420,7 +1420,7 @@ class Ticket(Model):
             }
         )
         client = Cache()
-        self.notify_url = "{site_url}/#/ticket/{ticket_id}/?token={token}&cache_key={cache_key}".format(
+        self.notify_url = "{site_url}/workbench/processDetail/{ticket_id}/?token={token}&cache_key={cache_key}".format(
             site_url=settings.TICKET_NOTIFY_HOST.rstrip("/"),
             ticket_id=self.id,
             token=ticket_token,
