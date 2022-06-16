@@ -26,10 +26,9 @@ instance.interceptors.response.use(
   (response) => {
     if (response.status === 401) {
       // 登录控制
-      const { data, config } = response;
-      if (data.has_plain) {
-        window.BLUEKING.corefunc.open_login_dialog(data.login_url, data.width, data.height, config.method);
-      }
+      const { data } = response;
+      const loginUrl = `${data.login_url.split('c_url=')[0]}c_url=${window.location.href}`;
+      window.location.href = loginUrl;
     } else if (response.status === 499) {
       const permissions = response.data.permission;
       let isViewApply = false;

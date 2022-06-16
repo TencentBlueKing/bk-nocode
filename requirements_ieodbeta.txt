@@ -4,7 +4,7 @@
 raven==6.1.0
 # for apm
 ddtrace==0.14.1
-blueapps == 2.5.0
+blueapps==4.4.2
 gunicorn==19.6.0
 blueking.component.ieod==0.0.89
 blueking.component.open==0.0.6
