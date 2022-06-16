@@ -91,7 +91,7 @@ drf_spectacular==0.12.0
 
 #pypinyin
 pypinyin==0.31.0
-blueapps==4.0.2rc0
+blueapps==4.4.2
 
 #openpyxl
 openpyxl==3.0.9
