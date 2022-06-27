@@ -150,7 +150,7 @@
                 theme="primary"
                 @click="handleDownload(row,column)"
                 text>
-                点击下载
+                {{row[field.key][0].origin_name}}
               </bk-button>
               <bk-button
                 v-else-if="['LINK'].includes(field.type)&&row[column.property]"

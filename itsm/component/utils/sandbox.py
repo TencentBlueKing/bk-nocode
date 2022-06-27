@@ -24,25 +24,36 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 # import requests
-from RestrictedPython import compile_restricted, safe_globals, safe_builtins, utility_builtins  # noqa
+from urllib.parse import urlencode
+
+from RestrictedPython import (  # noqa
+    compile_restricted,
+    safe_globals,
+    safe_builtins,
+    utility_builtins,
+)  # noqa
 from RestrictedPython.Guards import guarded_iter_unpack_sequence  # noqa
-from RestrictedPython.Eval import default_guarded_getiter, default_guarded_getitem, default_guarded_getattr  # noqa
+from RestrictedPython.Eval import (  # noqa
+    default_guarded_getiter,
+    default_guarded_getitem,
+    default_guarded_getattr,
+)  # noqa
 from RestrictedPython._compat import IS_CPYTHON  # noqa
 
 
-def map_data(source_code, data, key='response'):
+def map_data(source_code, data, key="response"):
     '''
-        bk.http->map_data
+    bk.http->map_data
 
-        response = {'result': True, 'data': {'a': 1, 'b': 2, 'c': 3}}
-        source_code = """
-        def map(response):
-            return [{'id': k, 'name': v} for k, v in response['data'].items()]
-        result = map(response)
-        """
-        source_code = """
-        result = [{'id': k, 'name': v} for k, v in response['data'].items()]
-        """
+    response = {'result': True, 'data': {'a': 1, 'b': 2, 'c': 3}}
+    source_code = """
+    def map(response):
+        return [{'id': k, 'name': v} for k, v in response['data'].items()]
+    result = map(response)
+    """
+    source_code = """
+    result = [{'id': k, 'name': v} for k, v in response['data'].items()]
+    """
     '''
 
     if not (source_code and IS_CPYTHON):
@@ -59,21 +70,25 @@ def map_data(source_code, data, key='response'):
     import json
 
     available_attrs = {
-        '_getitem_': default_guarded_getitem,
-        '_getiter_': default_guarded_getiter,
-        '_iter_unpack_sequence_': guarded_iter_unpack_sequence,
-        'enumerate': enumerate,
-        'json': json,
+        "_getitem_": default_guarded_getitem,
+        "_getiter_": default_guarded_getiter,
+        "_iter_unpack_sequence_": guarded_iter_unpack_sequence,
+        "enumerate": enumerate,
+        "json": json,
+        "urlencode": urlencode
         # 'requests': requests,
     }
 
-    limited_globals = {'__builtins__': {**safe_builtins, **utility_builtins}, **available_attrs}
+    limited_globals = {
+        "__builtins__": {**safe_builtins, **utility_builtins},
+        **available_attrs,
+    }
 
     try:
         byte_code = compile_restricted(
             source_code,
-            '<inline>',
-            'exec',
+            "<inline>",
+            "exec",
             # policy=None
         )
         limited_locals = {key: data}

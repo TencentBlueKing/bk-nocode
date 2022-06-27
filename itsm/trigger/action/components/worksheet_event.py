@@ -116,6 +116,9 @@ class WorkSheetEventExecute:
             project_key=self.project_key
         ).get_worksheet_events(worksheet_id=self.worksheet_id)
 
+        if worksheet_events is None:
+            return True
+
         suitable_events = [
             item for item in worksheet_events if item["action_type"] == self.action_type
         ]
