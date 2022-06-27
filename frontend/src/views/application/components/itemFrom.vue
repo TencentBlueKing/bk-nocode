@@ -34,7 +34,7 @@
            style="margin-right: 8px"
            @click="handleDownload(item.val)"
            text>
-                点击下载
+                {{getFileName(item.val)}}
           </bk-button>
           <span v-else>--</span>
       </span>
@@ -122,6 +122,12 @@ export default {
       val.forEach((item) => {
         window.open(`${window.location.origin}${window.SITE_URL}api/misc/download_file/?file_name=${item.file_name}&origin_name=${item.origin_name}&download_flag=1`);
       });
+    },
+    getFileName(val) {
+      if (val.length == 1) {
+        return val[0].origin_name;
+      }
+      return "暂无内容";
     },
     setSourceData(field) {
       if (field.source_type === 'CUSTOM') {
