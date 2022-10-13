@@ -37,6 +37,7 @@ from blueapps.account.decorators import login_exempt
 
 from config.default import TOKEN_EXPIRE_TIME
 from itsm.project.handler.project_handler import ProjectHandler
+from itsm.project.models import Project
 from itsm.service.validators import service_validate
 from itsm.ticket.models import Ticket, TicketEventLog
 from itsm.ticket.serializers import TicketSerializer, EventSerializer
@@ -150,12 +151,12 @@ class DataInstanceViewSet(BaseApiViewSet):
         serializer_class=query.WorkSheetVersionSerializers,
     )
     def get_worksheet_data(self, request, *args, **kwargs):
-        version_number = self.validated_data["version_number"]
         worksheet_id = self.validated_data["worksheet_id"]
-
+        project_key = self.validated_data["project_key"]
+        project = Project.objects.get(key=project_key)
         queryset = WorkSheetDataHandler(
             worksheet_id=worksheet_id, request=request
-        ).get_worksheet_data_by_version(version_number)
+        ).get_worksheet_data_by_version(project.version_number)
 
         return Response(queryset)
 
@@ -168,11 +169,11 @@ class DataInstanceViewSet(BaseApiViewSet):
         methods=["get"],
     )
     def get_worksheet(self, request, *args, **kwargs):
-        version_number = request.query_params.get("version_number")
         project_key = request.query_params.get("project_key")
+        project = Project.objects.get(key=project_key)
 
         version = ProjectVersionModelHandler(
-            project_key=project_key, version_number=version_number
+            project_key=project_key, version_number=project.version_number
         ).instance
         worksheets = version.worksheet
         return Response(worksheets)
