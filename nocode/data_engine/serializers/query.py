@@ -181,13 +181,4 @@ class ImportSerializers(WorkSheetBaseSerializers):
 
 
 class WorkSheetVersionSerializers(WorkSheetBaseSerializers):
-    version_number = serializers.CharField(help_text=_("项目版本"))
-
-    def validate(self, attrs):
-        worksheet_id = attrs["worksheet_id"]
-        version_number = attrs["version_number"]
-        if not WorkSheetHandler.exists(worksheet_id, version_number):
-            raise serializers.ValidationError(
-                "当前应用版本下没有worksheet_id={}的自定义表单".format(worksheet_id)
-            )
-        return attrs
+    project_key = serializers.CharField(required=True)
