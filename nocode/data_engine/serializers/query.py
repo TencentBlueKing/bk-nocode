@@ -181,4 +181,8 @@ class ImportSerializers(WorkSheetBaseSerializers):
 
 
 class WorkSheetVersionSerializers(WorkSheetBaseSerializers):
-    project_key = serializers.CharField(required=True)
+    conditions = serializers.JSONField(help_text=_("查询参数"), required=False, default={})
+    fields = serializers.ListField(help_text=_("字段列表"), required=False, default=[])
+    need_page = serializers.BooleanField(
+        help_text=_("是否分页"), required=False, default=False
+    )
