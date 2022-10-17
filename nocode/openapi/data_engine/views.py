@@ -147,18 +147,21 @@ class DataInstanceViewSet(BaseApiViewSet):
     )
     @action(
         detail=False,
-        methods=["get"],
+        methods=["post"],
         serializer_class=query.WorkSheetVersionSerializers,
     )
     def get_worksheet_data(self, request, *args, **kwargs):
         worksheet_id = self.validated_data["worksheet_id"]
-        project_key = self.validated_data["project_key"]
-        project = Project.objects.get(key=project_key)
-        queryset = WorkSheetDataHandler(
-            worksheet_id=worksheet_id, request=request
-        ).get_worksheet_data_by_version(project.version_number)
+        conditions = self.validated_data.get("conditions", {})
+        fields = self.validated_data.get("fields", [])
+        need_page = self.validated_data["need_page"]
+        data = WorkSheetDataHandler(worksheet_id, request).data(
+            conditions, fields, need_page
+        )
+        if need_page:
+            return data
 
-        return Response(queryset)
+        return Response(data)
 
     @swagger_auto_schema(
         operation_summary="获取某个版本应用下表单",
