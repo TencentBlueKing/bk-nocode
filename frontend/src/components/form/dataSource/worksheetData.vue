@@ -1,9 +1,9 @@
 <template>
   <div class="worksheet-data-wrapper">
     <bk-radio-group
-      style="margin-bottom: 24px;"
-      :value="localVal.target.project_key === appId"
-      @change="handleChangeFormType">
+        style="margin-bottom: 24px;"
+        :value="localVal.target.project_key === appId"
+        @change="handleChangeFormType">
       <bk-radio :value="true">本应用表单</bk-radio>
       <bk-radio :value="false">其他应用表单</bk-radio>
     </bk-radio-group>
@@ -16,36 +16,36 @@
       <bk-form-item v-if="localVal.target.project_key !== appId" label="应用" property="appId" :required="true"
                     error-display-type="normal">
         <bk-select
-          placeholder="请选择应用"
-          :value="localVal.target.project_key"
-          :clearable="false"
-          :disabled="appListLoading"
-          :loading="appListLoading"
-          @selected="handleSelectApp">
+            placeholder="请选择应用"
+            :value="localVal.target.project_key"
+            :clearable="false"
+            :disabled="appListLoading"
+            :loading="appListLoading"
+            @selected="handleSelectApp">
           <bk-option v-for="item in appList" :key="item.key" :id="item.key" :name="item.name"></bk-option>
         </bk-select>
       </bk-form-item>
       <bk-form-item label="表单" property="formId" :required="true" error-display-type="normal">
         <bk-select
-          placeholder="请选择表单"
-          :value="localVal.target.worksheet_id"
-          :clearable="false"
-          :searchable="true"
-          :disabled="formListLoading"
-          :loading="formListLoading"
-          @selected="handleSelectForm">
+            placeholder="请选择表单"
+            :value="localVal.target.worksheet_id"
+            :clearable="false"
+            :searchable="true"
+            :disabled="formListLoading"
+            :loading="formListLoading"
+            @selected="handleSelectForm">
           <bk-option v-for="item in formList" :key="item.id" :id="item.id" :name="item.name"></bk-option>
         </bk-select>
       </bk-form-item>
       <bk-form-item label="字段" property="field" :required="true" error-display-type="normal">
         <bk-select
-          v-model="localVal.field"
-          placeholder="请选择字段"
-          :clearable="false"
-          :searchable="true"
-          :disabled="fieldListLoading"
-          :loading="fieldListLoading"
-          @selected="update">
+            v-model="localVal.field"
+            placeholder="请选择字段"
+            :clearable="false"
+            :searchable="true"
+            :disabled="fieldListLoading"
+            :loading="fieldListLoading"
+            @selected="update">
           <bk-option v-for="item in fieldList" :key="item.key" :id="item.key" :name="item.name"></bk-option>
         </bk-select>
       </bk-form-item>
@@ -61,53 +61,65 @@
       <div v-if="localVal.conditions.expressions && localVal.conditions.expressions.length > 0" class="condition-list">
         <div class="condition-item" v-for="(expression, index) in localVal.conditions.expressions" :key="index">
           <bk-select
-            v-model="expression.key"
-            placeholder="字段"
-            style="width: 160px; margin-right: 8px"
-            :clearable="false"
-            @selected="handleSelectField(expression)">
+              v-model="expression.key"
+              placeholder="字段"
+              style="width: 160px; margin-right: 8px"
+              :clearable="false"
+              @selected="handleSelectField(expression)">
             <bk-option v-for="item in fieldList" :key="item.key" :id="item.key" :name="item.name"></bk-option>
           </bk-select>
           <bk-select
-            v-model="expression.condition"
-            placeholder="逻辑"
-            style="width: 100px; margin-right: 8px"
-            :clearable="false"
-            @selected="update">
+              v-model="expression.condition"
+              placeholder="逻辑"
+              style="width: 100px; margin-right: 8px"
+              :clearable="false"
+              @selected="update">
             <bk-option
-              v-for="item in getConditionOptions(expression.key)"
-              :key="item.id"
-              :id="item.id"
-              :name="item.name">
+                v-for="item in getConditionOptions(expression.key)"
+                :key="item.id"
+                :id="item.id"
+                :name="item.name">
             </bk-option>
           </bk-select>
           <bk-select
-            v-if="useVariable"
-            v-model="expression.type"
-            placeholder="值类型"
-            style="width: 100px; margin-right: 8px"
-            :clearable="false"
-            @selected="handleSelectType(expression)">
+              v-if="useVariable"
+              v-model="expression.type"
+              placeholder="值类型"
+              style="width: 100px; margin-right: 8px"
+              :clearable="false"
+              @selected="handleSelectType(expression)">
             <bk-option id="const" name="值"></bk-option>
             <bk-option id="field" name="引用变量"></bk-option>
+            <bk-option id="system" name="系统变量"></bk-option>
           </bk-select>
           <bk-select
-            v-if="expression.type === 'field'"
-            v-model="expression.value"
-            placeholder="选择变量"
-            style="width: 140px"
-            :clearable="false"
-            :loading="relationListLoading"
-            :disabled="relationListLoading"
-            @selected="update">
+              v-if="expression.type === 'field'"
+              v-model="expression.value"
+              placeholder="选择变量"
+              style="width: 140px"
+              :clearable="false"
+              :loading="relationListLoading"
+              :disabled="relationListLoading"
+              @selected="update">
             <bk-option v-for="item in relationList" :key="item.key" :id="item.key" :name="item.name"></bk-option>
           </bk-select>
+          <bk-select
+              v-if="expression.type === 'system'"
+              v-model="expression.value"
+              placeholder="选择系统变量"
+              style="width: 140px"
+              :clearable="false"
+              :loading="relationListLoading"
+              :disabled="relationListLoading"
+              @selected="update">
+            <bk-option v-for="item in systemValList" :key="item.key" :id="item.key" :name="item.name"></bk-option>
+          </bk-select>
           <field-value
-            v-else
-            :style="{ width: useVariable ? '140px' : '250px' }"
-            :field="getField(expression.key)"
-            :value="expression.value"
-            @change="handleValChange(expression, $event)">
+              v-if="expression.type === 'const'"
+              :style="{ width: useVariable ? '140px' : '250px' }"
+              :field="getField(expression.key)"
+              :value="expression.value"
+              @change="handleValChange(expression, $event)">
           </field-value>
           <div class="operate-btns" style="margin-left: 8px">
             <i class="custom-icon-font icon-add-circle" @click="handleAddExpression(index)"></i>
@@ -161,6 +173,10 @@ export default {
       fieldList: [],
       fieldListLoading: false,
       relationList: [],
+      systemValList: [{
+        key: "current_user",
+        name: "当前登陆的用户"
+      }],
       relationListLoading: false,
       errorTips: false,
       sourceRules: {

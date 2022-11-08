@@ -69,6 +69,15 @@ export default {
         }
         this.sourceDataLoading = true;
         const { field, conditions } = this.field.meta.data_config;
+        // 处理conditions中的系统变量
+        for (let i = 0;i < conditions.expressions.length; i++) {
+          if (conditions.expressions[i].type === 'system') {
+            if (conditions.expressions[i].value === 'current_user') {
+              conditions.expressions[i].value = window.username;
+              conditions.expressions[i].type = 'const';
+            }
+          }
+        }
         let params;
         if (!conditions.connector && !conditions.expressions.every(i => i)) {
           params = {
