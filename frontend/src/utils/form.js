@@ -7,7 +7,7 @@ export function getFieldConditions(type) {
     return [
       { id: '==', name: '等于' },
       // { id: '!=', name: '不等于' },
-      { id: 'in', name: '包含' },
+      { id: 'icontains', name: '包含' },
       // { id: 'not_in', name: '不包含' },
     ];
   }
