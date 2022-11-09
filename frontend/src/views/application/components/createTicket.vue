@@ -405,6 +405,7 @@ export default {
       const changedField = item[currentIndex];
 
       if (!changedField) {
+        this.judgePageCondition();
         return;
       }
       if (!changedField.meta.worksheet) {

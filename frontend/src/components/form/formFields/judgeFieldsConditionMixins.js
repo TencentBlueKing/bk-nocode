@@ -89,8 +89,8 @@ export default {
         return  condition.expressions?.every((item) => {
           const  func = CONDITION_FUNCTION_MAP[item.condition];
           return this[func](
-            isNumber ? item.value : Number(item.value),
-            isNumber ? this.formValue[item.key] : Number(this.formValue[item.key])
+            isNumber ? Number(item.value) : item.value,
+            isNumber ? Number(this.formValue[item.key]) : this.formValue[item.key]
           );
         });
       }
@@ -98,8 +98,8 @@ export default {
       return condition.expressions?.some((item) => {
         const  func = CONDITION_FUNCTION_MAP[item.condition];
         return this[func](
-          isNumber ? item.value : Number(item.value),
-          isNumber ? this.formValue[item.key] : Number(this.formValue[item.key])
+          isNumber ? Number(item.value) : item.value,
+          isNumber ? Number(this.formValue[item.key]) : this.formValue[item.key]
         );
       });
     },
