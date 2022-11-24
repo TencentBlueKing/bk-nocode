@@ -346,13 +346,17 @@ export default {
           }
         }
       }
-      console.log(worksheetFieldList);
       // 计算这些字段
       for (let i = 0; i < worksheetFieldList.length; i++) {
         const data_config = clonedeep(worksheetFieldList[i].meta.data_config);
         const expressions = data_config.conditions.expressions || [];
         for (let j = 0; j < expressions.length; j++) {
           for (let k = 0; k < this.fieldList.length; k++) {
+            try {
+              this.fieldList[k].meta.worksheet.field_key;
+            } catch {
+              continue;
+            }
             if (expressions[j].value === currentField.meta.worksheet.field_key) {
               expressions[j].value = $event[key];
               expressions[j].type = "const";
