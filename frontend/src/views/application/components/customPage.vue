@@ -75,6 +75,7 @@ export default {
 }
 .page-item{
   width: 100%;
+  overflow-y: scroll;
 }
 .page-element {
   position: relative;

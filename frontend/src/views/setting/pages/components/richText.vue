@@ -45,18 +45,18 @@ export default {
 <style scoped lang="postcss">
 @import "../../../../css/scroller.css";
 .rich-text{
-  height: 300px;
+  /*height: 50%;*/
   overflow-y: scroll;
-  @mixin scroller;
-  /deep/ .toastui-editor-contents{
-    p{
-      margin: 0;
-    }
+  /*@mixin scroller;*/
+  /*/deep/ .toastui-editor-contents{*/
+  /*  p{*/
+  /*    margin: 0;*/
+  /*  }*/
 
-    img{
-      margin: 0;
-    }
-  }
+  /*  img{*/
+  /*    margin: 0;*/
+  /*  }*/
+  /*}*/
 }
 .show-rich-text{
   background: #fff;
