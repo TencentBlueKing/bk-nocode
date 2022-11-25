@@ -13,7 +13,7 @@
       </create-ticket>
     </div>
     <function-card-page
-      v-if="crtPage.type === 'FUNCTION'"
+      v-else-if="crtPage.type === 'FUNCTION'"
       :app-id="appId"
       :app-name="appName"
       :version="version"
@@ -22,7 +22,7 @@
       :actions-perm-map="actionsPermMap">
     </function-card-page>
     <table-page
-      v-if="crtPage.type === 'LIST' && pageConfig.length !== 0"
+      v-else-if="crtPage.type === 'LIST' && pageConfig.length !== 0"
       :app-id="appId"
       :app-name="appName"
       :version="version"
@@ -150,10 +150,10 @@ export default {
 <style lang="postcss" scoped>
 .app-page-container {
   height: 100%;
-  overflow: hidden;
+  overflow: auto;
   .form-page-container {
     margin: 24px 24px 0;
-    height: calc(100% - 48px);
+    height: calc(90% - 48px);
     background: #ffffff;
     box-shadow: 0 2px 4px 0 rgba(25, 25, 41, 0.05);
     border-radius: 2px;

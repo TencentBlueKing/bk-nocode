@@ -1260,7 +1260,7 @@ export default {
 
 .list-page {
   position: relative;
-  height: 100%;
+  height: 90%;
 
   .circle {
     position: absolute;
